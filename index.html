@@ -527,7 +527,7 @@ const WARN_THRESHOLD = 0.6; // show warning at 60%
 const CRIT_THRESHOLD = 0.85;
 
 // ─── LESSON CACHE ─────────────────────────────────────────
-const CACHE_KEY = 'mis_lesson_cache_v1';
+const CACHE_KEY = 'mis_lesson_cache_v2';
 let lessonCache = {};
 try { lessonCache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch(e) {}
 function cacheKey(topic, sub, type) { return `${topic}::${sub}::${type}`; }
@@ -1498,7 +1498,7 @@ function renderQ(q) {
   renderBadges();
   updateHdr();
   </script>
-  <script src="content.js"></script>
+  <script src="content.js?v=1.1"></script>
   <script>
     // Ensure STATIC_CONTENT exists even if script fails
     if (typeof STATIC_CONTENT === 'undefined') window.STATIC_CONTENT = {};
