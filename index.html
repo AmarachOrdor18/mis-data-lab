@@ -365,6 +365,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <p>Turn raw warehouse data into clean, tested, documented tables that analysts can actually trust.</p>
       <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-dbt" style="width:0%"></div></div><span class="pc-pct" id="pct-dbt">0%</span></div>
     </div>
+    <div class="pc" onclick="goLearn('Power BI & Visualization')">
+      <span class="pc-tag" style="color:var(--yellow);background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.15)">Business Intel</span>
+      <h3>Power BI & Visualization</h3>
+      <p>Transform clean data into interactive dashboards. Tell the business story with DAX and visuals.</p>
+      <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-pbi" style="width:0%"></div></div><span class="pc-pct" id="pct-pbi">0%</span></div>
+    </div>
   </div>
 
   <div class="sec-lbl">How it works</div>
@@ -552,9 +558,17 @@ const TOPICS = {
     'Documentation: The Data Dictionary',
     'Career: The Analytics Engineer',
     'Milestone Project'
+  ],
+  'Power BI & Visualization': [
+    'Connecting to Data Sources',
+    'Data Cleaning in Power Query',
+    'DAX Basics (Calculated Columns vs Measures)',
+    'Building Interactive Dashboards',
+    'Publishing & Workspaces',
+    'Milestone Project'
   ]
 };
-const PROG_MAP = {'Python':'python','Apache Airflow':'airflow','APIs & REST':'api','ETL Pipelines':'etl','Cloud Computing':'cloud','dbt & Modeling':'dbt'};
+const PROG_MAP = {'Python':'python','Apache Airflow':'airflow','APIs & REST':'api','ETL Pipelines':'etl','Cloud Computing':'cloud','dbt & Modeling':'dbt','Power BI & Visualization':'pbi'};
 
 // ─── STATE ────────────────────────────────────────────────
 let S = {
@@ -920,7 +934,7 @@ function quickQuiz() {
   nav('quiz');
   // Scroll to top of quiz panel
   document.getElementById('q-content').scrollIntoView({ behavior: 'smooth' });
-  loadQ();
+  loadQ(S.topic, S.sub);
 }
 
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1086,7 +1100,7 @@ function startQuiz() {
   loadQ();
 }
 
-async function loadQ() {
+async function loadQ(forceTopic = null, forceSub = null) {
   S.answered = false;
   document.getElementById('q-loading').style.display = 'flex';
   document.getElementById('q-content').style.display = 'none';
@@ -1097,8 +1111,8 @@ async function loadQ() {
   document.getElementById('q-ctr').textContent = 'Q'+(S.qIdx+1)+' of '+total;
   document.getElementById('qprog-fill').style.width = (S.qIdx/total*100)+'%';
 
-  const topic = S.quizTopics[Math.floor(Math.random()*S.quizTopics.length)];
-  const sub = TOPICS[topic][Math.floor(Math.random()*TOPICS[topic].length)];
+  const topic = forceTopic || S.quizTopics[Math.floor(Math.random()*S.quizTopics.length)];
+  const sub = forceSub || TOPICS[topic][Math.floor(Math.random()*TOPICS[topic].length)];
 
   // 1. Check STATIC_CONTENT for quizzes
   if (typeof STATIC_CONTENT !== 'undefined' && STATIC_CONTENT[topic]?.[sub]?.quizzes) {

@@ -670,8 +670,8 @@ You would build a "Self-Healing" script. By adding error handling, your pipeline
       'lesson': `## Milestone: The Corporate Sales Reporter
 This is your first major project. You are going to build an automated Python system that reads messy sales data, cleans it, and generates a formatted "Executive Dashboard" report.
 
-## The Business Case
-Your company, **"Lagos Retail Hub,"** has 5 branches. Each branch saves its sales in a messy text file. Currently, an intern spends 4 hours every Monday copying these into Excel. You are going to automate this.
+## The Broad Business Problem
+Your company, **"Lagos Retail Hub,"** is losing money because pricing decisions are too slow. By the time management realizes a product is failing, it's already the end of the month. The root cause? Data fragmentation. The 5 regional branches store their sales in isolated, messy text files, and an intern spends 4 hours manually copying them into Excel. You need to build an automated Python system that instantly consolidates this data so the company can make daily, aggressive pricing decisions.
 
 ## Your Project Tasks:
 0. **The Data**: Download the [Northwind Relational Database from GitHub](https://github.com/pthom/northwind_psql) (Specifically the Orders, Order Details, and Products CSVs).
@@ -1298,8 +1298,8 @@ By building a robust Reconciliation Pipeline, you ensure that "Digital Money" al
       'lesson': `## Milestone: The Fintech Reconciliation Engine
 In this project, you will build a complete ETL pipeline that handles the most critical task in banking: **Reconciliation**. You will move data from two sources (Bank Internal Log vs Payment Gateway Log) and find the "Lost Money."
 
-## The Business Case
-Your startup, **"NaijaPay,"** is seeing "ghost transactions"-where a user says they were debited, but the payment gateway says they didn't receive the money. You need to build a pipeline that finds these mismatches automatically for the Finance VP.
+## The Broad Business Problem
+Your startup, **"NaijaPay,"** is facing a massive customer trust crisis. Thousands of users are complaining on Twitter about "ghost transactions"—being debited without the merchant receiving the money. The core issue is that your internal database and the external Paystack payment gateway are out of sync. You need to build a robust ETL pipeline that performs automated "Reconciliation" to find these missing funds before customers complain, restoring trust in the brand.
 
 ## Your Project Tasks:
 0. **The Data**: Use the [Instacart Relational Database on Kaggle](https://www.kaggle.com/c/instacart-market-basket-analysis/data) (specifically the Orders, Products, and Departments tables).
@@ -1939,12 +1939,8 @@ By building this pipeline, you've created a "Fair and Transparent" business proc
       'lesson': `## Milestone: The Autonomous Data Engineer
 In this milestone, you are going to orchestrate a multi-step business process using Apache Airflow. You will move from "writing scripts" to "building an autonomous system" that monitors itself.
 
-## The Business Case
-Your company, **"Abuja Logistics,"** delivers 10,000 packages a day. The CEO wants a report every morning at 6:00 AM showing:
-1. Total Deliveries.
-2. Failed Deliveries (and why).
-3. Driver Efficiency.
-If the data is missing or the pipeline fails, you need to know before the CEO wakes up.
+## The Broad Business Problem
+Your logistics company, **"Oya Deliveries,"** is suffering from massive driver turnover. Drivers are quitting because their performance bonuses are calculated late and unfairly due to manual data processing delays. The company's operations are fundamentally broken because there is no orchestration. You must build an autonomous Airflow system that automatically detects when delivery data arrives, calculates KPIs, and triggers payroll insights, ensuring operational stability and driver retention.
 
 ## Your Project Tasks:
 0. **The Data**: Download the [Brazilian E-Commerce Relational Dataset by Olist (Kaggle)](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) which contains 8 linked tables (Orders, Customers, Payments, etc).
@@ -2618,8 +2614,8 @@ You've transformed the business. By replacing a manual portal login with an API 
       'lesson': `## Milestone: The Relational API Dashboard
 In this project, you will pull relational data (Users and Posts) from two separate API endpoints, join them together in memory, and generate an executive report.
 
-## The Business Case
-Your company, **"Lagos Media Group,"** has a platform with thousands of Users and Posts. The Marketing Director needs a report showing which authors are generating the most content. The database team is busy, so you need to pull this data directly from the live API endpoints, join the Users and Posts manually, and generate a dashboard.
+## The Broad Business Problem
+Your company, **"Lagos Media Group,"** is losing advertising revenue. Advertisers want to sponsor top content creators, but your marketing team has no idea who the top creators are because the user data and the content data live in completely separate software systems. The database team is too backlogged to help. You must solve this strategic blind spot by building a Python script that pulls data directly from live APIs, joins the systems in memory, and immediately identifies the top talent.
 
 ## Your Project Tasks:
 0. **The Data**: We will use the [JSONPlaceholder Relational API](https://jsonplaceholder.typicode.com/) to simulate linked business systems.
@@ -2909,8 +2905,8 @@ By switching to Lambda, you've saved the company ₦240,000 a year. This is the 
       'lesson': `## Milestone: The Disaster-Proof Backup System
 In this project, you will move your company's data security to the next level by building an automated, cloud-based backup system. You will ensure that even if the physical office is destroyed, the business continues.
 
-## The Business Case
-Your company, **"Enugu Manufacturing,"** currently saves its daily production logs on a single computer in the factory. If that computer's hard drive fails (or the factory floods), 10 years of data is lost. You need to build a "Cloud Bridge" that pushes these logs to the AWS cloud automatically.
+## The Broad Business Problem
+Your manufacturing firm, **"Enugu Manufacturing,"** is operating under extreme existential risk. The entire company's intellectual property and 10 years of production logs are stored on a single physical server in the factory. If a fire or hardware failure occurs, the business goes bankrupt instantly. You have been tasked with solving this critical infrastructure vulnerability by designing an automated, serverless "Cloud Bridge" that securely backs up every file to an indestructible AWS S3 vault.
 
 ## Your Project Tasks:
 0. **The Data**: Download the [Chinook Relational Database](https://github.com/lerocha/chinook-database), which simulates an iTunes store with heavily linked Tables (Artists, Albums, and Tracks).
@@ -3254,8 +3250,8 @@ By focusing on this high-value career path, you've "upgraded" your future. You'v
       'lesson': `## Milestone: The Executive Decision Portal
 In this final milestone, you will use dbt to create a professional "Data Mart" that serves as the "Single Version of Truth" for your entire company. You will transform chaos into clarity.
 
-## The Business Case
-Your company, **"Owerri Omnichannel,"** sells on Jumia, Konga, and their own website. Each platform uses different names for "Revenue." The CEO is confused. You need to build a dbt project that joins these three sources and creates one master table called \`dim_total_revenue\`.
+## The Broad Business Problem
+Your e-commerce company, **"Owerri Omnichannel,"** is paralyzed by internal conflict. Every board meeting ends in an argument because Marketing, Finance, and Operations all bring different "Revenue" numbers. The company cannot secure its next round of funding because investors don't trust the data. You must solve this "Multiple Versions of Truth" crisis by using dbt to unify the raw data from Jumia, Konga, and the Website into a single, rigorously tested, and fully documented master data model.
 
 ## Your Project Tasks:
 0. **The Data**: Fork the [Official Jaffle Shop dbt Tutorial Dataset on GitHub](https://github.com/dbt-labs/jaffle_shop) to use as your raw e-commerce data.
@@ -3301,6 +3297,270 @@ Tell the CEO: "We no longer have three different revenue numbers. This dbt model
           'options': ["A. To show off your SQL skills", "B. To allow other engineers to review your logic, collaborate on improvements, and maintain the 'Single Version of Truth' as a team", "C. Because the CEO likes reading SQL", "D. To make the database run faster"],
           'correct': 1,
           'explanation': "dbt + GitHub = Reliability. By version controlling your models, you ensure that every change to the business logic is tracked, tested, and approved before it hits the executive dashboard."
+        }
+      ]
+    }
+  },
+  'Power BI & Visualization': {
+    'Connecting to Data Sources': {
+      'lesson': `## What is Connecting to Data Sources?
+It is the process of linking Power BI to where your company's data actually lives (like a SQL database, Excel file, or API) so it can pull the numbers automatically.
+
+## Why should you care as an MIS student?
+If you just copy-paste data into Excel, your reports are dead the moment you save them. By "Connecting," you build a live pipe. When the database updates, your dashboard updates automatically.
+
+## How it actually works
+You open Power BI, click "Get Data," choose your source (e.g., PostgreSQL), enter the server credentials, and Power BI establishes a secure connection to read the data without altering the source.
+
+## Show me the code
+There isn't "code" here, but the concept is creating a connection string:
+\`\`\`text
+Server: mydb.company.com
+Database: sales_db
+Authentication: Database (Username/Password)
+Data Connectivity Mode: DirectQuery (Live) vs Import (Snapshot)
+\`\`\`
+
+## Real life: How companies use this
+A Nigerian retail chain uses Power BI connected directly to their POS (Point of Sale) SQL database. Instead of waiting for regional managers to email Excel files at the end of the month, the CEO can open Power BI at 2:00 PM and see exactly how many items were sold 5 minutes ago.
+
+## Remember these three things
+- "Get Data" is always step one.
+- Import Mode copies data into Power BI; DirectQuery leaves it in the database.
+- Live connections eliminate manual data entry.`,
+      'scenario': `## Scenario: The "Stale Data" Complaint
+**The situation:** The Sales Director is angry. He says your dashboard shows ₦5M in sales for yesterday, but his team's manual spreadsheet shows ₦7M.
+
+**What you're seeing:**
+You check Power BI and realize you imported the data from an Excel file that was downloaded at 10:00 AM yesterday. The ₦2M in late sales are missing.
+
+**Your job:**
+1. Change the Data Source from the static Excel file to a direct connection to the CRM Database.
+2. Set up "Scheduled Refresh" so it updates automatically every hour.
+
+**What the solution looks like:**
+By connecting directly to the source system, you remove human error and timing issues. The Director never complains about "stale data" again.`,
+      'quizzes': [
+        {
+          'question': "What is the main difference between 'Import Mode' and 'DirectQuery' in Power BI?",
+          'options': ["A. Import is for Excel, DirectQuery is for Word", "B. Import copies the data into Power BI's memory, DirectQuery leaves it in the database and queries it live", "C. DirectQuery is always faster than Import", "D. Import is only for cloud databases"],
+          'correct': 1,
+          'explanation': "Importing takes a 'snapshot' that must be refreshed. DirectQuery is a live pipe to the database."
+        }
+      ]
+    },
+    'Data Cleaning in Power Query': {
+      'lesson': `## What is Power Query?
+Power Query is the "kitchen" behind Power BI. It's where you clean, filter, and reshape messy data before it goes into the final dashboard.
+
+## Why should you care as an MIS student?
+Raw data is almost never ready for a chart. You'll find missing dates, text mixed with numbers (like "₦500"), and badly named columns. Power Query lets you build an automated cleaning process.
+
+## How it actually works
+It records your steps. If you delete a column, rename another, and filter out blanks, Power Query saves those steps as a "Recipe." Next time new data comes in, it automatically applies the exact same recipe.
+
+## Show me the code (M Language)
+Power Query writes 'M' code behind the scenes:
+\`\`\`powerquery
+let
+    Source = Sql.Database("server", "db"),
+    RemovedColumns = Table.RemoveColumns(Source,{"internal_id"}),
+    ReplacedValue = Table.ReplaceValue(RemovedColumns,"null","0",Replacer.ReplaceText,{"Revenue"})
+in
+    ReplacedValue
+\`\`\`
+
+## Real life: How companies use this
+An HR department receives attendance logs where employee names are sometimes uppercase, sometimes lowercase, and sometimes have spaces. They use Power Query to automatically format all names to "Capitalize Each Word" and trim spaces, so Jane Doe and JANE DOE don't appear as two different people in the dashboard.
+
+## Remember these three things
+- Clean your data *before* you try to visualize it.
+- Power Query records your steps so you never have to clean the same file twice.
+- It uses the "M" formula language behind the scenes.`,
+      'scenario': `## Scenario: The "Dirty Dates" Crisis
+**The situation:** Your dashboard crashed. The total sales chart is blank. 
+
+**What you're seeing:**
+You look at the raw data and see the new regional manager typed dates as "Jan 5th 2024" instead of "05/01/2024". Power BI thinks this is text, not a date.
+
+**Your job:**
+1. Open Power Query.
+2. Select the Date column and use "Change Type -> Date" or extract the text properly.
+3. Save the step so the system knows how to handle this format next week.
+
+**What the solution looks like:**
+You've created a robust cleaning step. The dashboard is fixed, and the data pipeline is now resilient against this specific human error.`,
+      'quizzes': [
+        {
+          'question': "Why is Power Query described as an 'Automated Recipe'?",
+          'options': ["A. Because it only works with food data", "B. Because it records every cleaning step you make and automatically applies them to new data", "C. Because it writes SQL for you", "D. Because it creates charts instantly"],
+          'correct': 1,
+          'explanation': "The magic of Power Query is the 'Applied Steps' list. You clean the data once, and it remembers how to do it forever."
+        }
+      ]
+    },
+    'DAX Basics (Calculated Columns vs Measures)': {
+      'lesson': `## What is DAX?
+DAX (Data Analysis Expressions) is the formula language of Power BI. It's like Excel formulas on steroids. 
+
+## Why should you care as an MIS student?
+You can't just drag and drop everything. If the CEO wants "Year-to-Date Profit Margin compared to Last Year," that number doesn't exist in the database. You have to write a DAX formula to calculate it dynamically.
+
+## How it actually works
+- **Calculated Column**: Computes a value for *every single row* in a table (e.g., Price - Cost = Profit). Uses up memory.
+- **Measure**: Calculates a result *on the fly* based on what you click in the dashboard (e.g., Total Sales). Extremely fast and flexible.
+
+## Show me the code (DAX)
+\`\`\`dax
+-- A simple Measure
+Total Revenue = SUM(Sales[Revenue])
+
+-- A more advanced Measure (Time Intelligence)
+Revenue YTD = CALCULATE(
+    [Total Revenue], 
+    DATESYTD('DateTable'[Date])
+)
+\`\`\`
+
+## Real life: How companies use this
+A telecom company uses DAX Measures to calculate "Churn Rate." Because they used a Measure instead of a Column, a manager can click "Lagos" on the map, and the Churn Rate instantly recalculates for just the Lagos customers.
+
+## Remember these three things
+- DAX is how you create complex business logic.
+- Use **Columns** for things you want to slice/filter by (like "Age Group").
+- Use **Measures** for numbers you want to calculate (like "Total Profit").`,
+      'scenario': `## Scenario: The "Slow Dashboard"
+**The situation:** The CEO complains that the dashboard takes 30 seconds to load every time he clicks a button.
+
+**What you're seeing:**
+You look at the Power BI file and realize someone created 50 "Calculated Columns" for complex math. The file size is huge, and the computer is struggling to process every row.
+
+**Your job:**
+1. Delete the Calculated Columns.
+2. Rewrite the logic using **Measures**.
+3. Watch the file size drop and the speed increase instantly.
+
+**What the solution looks like:**
+By understanding the difference between row-context (Columns) and filter-context (Measures), you optimized the system. The dashboard now loads in 1 second.`,
+      'quizzes': [
+        {
+          'question': "When should you use a DAX Measure instead of a Calculated Column?",
+          'options': ["A. When you want to calculate a dynamic aggregate (like Total Sales) that changes based on what the user clicks in the dashboard", "B. When you want to create a new category to group data (like 'High Income' vs 'Low Income')", "C. When you want to make the file size larger", "D. Never, they are the exact same thing"],
+          'correct': 0,
+          'explanation': "Measures are calculated on the fly based on the user's filters. Columns are calculated once for every row and take up memory."
+        }
+      ]
+    },
+    'Building Interactive Dashboards': {
+      'lesson': `## What is Dashboard Building?
+It's the art of placing charts, slicers, and maps on a canvas so people can interact with data visually. It turns boring tables into a "Control Center."
+
+## Why should you care as an MIS student?
+This is the only part of your work the executives will ever see. You could build the greatest ETL pipeline in the world, but if the dashboard is confusing and ugly, they will think the data is bad.
+
+## How it actually works
+You drag a field (like "Sales") onto the canvas to create a chart. Then you add a "Slicer" (a filter button) for "Region." Because Power BI is interactive, clicking "North" on the Slicer automatically updates all other charts on the page.
+
+## Real life: How companies use this
+A logistics company like GIGM has a giant TV in their headquarters showing a live Power BI map. When a manager clicks a specific truck icon, the surrounding charts instantly show that driver's fuel usage, speed, and delivery status.
+
+## Remember these three things
+- Less is more. Don't put 20 charts on one page.
+- Use Slicers to let the user "play" with the data.
+- Always design with the final audience (e.g., the CEO) in mind.`,
+      'scenario': `## Scenario: The "Wall of Numbers"
+**The situation:** You present your new dashboard. It's basically just a giant table with 50 columns of numbers. The executives look bored and confused.
+
+**Your job:**
+1. Replace the giant table with high-level KPI "Cards" (Total Sales, Total Profit).
+2. Add a Bar Chart for "Sales by Region."
+3. Add a Line Chart for "Sales Trend over Time."
+4. Add a Slicer so they can filter by Month.
+
+**What the solution looks like:**
+You changed data into a story. Instead of staring at numbers, the CEO immediately sees that the trend line dipped in March and clicks to investigate. You made the data actionable.`,
+      'quizzes': [
+        {
+          'question': "What is the primary purpose of a 'Slicer' in a Power BI dashboard?",
+          'options': ["A. To cut the data in half and delete it", "B. To allow the user to easily filter the data shown on the dashboard interactively", "C. To change the colors of the charts", "D. To connect to a new database"],
+          'correct': 1,
+          'explanation': "Slicers are visual filters. They allow non-technical users to 'slice' the data by region, date, or category with a simple click."
+        }
+      ]
+    },
+    'Publishing & Workspaces': {
+      'lesson': `## What is Publishing?
+Publishing takes your Power BI file from your local laptop and pushes it to the Power BI Cloud Service so other people can see it securely on the web or their phones.
+
+## Why should you care as an MIS student?
+A dashboard on your laptop is useless to the company. Publishing allows you to control who sees what, schedule automatic data refreshes, and share insights securely.
+
+## How it actually works
+You click "Publish" in Power BI Desktop. The file is uploaded to a "Workspace" (a shared folder in the cloud). From there, you can share a link with the CEO, or embed the dashboard inside a company portal like Microsoft Teams.
+
+## Real life: How companies use this
+A bank uses Row-Level Security (RLS) in the Power BI Service. When the Lagos Branch Manager logs into the published dashboard, he only sees Lagos data. When the National Director logs into the exact same dashboard link, she sees all of Nigeria.
+
+## Remember these three things
+- Desktop is for building; the Service (Cloud) is for sharing.
+- Workspaces act like secure folders for different teams.
+- You can set up scheduled refreshes in the cloud so the dashboard updates automatically while you sleep.`,
+      'scenario': `## Scenario: The "Wrong Eyes" Problem
+**The situation:** You built an HR dashboard showing employee salaries. You accidentally emailed the raw Power BI file to the entire company. Panic ensues.
+
+**Your job:**
+1. Stop emailing files!
+2. Publish the dashboard to a secure "HR Only" Workspace in the Power BI Service.
+3. Grant "Viewer" access only to the HR Director.
+
+**What the solution looks like:**
+By using the Cloud Service, you maintain strict security. The data stays in the cloud, users can't edit the calculations, and you can revoke access at any time.`,
+      'quizzes': [
+        {
+          'question': "Why is it better to 'Publish' a dashboard to the Power BI Service rather than emailing the .pbix file to your boss?",
+          'options': ["A. It is not better, emailing is faster", "B. Publishing ensures security, allows automatic refreshing, and ensures everyone looks at the same version", "C. Because the Power BI service prints the dashboard on paper", "D. Because emails cannot handle data"],
+          'correct': 1,
+          'explanation': "Publishing creates a 'Single Version of Truth' in the cloud. Emailing files leads to security risks and multiple conflicting versions of the dashboard."
+        }
+      ]
+    },
+    'Milestone Project': {
+      'lesson': `## Milestone: The Global Performance Control Center
+In this final visualization project, you are stepping into the shoes of a Lead BI Developer. You must solve a broad, strategic problem: The company is drowning in data but starving for insights.
+
+## The Broad Business Problem
+Your company, **"Atlas Global Logistics,"** operates in 40 countries. The executive board is frustrated. Currently, they receive 15 different Excel reports every Friday. It takes them hours to figure out if the company is actually making a profit, and by the time they do, the data is a week old. They are losing market share because they cannot make fast decisions about which regions to expand or cut.
+
+## Your Project Tasks:
+0. **The Data**: Download the [AdventureWorks Relational Database](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/adventure-works) (Sales, Customers, Products, and Territories).
+1. **The Connection & Cleaning**: Connect Power BI to the tables. Use Power Query to clean the data (remove empty columns, ensure dates are formatted correctly).
+2. **The Data Model**: Create a Star Schema by linking the Tables together using their Foreign Keys.
+3. **The DAX Logic**: Create strategic Measures: Total Revenue, Profit Margin %, and Year-over-Year Growth.
+4. **The Dashboard**: Build an interactive Control Center. It must include:
+   - A Map showing global revenue.
+   - High-level KPI Cards for the CEO.
+   - Slicers for Year and Region so the board can drill down instantly.
+5. **The Delivery**: Upload a PDF export of your final dashboard and a summary of the business insights you found to your GitHub portfolio.
+
+## Presenting to Executives
+Tell the Board: "We have replaced 15 static spreadsheets with one live control center. You no longer have to wait until Friday to know our profit margins. If you want to know why Europe is underperforming, you simply click on Europe, and the entire data model recalculates instantly to show you the exact products failing in that region."`,
+      'scenario': `## Scenario: The "Mobile CEO"
+**The situation:** The CEO calls you. She says the dashboard is amazing on her laptop, but she is currently at an airport trying to look at it on her iPhone, and the charts are too small to read.
+
+**Your job:**
+1. Open your Power BI Desktop file.
+2. Switch to the "Mobile Layout" view.
+3. Rearrange your KPI cards and charts into a vertical, phone-friendly stack.
+4. Re-publish the report.
+
+**What the solution looks like:**
+You understand that executives are rarely sitting at desks. By optimizing for mobile, you ensure that strategic data is always in the CEO's pocket, cementing your value to the company.`,
+      'quizzes': [
+        {
+          'question': "When building a Star Schema data model in Power BI, how should your tables be organized?",
+          'options': ["A. Put everything into one giant table", "B. Have a central 'Fact' table (like Sales) surrounded by 'Dimension' tables (like Customers, Products, Dates) linked by relationships", "C. Don't use tables, use folders", "D. Delete all tables except the biggest one"],
+          'correct': 1,
+          'explanation': "The Star Schema is the gold standard for BI. Facts (the numbers/events) go in the middle, and Dimensions (the descriptive filters) surround them like a star."
         }
       ]
     }
