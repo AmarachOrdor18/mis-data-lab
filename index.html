@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIS DataLab — Training Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090e;
+  --bg2:#111118;
+  --bg3:#181824;
+  --bg4:#21212f;
+  --border:#252535;
+  --border2:#353550;
+  --accent:#00d98b;
+  --accent2:#00b374;
+  --red:#ff4d6a;
+  --yellow:#ffd166;
+  --blue:#4da6ff;
+  --purple:#b97aff;
+  --text:#dde1f0;
+  --muted:#5a5a7a;
+  --muted2:#8888aa;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;min-height:100vh;max-width:960px;margin:0 auto;padding:0 12px}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid var(--border);flex-shrink:0;gap:10px;flex-wrap:wrap}
+.logo{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.1em;white-space:nowrap}
+.logo em{color:var(--muted2);font-style:normal}
+.nav{display:flex;gap:2px;flex-shrink:0}
+.nb{font-family:var(--mono);font-size:10px;font-weight:600;padding:7px 14px;border:1px solid transparent;background:transparent;color:var(--muted2);cursor:pointer;letter-spacing:0.07em;transition:all 0.15s;border-radius:3px;white-space:nowrap}
+.nb:hover{color:var(--text);border-color:var(--border2)}
+.nb.on{background:var(--bg3);color:var(--accent);border-color:rgba(0,217,139,0.3)}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-family:var(--mono);font-size:10px;padding:5px 10px;border-radius:3px;white-space:nowrap;cursor:default}
+.pill-xp{color:var(--yellow);background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.18)}
+.pill-streak{color:var(--accent);background:rgba(0,217,139,0.06);border:1px solid rgba(0,217,139,0.15)}
+.pill-tokens{font-size:9px;padding:4px 9px;border-radius:3px;cursor:pointer;transition:border-color 0.2s}
+.pill-tokens.ok{color:#6b9b7a;background:rgba(0,217,139,0.04);border:1px solid rgba(0,217,139,0.12)}
+.pill-tokens.warn{color:var(--yellow);background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);animation:pulse-warn 1.5s infinite}
+.pill-tokens.crit{color:var(--red);background:rgba(255,77,106,0.07);border:1px solid rgba(255,77,106,0.3);animation:pulse-warn 0.8s infinite}
+@keyframes pulse-warn{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* ── SCREENS ── */
+.screen{display:none;padding:20px 4px 60px}
+.screen.on{display:block}
+
+/* ── TOKEN WARNING BANNER ── */
+.token-banner{display:none;background:rgba(255,209,102,0.06);border:1px solid rgba(255,209,102,0.25);border-radius:5px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--yellow);line-height:1.6}
+.token-banner.show{display:block}
+.token-banner strong{font-family:var(--mono);font-size:11px}
+
+/* ── HOME ── */
+.terminal-card{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:26px 28px;margin-bottom:22px;position:relative;overflow:hidden}
+.terminal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--blue) 60%,transparent)}
+.tc-dots{display:flex;gap:6px;margin-bottom:18px}
+.tcd{width:10px;height:10px;border-radius:50%}
+.tcd:nth-child(1){background:#ff5f57}.tcd:nth-child(2){background:#febc2e}.tcd:nth-child(3){background:#28c840}
+.tc-title{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);margin-bottom:8px;letter-spacing:-0.01em}
+.tc-sub{font-size:13px;color:var(--muted2);line-height:1.8;max-width:540px;margin-bottom:20px}
+.tc-stats{display:flex;gap:20px;flex-wrap:wrap}
+.tc-stat .sv{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--yellow)}
+.tc-stat .sl{font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+
+.sec-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.13em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.path-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:22px}
+@media(max-width:600px){.path-grid{grid-template-columns:1fr 1fr}}
+.pc{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px;cursor:pointer;transition:all 0.16s}
+.pc:hover{border-color:var(--border2);background:var(--bg3);transform:translateY(-1px)}
+.pc-tag{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;padding:2px 8px;border-radius:2px;display:inline-block;margin-bottom:9px}
+.tg{color:var(--accent);background:rgba(0,217,139,0.08);border:1px solid rgba(0,217,139,0.15)}
+.tb{color:var(--blue);background:rgba(77,166,255,0.08);border:1px solid rgba(77,166,255,0.15)}
+.ty{color:var(--yellow);background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.15)}
+.tr{color:var(--red);background:rgba(255,77,106,0.08);border:1px solid rgba(255,77,106,0.15)}
+.tp{color:var(--purple);background:rgba(185,122,255,0.08);border:1px solid rgba(185,122,255,0.15)}
+.pc h3{font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text)}
+.pc p{font-size:11px;color:var(--muted2);line-height:1.6}
+.pc-foot{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+.pc-bar{flex:1;height:2px;background:var(--border);border-radius:2px}
+.pc-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s}
+.pc-pct{font-family:var(--mono);font-size:9px;color:var(--muted)}
+
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:600px){.how-grid{grid-template-columns:1fr}}
+.hg-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px}
+.hg-num{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.1em;margin-bottom:6px}
+.hg-card p{font-size:11px;color:var(--muted2);line-height:1.7}
+
+/* ── LEARN ── */
+.learn-wrap{display:grid;grid-template-columns:180px 1fr;gap:14px}
+@media(max-width:650px){.learn-wrap{grid-template-columns:1fr}}
+.sidebar{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;height:fit-content;position:sticky;top:8px}
+.sb-btn{width:100%;text-align:left;font-family:var(--sans);font-size:12px;color:var(--muted2);background:transparent;border:none;padding:8px 10px;border-radius:4px;cursor:pointer;transition:all 0.12s;display:block;line-height:1.4}
+.sb-btn:hover{background:var(--bg3);color:var(--text)}
+.sb-btn.on{background:rgba(0,217,139,0.07);color:var(--accent);border-left:2px solid var(--accent);padding-left:8px}
+.chip-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.chip{font-family:var(--mono);font-size:10px;padding:5px 10px;border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:3px;cursor:pointer;transition:all 0.12s;letter-spacing:0.03em}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.on{border-color:var(--accent);color:var(--accent);background:rgba(0,217,139,0.06)}
+.btn-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.gen-btn{flex:1;min-width:130px;padding:10px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.gen-btn:hover{background:var(--accent2)}
+.gen-btn:disabled{opacity:0.35;cursor:not-allowed}
+.scen-btn{padding:10px 16px;background:transparent;color:var(--yellow);border:1px solid rgba(255,209,102,0.28);border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.scen-btn:hover{background:rgba(255,209,102,0.05)}
+.scen-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+/* Voice button */
+.voice-btn{padding:10px 14px;background:transparent;color:var(--muted2);border:1px solid var(--border);border-radius:4px;font-size:14px;cursor:pointer;transition:all 0.15s;position:relative}
+.voice-btn:hover{border-color:var(--border2);color:var(--text)}
+.voice-btn.listening{color:var(--red);border-color:rgba(255,77,106,0.4);background:rgba(255,77,106,0.06);animation:voice-pulse 1s infinite}
+@keyframes voice-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,77,106,0.3)}50%{box-shadow:0 0 0 6px rgba(255,77,106,0)}}
+.voice-transcript{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-bottom:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;min-height:32px;display:none;font-style:italic}
+.voice-transcript.show{display:block}
+
+/* Lesson panel */
+.lesson-panel{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:22px;min-height:280px}
+.lesson-panel h1,.lesson-panel h2{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);margin:18px 0 8px;letter-spacing:0.04em;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.lesson-panel h1:first-child,.lesson-panel h2:first-child{margin-top:0}
+.lesson-panel h3{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--yellow);margin:14px 0 6px;letter-spacing:0.04em}
+.lesson-panel p{font-size:13px;color:var(--muted2);line-height:1.85;margin-bottom:10px}
+.lesson-panel strong{color:var(--text);font-weight:600}
+.lesson-panel em{color:var(--accent);font-style:normal}
+.lesson-panel ul,.lesson-panel ol{padding-left:20px;margin-bottom:10px}
+.lesson-panel li{font-size:13px;color:var(--muted2);line-height:1.8;margin-bottom:4px}
+.lesson-panel pre{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--accent);padding:14px 16px;border-radius:4px;font-family:var(--mono);font-size:11px;color:#b8fde0;overflow-x:auto;margin:10px 0;line-height:1.75}
+.lesson-panel code{font-family:var(--mono);font-size:11px;color:var(--accent);background:rgba(0,217,139,0.07);padding:1px 5px;border-radius:2px}
+.mis-box{background:rgba(77,166,255,0.05);border:1px solid rgba(77,166,255,0.18);border-radius:5px;padding:13px 15px;margin-top:12px}
+.mis-box-lbl{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--blue);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
+.mis-box p{font-size:12px;color:var(--muted2);margin-bottom:0;line-height:1.75}
+.real-box{background:rgba(255,209,102,0.04);border:1px solid rgba(255,209,102,0.18);border-radius:5px;padding:13px 15px;margin-top:10px}
+.real-box-lbl{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--yellow);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
+.real-box p{font-size:12px;color:var(--muted2);margin-bottom:0;line-height:1.75}
+.speak-row{display:flex;gap:6px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.speak-btn{font-family:var(--mono);font-size:10px;padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:3px;cursor:pointer;transition:all 0.12s;letter-spacing:0.04em}
+.speak-btn:hover{border-color:var(--border2);color:var(--text)}
+.speak-btn.speaking{color:var(--accent);border-color:rgba(0,217,139,0.3);background:rgba(0,217,139,0.05)}
+.loading{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted2);padding:28px 0}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:blink 1s infinite}
+.ldot:nth-child(2){animation-delay:.2s}.ldot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:2}
+.empty-state .big{font-size:28px;margin-bottom:10px}
+
+/* ── QUIZ ── */
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:18px}
+@media(max-width:600px){.mode-grid{grid-template-columns:1fr}}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px;cursor:pointer;transition:all 0.14s}
+.mc:hover{border-color:var(--border2)}
+.mc.on{border-color:rgba(0,217,139,0.4);background:rgba(0,217,139,0.04)}
+.mc .mi{font-size:18px;margin-bottom:7px}
+.mc h4{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px}
+.mc p{font-size:11px;color:var(--muted2);line-height:1.5}
+.tc-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.tc{font-family:var(--mono);font-size:10px;padding:5px 11px;border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:3px;cursor:pointer;transition:all 0.12s;letter-spacing:0.03em}
+.tc:hover{border-color:var(--border2);color:var(--text)}
+.tc.on{border-color:rgba(0,217,139,0.4);color:var(--accent);background:rgba(0,217,139,0.06)}
+.start-btn{width:100%;padding:12px;background:var(--accent);color:var(--bg);border:none;border-radius:4px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.08em;cursor:pointer;transition:all 0.14s;margin-top:4px}
+.start-btn:hover{background:var(--accent2)}
+.start-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+/* Active quiz */
+.q-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.q-ctr{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.q-timer{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red);background:rgba(255,77,106,0.09);border:1px solid rgba(255,77,106,0.22);padding:5px 11px;border-radius:3px}
+.qprog{height:2px;background:var(--border);border-radius:2px;margin-bottom:18px}
+.qprog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s}
+.q-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:18px;margin-bottom:11px}
+.q-card::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--accent),transparent);margin:-18px -18px 16px;border-radius:6px 6px 0 0}
+.q-badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;padding:3px 9px;border-radius:2px;display:inline-block;margin-bottom:11px}
+.qb-norm{color:var(--accent);background:rgba(0,217,139,0.08);border:1px solid rgba(0,217,139,0.15)}
+.qb-scen{color:var(--yellow);background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2)}
+.q-text{font-size:13px;font-weight:500;color:var(--text);line-height:1.75}
+.q-scen-box{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--yellow);padding:12px 14px;border-radius:4px;margin-top:11px;font-size:12px;color:var(--muted2);line-height:1.8;font-style:italic}
+.q-code{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--accent);padding:12px 14px;border-radius:4px;font-family:var(--mono);font-size:11px;color:#b8fde0;overflow-x:auto;margin-top:10px;line-height:1.75}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{width:100%;text-align:left;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--muted2);font-family:var(--sans);font-size:13px;cursor:pointer;transition:all 0.14s;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.opt:hover:not(:disabled){border-color:var(--border2);color:var(--text);background:var(--bg3)}
+.opt:disabled{cursor:default}
+.opt.correct{background:rgba(0,217,139,0.06);border-color:var(--accent);color:var(--accent)}
+.opt.wrong{background:rgba(255,77,106,0.06);border-color:var(--red);color:var(--red)}
+.opt-key{width:21px;height:21px;min-width:21px;border-radius:3px;background:var(--bg);border:1px solid var(--border);font-family:var(--mono);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;margin-top:1px}
+.feedback{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:15px;margin-top:11px;display:none}
+.feedback.show{display:block}
+.feedback.ok{border-color:rgba(0,217,139,0.25)}
+.feedback.bad{border-color:rgba(255,77,106,0.25)}
+.fb-title{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.06em;margin-bottom:7px}
+.feedback.ok .fb-title{color:var(--accent)}
+.feedback.bad .fb-title{color:var(--red)}
+.fb-body{color:var(--muted2);font-size:12px;line-height:1.75}
+.fb-mis{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--blue);letter-spacing:0.03em}
+.next-btn{width:100%;margin-top:9px;padding:11px;background:transparent;color:var(--accent);border:1px solid rgba(0,217,139,0.25);border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.06em;transition:all 0.14s;display:none}
+.next-btn.show{display:block}
+.next-btn:hover{background:rgba(0,217,139,0.05);border-color:var(--accent)}
+
+/* Results */
+.res-wrap{max-width:500px;margin:0 auto}
+.res-top{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:26px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden}
+.res-top::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--blue))}
+.res-score{font-family:var(--mono);font-size:52px;font-weight:700;color:var(--accent);line-height:1.1}
+.res-grade{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:4px;letter-spacing:0.05em}
+.res-msg{font-size:12px;color:var(--muted2);line-height:1.6}
+.xp-earned{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--yellow);background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.18);padding:5px 14px;border-radius:3px;margin-bottom:14px}
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:13px}
+.rg{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:11px 7px;text-align:center}
+.rg-v{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--text)}
+.rg-l{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;margin-top:3px}
+.res-btns{display:flex;gap:7px}
+.rb{flex:1;padding:11px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.06em;cursor:pointer;transition:all 0.14s}
+.rb.p{background:var(--accent);color:var(--bg)}
+.rb.p:hover{background:var(--accent2)}
+.rb.s{background:transparent;color:var(--text);border:1px solid var(--border)}
+.rb.s:hover{border-color:var(--border2);background:var(--bg3)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">// MIS<em>.DATALAB</em></div>
+  <div class="nav">
+    <button class="nb on" onclick="nav('home')">HOME</button>
+    <button class="nb" onclick="nav('learn')">LEARN</button>
+    <button class="nb" onclick="nav('quiz')">QUIZ</button>
+  </div>
+  <div class="hdr-right">
+    <div class="pill pill-streak" id="streak-pill">0🔥</div>
+    <div class="pill pill-xp" id="xp-pill">⚡ 0 XP</div>
+    <div class="pill pill-tokens ok" id="token-pill" title="Estimated token usage today. Resets daily at midnight." onclick="showTokenInfo()">⬡ tokens ok</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="screen-home" class="screen on">
+  <div class="token-banner" id="token-banner">
+    <strong>⚠ TOKEN LIMIT APPROACHING</strong> — You've used roughly <span id="banner-used"></span> of your estimated daily limit. 
+    The free tier on OpenRouter resets every day at <strong>midnight UTC</strong>. 
+    Slow down your lesson generation or come back tomorrow. Your progress is saved.
+  </div>
+
+  <div class="terminal-card">
+    <div class="tc-dots"><div class="tcd"></div><div class="tcd"></div><div class="tcd"></div></div>
+    <div class="tc-title">MIS Data Engineering Lab_</div>
+    <div class="tc-sub">You already know Excel, SQL, Power BI, and data modeling — that's your edge. Now we go deeper into the engineering layer: Python, Airflow, APIs, ETL pipelines, cloud, and dbt. Every lesson connects back to systems you already understand.</div>
+    <div class="tc-stats">
+      <div class="tc-stat"><div class="sv" id="h-lessons">0</div><div class="sl">Lessons Done</div></div>
+      <div class="tc-stat"><div class="sv" id="h-acc">—</div><div class="sl">Quiz Accuracy</div></div>
+      <div class="tc-stat"><div class="sv" id="h-xp">0</div><div class="sl">XP Earned</div></div>
+      <div class="tc-stat"><div class="sv" id="h-streak">0</div><div class="sl">Day Streak</div></div>
+    </div>
+  </div>
+
+  <div class="sec-lbl">Curriculum</div>
+  <div class="path-grid">
+    <div class="pc" onclick="goLearn('Python')">
+      <span class="pc-tag tg">Foundation</span>
+      <h3>Python for Data</h3>
+      <p>The language behind every data pipeline. We start simple and build up to real scripts.</p>
+      <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-python" style="width:0%"></div></div><span class="pc-pct" id="pct-python">0%</span></div>
+    </div>
+    <div class="pc" onclick="goLearn('Apache Airflow')">
+      <span class="pc-tag tb">Orchestration</span>
+      <h3>Apache Airflow</h3>
+      <p>Schedule and automate your pipelines. Think of it as a task manager for data jobs.</p>
+      <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-airflow" style="width:0%"></div></div><span class="pc-pct" id="pct-airflow">0%</span></div>
+    </div>
+    <div class="pc" onclick="goLearn('APIs & REST')">
+      <span class="pc-tag ty">Integration</span>
+      <h3>APIs & REST</h3>
+      <p>How apps talk to each other. How to pull live data from banks, weather, and payment systems.</p>
+      <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-api" style="width:0%"></div></div><span class="pc-pct" id="pct-api">0%</span></div>
+    </div>
+    <div class="pc" onclick="goLearn('ETL Pipelines')">
+      <span class="pc-tag tr">Engineering</span>
+      <h3>ETL Pipelines</h3>
+      <p>Extract, Transform, Load — the foundation of moving data from source systems to reports.</p>
+      <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-etl" style="width:0%"></div></div><span class="pc-pct" id="pct-etl">0%</span></div>
+    </div>
+    <div class="pc" onclick="goLearn('Cloud Computing')">
+      <span class="pc-tag tb">Infrastructure</span>
+      <h3>Cloud Computing</h3>
+      <p>Where data actually lives. Storage, compute, access control — the basics every engineer needs.</p>
+      <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-cloud" style="width:0%"></div></div><span class="pc-pct" id="pct-cloud">0%</span></div>
+    </div>
+    <div class="pc" onclick="goLearn('dbt & Modeling')">
+      <span class="pc-tag tp">Analytics Eng</span>
+      <h3>dbt & Modeling</h3>
+      <p>Turn raw warehouse data into clean, tested, documented tables that analysts can actually trust.</p>
+      <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-dbt" style="width:0%"></div></div><span class="pc-pct" id="pct-dbt">0%</span></div>
+    </div>
+  </div>
+
+  <div class="sec-lbl">How it works</div>
+  <div class="how-grid">
+    <div class="hg-card"><div class="hg-num" style="color:var(--accent)">01 — LEARN</div><p>Pick a module and subtopic. The AI generates a full lesson in plain English with real code and a business story you'll relate to.</p></div>
+    <div class="hg-card"><div class="hg-num" style="color:var(--yellow)">02 — SCENARIO DRILLS</div><p>Get dropped into a real work situation — a bank's pipeline breaks at 3am, a report goes missing — and figure out what you'd do.</p></div>
+    <div class="hg-card"><div class="hg-num" style="color:var(--blue)">03 — QUIZ</div><p>Test what you know with scenario questions, get instant feedback with explanations, and build your XP streak.</p></div>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div id="screen-learn" class="screen">
+  <div class="learn-wrap">
+    <div class="sidebar" id="sidebar"></div>
+    <div>
+      <div class="chip-row" id="chip-row"></div>
+      <div class="voice-transcript" id="voice-transcript">Listening...</div>
+      <div class="btn-row">
+        <button class="gen-btn" id="gen-btn" onclick="generateLesson()">▶ LESSON</button>
+        <button class="scen-btn" id="scen-btn" onclick="generateScenario()">⚡ SCENARIO</button>
+        <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Ask a question by voice">🎤</button>
+      </div>
+      <div class="lesson-panel" id="lesson-panel">
+        <div class="empty-state"><div class="big">⌨</div>Pick a topic on the left,<br>choose a subtopic, then hit Lesson or Scenario.<br><br><span style="color:var(--muted);font-size:10px">🎤 You can also use your voice to ask questions.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div id="quiz-setup">
+    <div class="sec-lbl">Mode</div>
+    <div class="mode-grid">
+      <div class="mc on" data-mode="practice" onclick="pickMode(this)">
+        <div class="mi">🎯</div><h4>Practice</h4>
+        <p>Feedback after every answer. Best for learning.</p>
+      </div>
+      <div class="mc" data-mode="timed" onclick="pickMode(this)">
+        <div class="mi">⏱</div><h4>Timed</h4>
+        <p>90 seconds per question. Builds real speed.</p>
+      </div>
+      <div class="mc" data-mode="scenario" onclick="pickMode(this)">
+        <div class="mi">🏢</div><h4>Scenario Mode</h4>
+        <p>Every question is a real business situation.</p>
+      </div>
+    </div>
+    <div class="sec-lbl">Topics</div>
+    <div class="tc-row" id="topic-checks"></div>
+    <div class="sec-lbl">Difficulty</div>
+    <div class="tc-row">
+      <div class="tc on" data-d="Entry Level" onclick="togDiff(this)">Entry Level</div>
+      <div class="tc" data-d="Mid Level" onclick="togDiff(this)">Mid Level</div>
+      <div class="tc" data-d="Senior" onclick="togDiff(this)">Senior</div>
+    </div>
+    <button class="start-btn" id="start-btn" onclick="startQuiz()">START QUIZ →</button>
+  </div>
+
+  <div id="quiz-active" style="display:none">
+    <div class="q-topbar">
+      <span class="q-ctr" id="q-ctr">Q1 of 8</span>
+      <span class="q-timer" id="q-timer" style="display:none">1:30</span>
+    </div>
+    <div class="qprog"><div class="qprog-fill" id="qprog-fill" style="width:0%"></div></div>
+    <div id="q-loading" class="loading" style="display:none"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div><span>Generating question...</span></div>
+    <div id="q-content">
+      <div class="q-card">
+        <span class="q-badge qb-norm" id="q-badge">Python</span>
+        <div class="q-text" id="q-text">Loading...</div>
+        <div class="q-scen-box" id="q-scen" style="display:none"></div>
+        <div class="q-code" id="q-code" style="display:none"></div>
+      </div>
+      <div class="opts" id="opts"></div>
+      <div class="feedback" id="feedback">
+        <div class="fb-title" id="fb-title"></div>
+        <div class="fb-body" id="fb-body"></div>
+        <div class="fb-mis" id="fb-mis"></div>
+      </div>
+      <button class="next-btn" id="next-btn" onclick="nextQ()">NEXT →</button>
+    </div>
+  </div>
+
+  <div id="quiz-results" style="display:none">
+    <div class="res-wrap">
+      <div class="res-top">
+        <div class="xp-earned" id="xp-earned">⚡ +0 XP</div>
+        <div class="res-score" id="res-score">0%</div>
+        <div class="res-grade" id="res-grade">—</div>
+        <div class="res-msg" id="res-msg">—</div>
+      </div>
+      <div class="res-grid">
+        <div class="rg"><div class="rg-v" id="r-c">0</div><div class="rg-l">Correct</div></div>
+        <div class="rg"><div class="rg-v" id="r-w">0</div><div class="rg-l">Wrong</div></div>
+        <div class="rg"><div class="rg-v" id="r-s">0</div><div class="rg-l">Skipped</div></div>
+        <div class="rg"><div class="rg-v" id="r-t">0s</div><div class="rg-l">Avg Time</div></div>
+      </div>
+      <div class="res-btns">
+        <button class="rb p" onclick="resetQuiz()">TRY AGAIN</button>
+        <button class="rb s" onclick="nav('learn')">GO STUDY</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const API_URL = '/api/chat'; // Vercel serverless route
+const MODEL = 'anthropic/claude-3-haiku'; // cheap + fast on OpenRouter
+const DAILY_TOKEN_BUDGET = 80000; // conservative estimate for free tier
+const WARN_THRESHOLD = 0.7; // show warning at 70%
+const CRIT_THRESHOLD = 0.9;
+
+// ─── CURRICULUM ───────────────────────────────────────────
+const TOPICS = {
+  'Python': [
+    'Variables & Data Types','Lists, Dicts & Loops','Functions','Reading & Writing Files',
+    'Pandas Basics','DataFrames & Filtering','The Requests Library','Writing Automation Scripts','Error Handling'
+  ],
+  'Apache Airflow': [
+    'What is Airflow & Why it Exists','DAGs — The Big Picture','Operators & Tasks',
+    'Scheduling with Cron','Task Dependencies','XCom: Passing Data Between Tasks',
+    'Monitoring & Alerts','Real Pipeline Examples'
+  ],
+  'APIs & REST': [
+    'What is an API? (Really)','HTTP Methods — GET, POST, PUT, DELETE','JSON: The Language of APIs',
+    'API Keys & Authentication','Pulling Data into Python','Handling Errors & Timeouts',
+    'Pagination — Getting All the Data','APIs in Banking & Fintech'
+  ],
+  'ETL Pipelines': [
+    'What is ETL? (Plain English)','The Extract Phase','Cleaning & Transforming Data',
+    'Loading into a Warehouse','Handling Pipeline Failures','Incremental vs Full Loads',
+    'ETL vs ELT','ETL in a Real Nigerian Bank'
+  ],
+  'Cloud Computing': [
+    'What is the Cloud, Really?','Storage — S3, GCS, Blobs','Compute & Virtual Machines',
+    'IAM — Who Can Access What','Cloud Databases','Serverless Functions','Cloud Costs & Billing',
+    'Cloud in MIS Architecture'
+  ],
+  'dbt & Modeling': [
+    'What is dbt and Why MIS Needs It','Your First dbt Model','Staging vs Mart Layers',
+    'ref() and Sources','Testing Your Data','Documentation','Star Schema in dbt',
+    'dbt in a Real BI Project'
+  ]
+};
+const PROG_MAP = {'Python':'python','Apache Airflow':'airflow','APIs & REST':'api','ETL Pipelines':'etl','Cloud Computing':'cloud','dbt & Modeling':'dbt'};
+
+// ─── STATE ────────────────────────────────────────────────
+let S = {
+  xp:0, streak:0, lessons:0, qCorrect:0, qTotal:0,
+  topic:null, sub:null,
+  quizMode:'practice', quizTopics:['Python','ETL Pipelines'], quizDiff:['Entry Level'],
+  qIdx:0, qC:0, qW:0, qSk:0, qTimes:[], qStart:0, timerInt:null, timerSec:90, answered:false,
+  prog:{}, lessonText:'', isSpeaking:false,
+  tokensUsedToday:0, tokenResetDate:todayKey()
+};
+
+// Load saved state
+try {
+  const saved = JSON.parse(localStorage.getItem('mis_state_v2') || 'null');
+  if (saved) {
+    // Reset token counter if it's a new day
+    if (saved.tokenResetDate !== todayKey()) {
+      saved.tokensUsedToday = 0;
+      saved.tokenResetDate = todayKey();
+    }
+    Object.assign(S, saved);
+  }
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem('mis_state_v2', JSON.stringify(S)); } catch(e) {}
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0,10);
+}
+
+// ─── TOKEN TRACKING ───────────────────────────────────────
+function addTokens(n) {
+  if (S.tokenResetDate !== todayKey()) {
+    S.tokensUsedToday = 0;
+    S.tokenResetDate = todayKey();
+  }
+  S.tokensUsedToday += n;
+  updateTokenUI();
+  save();
+}
+
+function updateTokenUI() {
+  const used = S.tokensUsedToday;
+  const pct = used / DAILY_TOKEN_BUDGET;
+  const pill = document.getElementById('token-pill');
+  const banner = document.getElementById('token-banner');
+
+  if (pct < WARN_THRESHOLD) {
+    pill.className = 'pill pill-tokens ok';
+    pill.textContent = '⬡ tokens ok';
+    banner.classList.remove('show');
+  } else if (pct < CRIT_THRESHOLD) {
+    pill.className = 'pill pill-tokens warn';
+    pill.textContent = `⚠ ${Math.round(pct*100)}% used`;
+    banner.classList.add('show');
+    document.getElementById('banner-used').textContent = `${Math.round(pct*100)}%`;
+  } else {
+    pill.className = 'pill pill-tokens crit';
+    pill.textContent = `🔴 limit near`;
+    banner.classList.add('show');
+    document.getElementById('banner-used').textContent = `${Math.round(pct*100)}%`;
+  }
+}
+
+function showTokenInfo() {
+  const used = S.tokensUsedToday;
+  const pct = Math.round(used / DAILY_TOKEN_BUDGET * 100);
+  const resetMsg = 'Resets daily at midnight UTC (1am WAT / Lagos time).';
+  alert(`Token Usage Today\n\nEstimated used: ~${used.toLocaleString()} tokens (${pct}% of daily budget)\nBudget: ~${DAILY_TOKEN_BUDGET.toLocaleString()} tokens\n\n${resetMsg}\n\nNote: This is an estimate. Actual usage depends on lesson length.`);
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────
+function nav(s) {
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));
+  document.getElementById('screen-'+s).classList.add('on');
+  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('on',['home','learn','quiz'][i]===s));
+}
+
+function updateHdr() {
+  document.getElementById('xp-pill').textContent = '⚡ '+S.xp+' XP';
+  document.getElementById('streak-pill').textContent = S.streak+'🔥';
+  document.getElementById('h-lessons').textContent = S.lessons;
+  document.getElementById('h-xp').textContent = S.xp;
+  document.getElementById('h-streak').textContent = S.streak;
+  const acc = S.qTotal ? Math.round(S.qCorrect/S.qTotal*100)+'%' : '—';
+  document.getElementById('h-acc').textContent = acc;
+  updateProgress();
+  updateTokenUI();
+}
+
+function addXP(n) { S.xp += n; updateHdr(); save(); }
+
+function updateProgress() {
+  Object.keys(S.prog).forEach(k => {
+    const v = S.prog[k] || 0;
+    const fill = document.getElementById('pp-'+k);
+    const pct = document.getElementById('pct-'+k);
+    if (fill) fill.style.width = v+'%';
+    if (pct) pct.textContent = v+'%';
+  });
+}
+
+// ─── SIDEBAR / TOPIC SELECTOR ─────────────────────────────
+function buildSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = '';
+  Object.keys(TOPICS).forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'sb-btn' + (S.topic === t ? ' on' : '');
+    b.textContent = t;
+    b.onclick = () => selectTopic(t);
+    sb.appendChild(b);
+  });
+}
+
+function selectTopic(t) {
+  S.topic = t; S.sub = null;
+  buildSidebar();
+  const cr = document.getElementById('chip-row');
+  cr.innerHTML = '';
+  TOPICS[t].forEach(s => {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.textContent = s;
+    c.onclick = () => {
+      S.sub = s;
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+    };
+    cr.appendChild(c);
+  });
+}
+
+function goLearn(t) { nav('learn'); selectTopic(t); }
+
+// ─── AI CALL ──────────────────────────────────────────────
+async function callAI(prompt, maxTokens = 900) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const data = await res.json();
+
+  // Track token usage
+  if (data.usage) {
+    const total = (data.usage.prompt_tokens || 0) + (data.usage.completion_tokens || 0);
+    addTokens(total);
+  } else {
+    // Estimate if usage not returned
+    addTokens(Math.round(prompt.length / 4) + maxTokens);
+  }
+
+  if (data.error) throw new Error(data.error.message || 'API error');
+  return data.choices?.[0]?.message?.content || data.content?.[0]?.text || '';
+}
+
+// ─── LESSON GENERATION ────────────────────────────────────
+async function generateLesson() {
+  if (!S.topic) { alert('Choose a topic first'); return; }
+  const sub = S.sub || TOPICS[S.topic][0];
+  setLoading(true);
+
+  const prompt = `You're teaching "${sub}" in "${S.topic}" to a Nigerian university student studying Management Information Systems (MIS). She already knows Excel, SQL, Power BI, and basic data modeling.
+
+Write a lesson that sounds like a smart friend explaining this over coffee — casual, clear, zero fluff, zero jargon without explanation.
+
+Use this exact structure:
+
+## What is ${sub}?
+Start with one sentence that a non-technical person could understand. Then 2-3 sentences of real explanation. Use an analogy if it helps.
+
+## Why should you care as an MIS student?
+Connect this directly to systems she already knows: ERP systems, BI dashboards, database management, information flows in a business. Make her think "oh that's how that works!"
+
+## How it actually works
+Walk through the concept step by step. Be concrete. If there's a process, describe it clearly.
+
+## Show me the code
+A practical, well-commented code example (Python or SQL). Keep it under 18 lines but make it real — not toy examples.
+
+## Real life: How companies use this
+Tell a short story (4-6 sentences) about a real company type — Nigerian bank, telecom like MTN, retail like Shoprite, insurance company. Name the actual problem they had and show exactly how this concept solved it. Make her think "oh THAT'S how they do that."
+
+## Remember these three things
+Three crisp bullet points — the most important takeaways.
+
+Write in warm, encouraging, conversational English. No stiff academic tone.`;
+
+  try {
+    const text = await callAI(prompt, 1000);
+    S.lessonText = text;
+    renderLesson(text);
+    S.lessons++;
+    addXP(15);
+    const k = PROG_MAP[S.topic];
+    if (k) { S.prog[k] = Math.min((S.prog[k]||0)+14, 100); updateProgress(); }
+    save();
+  } catch(e) {
+    document.getElementById('lesson-panel').innerHTML = `<p style="color:var(--red)">Couldn't load lesson: ${e.message}</p>`;
+  }
+  setLoading(false);
+}
+
+async function generateScenario() {
+  if (!S.topic) { alert('Choose a topic first'); return; }
+  const sub = S.sub || TOPICS[S.topic][0];
+  setLoading(true);
+
+  const prompt = `You're a senior data engineer mentoring a Nigerian MIS student. Drop her into a real work scenario involving "${sub}" from "${S.topic}". Write like you're talking to a smart junior colleague — warm but direct.
+
+Use this structure:
+
+## Scenario: [Give it a punchy real title like "The Missing Morning Report" or "3am Pipeline Crash at GT Bank"]
+
+**The situation:** Set the scene. A real company in Nigeria or Africa (a bank, telecom, FMCG company, fintech). Describe the business context, the stakeholders waiting, and what just went wrong. 4-5 sentences. Be specific — what data, what system, who's affected.
+
+**What you're seeing:** Describe exactly what the junior engineer (her) finds when she logs in. Error messages, empty dashboards, angry Slack messages. Make it vivid.
+
+**Your job:** Two or three specific tasks she needs to figure out.
+
+**Code to look at:**
+Provide a code snippet with a bug or gap she needs to spot and think about.
+
+**Think through these:**
+Three questions she should answer. Connect at least one to MIS principles — data integrity, system reliability, stakeholder trust.
+
+**What the solution looks like:**
+Walk through the right approach clearly. Tell her what a senior engineer would do. 4-5 sentences. This is where the learning happens — make it satisfying to read.
+
+Write warmly. Make it feel real, not like a textbook exercise.`;
+
+  try {
+    const text = await callAI(prompt, 1100);
+    S.lessonText = text;
+    renderLesson(text);
+    S.lessons++;
+    addXP(20);
+    const k = PROG_MAP[S.topic];
+    if (k) { S.prog[k] = Math.min((S.prog[k]||0)+14, 100); updateProgress(); }
+    save();
+  } catch(e) {
+    document.getElementById('lesson-panel').innerHTML = `<p style="color:var(--red)">Couldn't load scenario: ${e.message}</p>`;
+  }
+  setLoading(false);
+}
+
+async function answerVoiceQuestion(question) {
+  if (!question.trim()) return;
+  setLoading(true);
+  const context = S.topic ? `The student is currently studying "${S.sub || S.topic}" in "${S.topic}".` : '';
+
+  const prompt = `You're a friendly data engineering tutor for an MIS student. ${context}
+  
+She just asked (by voice): "${question}"
+
+Answer her question directly and conversationally — like a smart friend, not a textbook. Keep it under 200 words. Use plain English. If her question mentions something technical, explain the concept first then answer. End with one practical tip she can remember.`;
+
+  try {
+    const text = await callAI(prompt, 500);
+    renderLesson('## Your Question\n\n*"' + question + '"*\n\n' + text);
+    speakText(text);
+  } catch(e) {
+    document.getElementById('lesson-panel').innerHTML = `<p style="color:var(--red)">Couldn't answer: ${e.message}</p>`;
+  }
+  setLoading(false);
+}
+
+function setLoading(on) {
+  document.getElementById('gen-btn').disabled = on;
+  document.getElementById('scen-btn').disabled = on;
+  document.getElementById('gen-btn').textContent = on ? '⏳ LOADING...' : '▶ LESSON';
+  if (on) {
+    document.getElementById('lesson-panel').innerHTML = '<div class="loading"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div><span>AI is writing your lesson...</span></div>';
+  }
+}
+
+// ─── MARKDOWN RENDERER ────────────────────────────────────
+function renderLesson(text) {
+  let html = text
+    .replace(/```[\w]*\n([\s\S]*?)```/g, (_, c) => `<pre>${esc(c.trim())}</pre>`)
+    .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^\*\*(.+?)\*\*$/gm, '<h3>$1</h3>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+    .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // wrap consecutive <li> in <ul>
+  html = html.replace(/(<li>.*?<\/li>(\n|$))+/g, m => `<ul>${m}</ul>`);
+  // wrap paragraphs
+  html = html.split('\n\n').map(chunk => {
+    chunk = chunk.trim();
+    if (!chunk) return '';
+    if (/^<[hup]|^<li/.test(chunk)) return chunk;
+    return `<p>${chunk}</p>`;
+  }).join('\n');
+
+  const panel = document.getElementById('lesson-panel');
+  panel.innerHTML = html;
+
+  // Add speak button at bottom
+  const speakRow = document.createElement('div');
+  speakRow.className = 'speak-row';
+  speakRow.innerHTML = `
+    <button class="speak-btn" id="speak-toggle" onclick="toggleSpeak()">🔊 Read Aloud</button>
+    <button class="speak-btn" onclick="speakStop()">⏹ Stop</button>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto">AI voice (female)</span>
+  `;
+  panel.appendChild(speakRow);
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── VOICE: TEXT-TO-SPEECH ────────────────────────────────
+let currentUtterance = null;
+
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  speakStop();
+  // Strip markdown for speech
+  const clean = text
+    .replace(/```[\s\S]*?```/g, 'code example')
+    .replace(/`[^`]+`/g, '')
+    .replace(/[#\*\_]/g, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+
+  currentUtterance = new SpeechSynthesisUtterance(clean);
+  currentUtterance.rate = 0.92;
+  currentUtterance.pitch = 1.05;
+  currentUtterance.volume = 1;
+
+  // Pick a female voice
+  const voices = window.speechSynthesis.getVoices();
+  const femaleVoice = voices.find(v =>
+    /female|woman|girl|fiona|victoria|samantha|karen|moira|tessa|veena|zira|hazel|susan/i.test(v.name)
+  ) || voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('f'));
+
+  if (femaleVoice) currentUtterance.voice = femaleVoice;
+
+  currentUtterance.onstart = () => {
+    S.isSpeaking = true;
+    const btn = document.getElementById('speak-toggle');
+    if (btn) btn.classList.add('speaking');
+  };
+  currentUtterance.onend = () => {
+    S.isSpeaking = false;
+    const btn = document.getElementById('speak-toggle');
+    if (btn) btn.classList.remove('speaking');
+  };
+
+  window.speechSynthesis.speak(currentUtterance);
+}
+
+function speakStop() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  S.isSpeaking = false;
+  const btn = document.getElementById('speak-toggle');
+  if (btn) btn.classList.remove('speaking');
+}
+
+function toggleSpeak() {
+  if (S.isSpeaking) {
+    speakStop();
+  } else if (S.lessonText) {
+    speakText(S.lessonText);
+  }
+}
+
+// Reload voices after they async-load in some browsers
+window.speechSynthesis && window.speechSynthesis.addEventListener('voiceschanged', () => {});
+
+// ─── VOICE: SPEECH-TO-TEXT ────────────────────────────────
+let recognition = null;
+let isListening = false;
+
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice input not supported in this browser. Try Chrome.');
+    return;
+  }
+  if (isListening) {
+    stopListening();
+  } else {
+    startListening();
+  }
+}
+
+function startListening() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'en-NG'; // Nigerian English
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+  recognition.continuous = false;
+
+  const btn = document.getElementById('voice-btn');
+  const transcript = document.getElementById('voice-transcript');
+  btn.classList.add('listening');
+  btn.textContent = '🔴';
+  transcript.classList.add('show');
+  transcript.textContent = 'Listening... (speak your question)';
+  isListening = true;
+
+  recognition.onresult = (e) => {
+    let text = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      text += e.results[i][0].transcript;
+    }
+    transcript.textContent = '🎤 ' + text;
+    if (e.results[e.results.length - 1].isFinal) {
+      stopListening();
+      answerVoiceQuestion(text);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    transcript.textContent = 'Mic error: ' + e.error + '. Try again.';
+    stopListening();
+  };
+
+  recognition.onend = () => {
+    if (isListening) stopListening();
+  };
+
+  recognition.start();
+}
+
+function stopListening() {
+  isListening = false;
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+  const btn = document.getElementById('voice-btn');
+  btn.classList.remove('listening');
+  btn.textContent = '🎤';
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────
+function buildTopicChecks() {
+  const c = document.getElementById('topic-checks');
+  c.innerHTML = '';
+  Object.keys(TOPICS).forEach(t => {
+    const d = document.createElement('div');
+    d.className = 'tc' + (S.quizTopics.includes(t) ? ' on' : '');
+    d.textContent = t; d.dataset.t = t;
+    d.onclick = () => {
+      d.classList.toggle('on');
+      S.quizTopics = Array.from(document.querySelectorAll('[data-t].on')).map(x=>x.dataset.t);
+    };
+    c.appendChild(d);
+  });
+}
+
+function pickMode(el) {
+  document.querySelectorAll('.mc').forEach(m=>m.classList.remove('on'));
+  el.classList.add('on');
+  S.quizMode = el.dataset.mode;
+}
+
+function togDiff(el) {
+  el.classList.toggle('on');
+  S.quizDiff = Array.from(document.querySelectorAll('[data-d].on')).map(x=>x.dataset.d);
+}
+
+function startQuiz() {
+  if (!S.quizTopics.length) { alert('Pick at least one topic'); return; }
+  S.qIdx = 0; S.qC = 0; S.qW = 0; S.qSk = 0; S.qTimes = [];
+  document.getElementById('quiz-setup').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('q-loading').style.display = 'flex';
+  document.getElementById('q-content').style.display = 'none';
+  loadQ();
+}
+
+async function loadQ() {
+  S.answered = false;
+  document.getElementById('q-loading').style.display = 'flex';
+  document.getElementById('q-content').style.display = 'none';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-btn').className = 'next-btn';
+
+  const total = 8;
+  document.getElementById('q-ctr').textContent = 'Q'+(S.qIdx+1)+' of '+total;
+  document.getElementById('qprog-fill').style.width = (S.qIdx/total*100)+'%';
+
+  const topic = S.quizTopics[Math.floor(Math.random()*S.quizTopics.length)];
+  const sub = TOPICS[topic][Math.floor(Math.random()*TOPICS[topic].length)];
+  const diff = S.quizDiff.length ? S.quizDiff[Math.floor(Math.random()*S.quizDiff.length)] : 'Entry Level';
+  const useScenario = S.quizMode === 'scenario' || (S.quizMode === 'practice' && Math.random() > 0.45);
+
+  const prompt = useScenario ?
+`Write a scenario-based multiple choice question for an MIS student learning data engineering.
+
+Topic: "${topic}" — Subtopic: "${sub}" — Difficulty: ${diff}
+
+The question MUST start with a realistic business scenario (Nigerian/African company context preferred — bank, telecom, fintech, FMCG). Then ask what the student should do, or what went wrong. Make the options meaningful — no obviously wrong answers.
+
+Return ONLY valid JSON (no markdown):
+{
+  "topic": "${topic}",
+  "type": "scenario",
+  "scenario": "Kuda Bank's data team notices their daily transaction summary report is empty every Monday morning. The ETL pipeline runs at 11:59pm Sunday and shows 'completed' in green. The data warehouse shows 0 rows for Sunday. The finance team is already pinging on Slack.",
+  "question": "What is the most likely cause, and what should the engineer check first?",
+  "code": "",
+  "options": ["A. The pipeline is configured to skip weekends in the cron schedule", "B. The source database does a maintenance window on Sundays that locks tables during the ETL run — causing the pipeline to 'complete' with no data", "C. The data warehouse ran out of storage on Sunday", "D. The Slack notifications are misconfigured"],
+  "correct": 1,
+  "explanation": "Silent failures — where a pipeline finishes 'successfully' but writes zero rows — happen when the source is unavailable during the run. Many databases do maintenance at low-traffic times like Sunday midnight. The fix is to add row-count validation after the load step: if rows_loaded == 0, raise an alert.",
+  "mis_link": "In MIS, data reliability is as important as the data itself. A report that says 'no data' and a report that fails to run look identical to the business — both destroy trust in the system."
+}`
+:
+`Write a practical multiple choice question for an MIS student learning data engineering.
+
+Topic: "${topic}" — Subtopic: "${sub}" — Difficulty: ${diff}
+
+Make it practical — test understanding, not memorisation. Include a short code snippet if it makes the question better.
+
+Return ONLY valid JSON (no markdown):
+{
+  "topic": "${topic}",
+  "type": "technical",
+  "scenario": "",
+  "question": "What does the pandas .dropna() method do to a DataFrame?",
+  "code": "import pandas as pd\\ndf = pd.read_csv('sales.csv')\\ndf_clean = df.dropna()\\nprint(df_clean.shape)",
+  "options": ["A. Removes columns that have any null values", "B. Removes rows that contain at least one null/missing value", "C. Fills null values with zero", "D. Removes duplicate rows"],
+  "correct": 1,
+  "explanation": "dropna() removes any row that has at least one missing (NaN) value by default. This matters in data engineering because null rows often cause downstream errors — dashboards show wrong totals, aggregations break, joins produce unexpected results.",
+  "mis_link": "Data quality is a core MIS concern. When a report shows wrong numbers, it's often because nulls slipped through — data engineers are the last line of defence."
+}`;
+
+  try {
+    const raw = await callAI(prompt, 800);
+    const text = raw.replace(/```json|```/g,'').trim();
+    const q = JSON.parse(text);
+    renderQ(q);
+  } catch(e) {
+    renderQ({topic, type:'technical', scenario:'', question:'Could not load question — click Next.', options:['A. Skip'], correct:0, explanation:'', mis_link:'', code:''});
+  }
+  if (S.quizMode === 'timed') startTimer();
+}
+
+function renderQ(q) {
+  document.getElementById('q-loading').style.display = 'none';
+  document.getElementById('q-content').style.display = 'block';
+
+  const badge = document.getElementById('q-badge');
+  badge.textContent = q.type === 'scenario' ? '🏢 SCENARIO — ' + q.topic : q.topic;
+  badge.className = 'q-badge ' + (q.type === 'scenario' ? 'qb-scen' : 'qb-norm');
+
+  document.getElementById('q-text').textContent = q.question;
+
+  const sc = document.getElementById('q-scen');
+  if (q.scenario && q.scenario.trim()) { sc.textContent = q.scenario; sc.style.display = 'block'; }
+  else sc.style.display = 'none';
+
+  const cd = document.getElementById('q-code');
+  if (q.code && q.code.trim()) {
+    cd.textContent = q.code.replace(/\\n/g, '\n');
+    cd.style.display = 'block';
+  } else cd.style.display = 'none';
+
+  const ol = document.getElementById('opts');
+  ol.innerHTML = '';
+  const ks = ['A','B','C','D'];
+  q.options.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = `<span class="opt-key">${ks[i]}</span><span>${o.replace(/^[A-D]\.\s*/,'')}</span>`;
+    b.onclick = () => answerQ(i, q, b);
+    ol.appendChild(b);
+  });
+
+  S.qStart = Date.now();
+}
+
+function answerQ(i, q, btn) {
+  if (S.answered) return;
+  S.answered = true;
+  clearInterval(S.timerInt);
+  S.qTimes.push(Math.round((Date.now() - S.qStart) / 1000));
+  const btns = document.querySelectorAll('.opt');
+  btns.forEach(b => b.disabled = true);
+  const ok = i === q.correct;
+  btns[q.correct].classList.add('correct');
+  if (!ok) { btn.classList.add('wrong'); S.qW++; }
+  else { S.qC++; S.qCorrect++; }
+  S.qTotal++;
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (ok ? 'ok' : 'bad');
+  document.getElementById('fb-title').textContent = ok ? '✓ CORRECT' : '✗ INCORRECT';
+  document.getElementById('fb-body').textContent = q.explanation || '';
+  document.getElementById('fb-mis').textContent = q.mis_link ? '📌 ' + q.mis_link : '';
+  document.getElementById('next-btn').className = 'next-btn show';
+  addXP(ok ? 10 : 2);
+  save();
+}
+
+function startTimer() {
+  S.timerSec = 90;
+  const el = document.getElementById('q-timer');
+  el.style.display = 'block';
+  clearInterval(S.timerInt);
+  S.timerInt = setInterval(() => {
+    S.timerSec--;
+    const m = Math.floor(S.timerSec/60), s = S.timerSec%60;
+    el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    if (S.timerSec <= 0) { clearInterval(S.timerInt); S.qSk++; nextQ(); }
+  }, 1000);
+}
+
+function nextQ() {
+  clearInterval(S.timerInt);
+  S.qIdx++;
+  if (S.qIdx >= 8) { showResults(); return; }
+  document.getElementById('q-loading').style.display = 'flex';
+  document.getElementById('q-content').style.display = 'none';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-btn').className = 'next-btn';
+  loadQ();
+}
+
+function showResults() {
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-results').style.display = 'block';
+  const tot = S.qC + S.qW + S.qSk;
+  const pct = tot ? Math.round(S.qC / tot * 100) : 0;
+  document.getElementById('res-score').textContent = pct + '%';
+  const xpE = S.qC * 10 + (pct >= 80 ? 50 : pct >= 60 ? 25 : 0);
+  document.getElementById('xp-earned').textContent = '⚡ +' + xpE + ' XP earned';
+  const grades = [[90,'A — Excellent 🏆','You think like a data engineer. Keep going.'],[70,'B — Good Work 🎯','Solid foundation. Target those gaps.'],[50,'C — Passing 📚','Head to the Learn tab and do a scenario drill.'],[0,'D — Keep Studying 💪','Do a few more lessons then come back.']];
+  const [,g,m] = grades.find(([t]) => pct >= t);
+  document.getElementById('res-grade').textContent = g;
+  document.getElementById('res-msg').textContent = m;
+  document.getElementById('r-c').textContent = S.qC;
+  document.getElementById('r-w').textContent = S.qW;
+  document.getElementById('r-s').textContent = S.qSk;
+  const avg = S.qTimes.length ? Math.round(S.qTimes.reduce((a,b)=>a+b,0)/S.qTimes.length) : 0;
+  document.getElementById('r-t').textContent = avg + 's';
+  if (pct >= 70) { S.streak++; }
+  addXP(xpE);
+  save();
+}
+
+function resetQuiz() {
+  document.getElementById('quiz-results').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-setup').style.display = 'block';
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+buildSidebar();
+buildTopicChecks();
+updateHdr();
+</script>
+</body>
+</html>

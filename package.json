@@ -1,0 +1,9 @@
+{
+  "name": "mis-datalab",
+  "version": "1.0.0",
+  "description": "MIS DataLab — AI-powered Data Engineering Training Academy",
+  "private": true,
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
