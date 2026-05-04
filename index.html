@@ -205,10 +205,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .real-box{background:rgba(255,209,102,0.04);border:1px solid rgba(255,209,102,0.18);border-radius:5px;padding:13px 15px;margin-top:10px}
 .real-box-lbl{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--yellow);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px}
 .real-box p{font-size:12px;color:var(--muted2);margin-bottom:0;line-height:1.75}
-.speak-row{display:flex;gap:6px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
-.speak-btn{font-family:var(--mono);font-size:10px;padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:3px;cursor:pointer;transition:all 0.12s;letter-spacing:0.04em}
-.speak-btn:hover{border-color:var(--border2);color:var(--text)}
+.speak-row{display:flex;gap:7px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap}
+.speak-btn{font-family:var(--mono);font-size:10px;padding:7px 14px;border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:4px;cursor:pointer;transition:all 0.12s;letter-spacing:0.04em;display:inline-flex;align-items:center;gap:6px;height:28px}
+.speak-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg3)}
 .speak-btn.speaking{color:var(--accent);border-color:rgba(0,217,139,0.3);background:rgba(0,217,139,0.05)}
+.quiz-jump-btn{background:var(--accent);color:var(--bg) !important;border-color:var(--accent);font-weight:700}
+.quiz-jump-btn:hover{background:var(--accent2);border-color:var(--accent2)}
 .loading{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted2);padding:28px 0}
 .ldot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:blink 1s infinite}
 .ldot:nth-child(2){animation-delay:.2s}.ldot:nth-child(3){animation-delay:.4s}
@@ -500,7 +502,8 @@ const TOPICS = {
     'DataFrames & Filtering',
     'The Requests Library',
     'Writing Automation Scripts',
-    'Error Handling'
+    'Error Handling',
+    'Milestone Project'
   ],
   'ETL Pipelines': [
     'What is ETL? (Plain English)',
@@ -510,7 +513,8 @@ const TOPICS = {
     'Handling Pipeline Failures',
     'Incremental vs Full Loads',
     'ETL vs ELT',
-    'ETL in a Real Nigerian Bank'
+    'ETL in a Real Nigerian Bank',
+    'Milestone Project'
   ],
   'Apache Airflow': [
     'What is Airflow & Why it Exists',
@@ -520,7 +524,8 @@ const TOPICS = {
     'Task Dependencies',
     'XCom: Passing Data Between Tasks',
     'Monitoring & Alerts',
-    'Real Pipeline Examples'
+    'Real Pipeline Examples',
+    'Milestone Project'
   ],
   'APIs & REST': [
     'What is an API? (Really)',
@@ -530,20 +535,23 @@ const TOPICS = {
     'Pulling Data into Python',
     'Handling Errors & Timeouts',
     'Pagination — Getting All the Data',
-    'APIs in Banking & Fintech'
+    'APIs in Banking & Fintech',
+    'Milestone Project'
   ],
   'Cloud Computing': [
     'Cloud Basics for MIS',
     'AWS, Azure, & Google Cloud',
     'S3: Storing Data in the Sky',
-    'Lambda: Functions without Servers'
+    'Lambda: Functions without Servers',
+    'Milestone Project'
   ],
   'dbt & Modeling': [
     'Modern Data Modeling',
     'Tables vs Views',
     'Writing Tests for Data',
     'Documentation: The Data Dictionary',
-    'Career: The Analytics Engineer'
+    'Career: The Analytics Engineer',
+    'Milestone Project'
   ]
 };
 const PROG_MAP = {'Python':'python','Apache Airflow':'airflow','APIs & REST':'api','ETL Pipelines':'etl','Cloud Computing':'cloud','dbt & Modeling':'dbt'};
@@ -902,9 +910,17 @@ function renderLesson(text, isCached = false) {
   speakRow.innerHTML = `
     <button class="speak-btn" id="speak-toggle" onclick="toggleSpeak()">🔊 Read Aloud</button>
     <button class="speak-btn" onclick="speakStop()">⏹ Stop</button>
+    <button class="speak-btn quiz-jump-btn" onclick="quickQuiz()">✍️ Take Quick Quiz</button>
     <span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto">AI voice (female)</span>
   `;
   panel.appendChild(speakRow);
+}
+
+function quickQuiz() {
+  switchTab('quiz');
+  // Scroll to top of quiz panel
+  document.getElementById('q-content').scrollIntoView({ behavior: 'smooth' });
+  loadQ();
 }
 
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

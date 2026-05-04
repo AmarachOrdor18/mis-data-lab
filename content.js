@@ -657,12 +657,52 @@ except requests.exceptions.RequestException as e:
 
 **What the solution looks like:**
 You would build a "Self-Healing" script. By adding error handling, your pipeline becomes smart enough to navigate common internet problems. If a critical failure happens, it "raises an alarm" properly so you can fix it, rather than leaving everyone in the dark.`,
+      'Milestone Project': {
+      'lesson': `## Milestone: The Corporate Sales Reporter
+This is your first major project. You are going to build an automated Python system that reads messy sales data, cleans it, and generates a formatted "Executive Dashboard" report.
+
+## The Business Case
+Your company, **"Lagos Retail Hub,"** has 5 branches. Each branch saves its sales in a messy text file. Currently, an intern spends 4 hours every Monday copying these into Excel. You are going to automate this.
+
+## Your Project Tasks:
+1. **The Script**: Write a Python script that reads data from a list of dictionaries (simulating your branches).
+2. **The Cleaning**: Handle missing values (NaN) and incorrect data types (e.g., prices stored as strings like "₦5,000").
+3. **The Analytics**: Calculate Total Revenue, Average Order Value, and identify the top-performing branch.
+4. **The Dashboard**: Print a clean, formatted text-based dashboard that an executive can read in 10 seconds.
+5. **The Delivery**: Create a new GitHub repository, upload your \`main.py\` and a \`README.md\` explaining how the "Dashboard" works.
+
+## Show me the code (Project Template)
+\`\`\`python
+# Example of the final Dashboard Output you should generate:
+print("=========================================")
+print("   LAGOS RETA HUB - WEEKLY EXECUTIVE REPORT")
+print("=========================================")
+print(f"TOTAL REVENUE:   ₦{total_rev:,.2f}")
+print(f"TOP BRANCH:      {top_branch}")
+print("-----------------------------------------")
+print("Action: Pushing clean report to GitHub...")
+\`\`\`
+
+## Presenting to Executives
+When you present this, don't show the code. Show the **Dashboard**. Explain how you've reduced a 4-hour manual task to a 2-second automated process. This is how you prove your value as an MIS professional.`,
+      'scenario': `## Scenario: The CEO's GitHub Request
+**The situation:** You showed the CEO your automated report. He is impressed but says, "Chidi, what if you're not in the office? How do we see the latest version of the code and the report?"
+
+**Your job:**
+1. Initialize a Git repository in your project folder.
+2. Commit your code with a professional message.
+3. Push it to a public GitHub repository.
+4. Send the link to the CEO (and your instructor).
+
+**Think through these:**
+- Why is GitHub a better "Single Version of Truth" than sending files over Email?
+- How does a "Public Portfolio" help your career growth in MIS?`,
       'quizzes': [
         {
-          'question': "What happens if an error occurs inside a 'try' block that has a matching 'except' block?",
-          'options': ["A. The program stops and shows a red error message", "B. The computer restarts", "C. The code in the 'except' block runs, and the program continues", "D. The error is ignored completely"],
-          'correct': 2,
-          'explanation': "The 'except' block catches the error, allowing you to handle it (like showing a friendly message) instead of letting the program crash."
+          'question': "Why is it important to include a README.md file when you upload your project to GitHub?",
+          'options': ["A. It makes the code run faster", "B. It explains to other people (and your boss) what the project does and how to use it", "C. It is required by the Nigerian government", "D. It stores the customer passwords"],
+          'correct': 1,
+          'explanation': "The README is the 'front door' of your project. It translates your code into business value for anyone viewing your portfolio."
         }
       ]
     }
@@ -1235,12 +1275,54 @@ A massive "Mismatched" list. Thousands of customers probably didn't get their ca
 
 **What the solution looks like:**
 By building a robust Reconciliation Pipeline, you ensure that "Digital Money" always matches "Physical Reality." You turn a ₦20 Million crisis into an automated 10-minute cleanup, protecting both the bank and its customers. This is the ultimate goal of MIS in the financial sector.`,
+      'Milestone Project': {
+      'lesson': `## Milestone: The Fintech Reconciliation Engine
+In this project, you will build a complete ETL pipeline that handles the most critical task in banking: **Reconciliation**. You will move data from two sources (Bank Internal Log vs Payment Gateway Log) and find the "Lost Money."
+
+## The Business Case
+Your startup, **"NaijaPay,"** is seeing "ghost transactions"—where a user says they were debited, but the payment gateway says they didn't receive the money. You need to build a pipeline that finds these mismatches automatically for the Finance VP.
+
+## Your Project Tasks:
+1. **EXTRACT**: Create two CSV files (or lists) simulating "Our Database" and "Paystack Logs."
+2. **TRANSFORM**: Use Python to find transactions that exist in "Our Database" but are MISSING in "Paystack."
+3. **LOAD**: Save these "Exceptions" into a new CSV called \`refund_requests.csv\`.
+4. **THE DASHBOARD**: Create a simple summary showing:
+   - Total Transactions Processed.
+   - Total Discrepancy Amount (The "Lost Money").
+   - A list of the Top 5 customers affected.
+5. **THE DELIVERY**: Push your \`recon_pipeline.py\` and a sample \`dashboard_screenshot.md\` to GitHub.
+
+## Show me the code (ETL Logic)
+\`\`\`python
+# Example logic for your Transform step:
+def find_lost_money(internal, gateway):
+    internal_ids = {tx['id'] for tx in internal}
+    gateway_ids = {tx['id'] for tx in gateway}
+    
+    # IDs we have that the gateway DOES NOT have
+    lost_ids = internal_ids - gateway_ids
+    return [tx for tx in internal if tx['id'] in lost_ids]
+\`\`\`
+
+## Presenting to Executives
+Tell the VP: "Instead of having 5 accountants manually check Excel files all day, this pipeline identifies every single discrepancy in 3 seconds. It protects our ₦20M daily revenue and ensures customer trust."`,
+      'scenario': `## Scenario: The "Audit-Ready" Repository
+**The situation:** The external auditors are coming. They want to see the "Logic" you used to calculate the refunds. They don't want a PowerPoint; they want to see the code and the version history.
+
+**Your job:**
+1. Ensure your GitHub repo has a \`/docs\` folder explaining the ETL logic.
+2. Tag your current code as \`v1.0-Audit-Ready\`.
+3. Provide the auditors with the GitHub link.
+
+**Think through these:**
+- Why is "Transparency" in code important for financial audits?
+- How does GitHub's "Commit History" prove that you didn't just "fake the numbers" this morning?`,
       'quizzes': [
         {
-          'question': "What is the primary purpose of 'Reconciliation' in banking ETL?",
-          'options': ["A. To make the dashboard look pretty", "B. To ensure that internal records match external partners (like Interswitch/NIBSS)", "C. To delete old bank accounts", "D. To increase the interest rates for customers"],
+          'question': "In your ETL Milestone project, what is the 'Business Value' of the Load phase?",
+          'options': ["A. It makes the code look complex", "B. It saves the results in a permanent place (CSV/Database) so other systems can use it to issue refunds", "C. It deletes the raw data", "D. It sends an email to everyone in the company"],
           'correct': 1,
-          'explanation': "Reconciliation is the act of proving that two sets of records (ours and theirs) match perfectly. If they don't, ETL identifies the 'exceptions' so they can be fixed."
+          'explanation': "The Load phase is where the 'Clean Data' is delivered. Without it, your transformation work is lost as soon as the script finishes."
         }
       ]
     }
@@ -1824,12 +1906,58 @@ Data is in two places: "Completed Orders" are in a SQL database, but "Driver Rat
 
 **What the solution looks like:**
 By building this pipeline, you've created a "Fair and Transparent" business process. The computer doesn't have favorites; it simply follows your DAG. This improves driver morale and ensures the company's money is spent on the best performers, all while requiring zero manual work from you.`,
+      'Milestone Project': {
+      'lesson': `## Milestone: The Autonomous Data Engineer
+In this milestone, you are going to orchestrate a multi-step business process using Apache Airflow. You will move from "writing scripts" to "building an autonomous system" that monitors itself.
+
+## The Business Case
+Your company, **"Abuja Logistics,"** delivers 10,000 packages a day. The CEO wants a report every morning at 6:00 AM showing:
+1. Total Deliveries.
+2. Failed Deliveries (and why).
+3. Driver Efficiency.
+If the data is missing or the pipeline fails, you need to know before the CEO wakes up.
+
+## Your Project Tasks:
+1. **The DAG**: Create a Python file representing your Airflow DAG.
+2. **The Sensor**: Add a task that "waits" for the daily delivery CSV to arrive.
+3. **The Transformation**: Add a task that calculates the KPIs for the CEO.
+4. **The Dashboard**: Add a task that prints a "Markdown Dashboard" into a log file.
+5. **The GitHub Submission**: Upload your \`dags/\` folder and a screenshot of your "Executive Dashboard" (as a markdown file) to GitHub.
+
+## Show me the code (DAG Template)
+\`\`\`python
+# How your final project structure should look:
+with DAG('ceo_morning_report', start_date=datetime(2023,1,1), schedule='0 6 * * *') as dag:
+    
+    wait_for_data = FileSensor(task_id='wait_for_csv', filepath='/data/today.csv')
+    
+    generate_metrics = PythonOperator(task_id='calc_kpis', python_callable=analyze_data)
+    
+    # This is the "Dashboard" step
+    log_to_dashboard = BashOperator(task_id='update_gh', bash_command='cat report.txt >> github_readme.md')
+
+    wait_for_data >> generate_metrics >> log_to_dashboard
+\`\`\`
+
+## Presenting to Executives
+Say: "This system is now autonomous. It checks for data, processes it, and updates our shared GitHub dashboard while we sleep. It's the highest level of data maturity for a modern logistics business."`,
+      'scenario': `## Scenario: The "3 AM Alert"
+**The situation:** It's 3 AM. The "File Sensor" task in your DAG has been spinning for 2 hours because the branch office forgot to upload the CSV.
+
+**Your job:**
+1. Configure an "SLA Miss" alert in your Airflow DAG.
+2. Write a function that sends a "Critical Warning" to the branch manager automatically.
+3. Show the CEO how Airflow "Caught the error" before it became a crisis.
+
+**Think through these:**
+- Why is it better for the system to "Wait and Alert" than to just "Fail and Crash"?
+- How does "Automated Monitoring" reduce the stress of an MIS manager?`,
       'quizzes': [
         {
-          'question': "What is the best way to handle a pipeline that requires data from BOTH a SQL database and a CSV file?",
-          'options': ["A. It's impossible", "B. Create two separate tasks to extract each, then a third task to merge them", "C. Copy-paste the CSV into the SQL database manually", "D. Use Excel"],
+          'question': "What is the role of a 'Dependency' ( >> ) in an Airflow Milestone project?",
+          'options': ["A. It makes the code harder to read", "B. It ensures that the 'Report Generation' task doesn't start until the 'Data Cleaning' task is finished", "C. It is used to add numbers together", "D. It is for deleting old files"],
           'correct': 1,
-          'explanation': "Airflow excels at this. You run parallel extraction tasks and then a third task (like a PythonOperator) to combine the data and perform logic."
+          'explanation': "Dependencies are the 'Roadmap'. They tell Airflow the correct order to run your business tasks so that you don't try to report on data that hasn't been cleaned yet."
         }
       ]
     }
@@ -2447,12 +2575,57 @@ requests.post("https://api.bank.com/transfer", json=refund_data, headers=auth_he
 
 **What the solution looks like:**
 You've transformed the business. By replacing a manual portal login with an API call, "Instant" actually means instant. The business scales without hiring more accountants, and customers are happy because their money returns in seconds. This is the power of MIS in the digital economy.`,
+      'Milestone Project': {
+      'lesson': `## Milestone: The Live Currency Tracker
+In this project, you will bridge the gap between "Internal Systems" and the "Global Market" by pulling live data from an external API and building a tracking dashboard.
+
+## The Business Case
+Your company, **"Lekki Import-Export,"** deals with suppliers in the UK and USA. The Finance Director is tired of manually checking the Naira exchange rate every morning. You need to build a system that pulls the rate automatically and displays it on an "Executive Currency Dashboard."
+
+## Your Project Tasks:
+1. **The Request**: Write a Python script using the \`requests\` library to call a live Currency API (e.g., ExchangeRate-API or similar).
+2. **The Extraction**: Parse the JSON response to find the specific rate for NGN (Nigerian Naira) against USD and GBP.
+3. **The Analytics**: Compare today's rate with a "Baseline Rate" to see if the Naira is getting stronger or weaker.
+4. **The Dashboard**: Create a formatted text output showing:
+   - Today's Date.
+   - Current USD/NGN Rate.
+   - Current GBP/NGN Rate.
+   - A "Market Alert" message if the rate changes by more than 5%.
+5. **The Delivery**: Push your \`currency_bot.py\` and a \`README.md\` with a screenshot of your dashboard to GitHub.
+
+## Show me the code (API Logic)
+\`\`\`python
+# Example of pulling the data:
+import requests
+
+url = "https://api.exchangerate-api.com/v4/latest/USD"
+response = requests.get(url)
+data = response.json()
+
+naira_rate = data['rates']['NGN']
+print(f"EXECUTIVE ALERT: Current Naira Rate is ₦{naira_rate}/$1")
+\`\`\`
+
+## Presenting to Executives
+Tell the Director: "This isn't just a script; it's a real-time financial monitor. By using an API, we eliminate the risk of human error and ensure the company always makes decisions based on the most accurate market data available."`,
+      'scenario': `## Scenario: The "API Key" Leak
+**The situation:** You just pushed your code to GitHub. 5 minutes later, you get an automated email from the API provider saying your "Secret Key" has been compromised and your account is suspended.
+
+**Your job:**
+1. Identify how the key got leaked (Did you hardcode it in the script?).
+2. Use an \`.env\` file or "Environment Variables" to hide your keys.
+3. Add a \`.gitignore\` file to your repository so the \`.env\` file is never pushed to GitHub again.
+4. Rotate your API key (generate a new one).
+
+**Think through these:**
+- Why is it dangerous to have API keys visible on a public GitHub repository?
+- How does a \`.gitignore\` file protect a company's sensitive credentials?`,
       'quizzes': [
         {
-          'question': "What is a 'Webhook' in the context of fintech APIs?",
-          'options': ["A. A type of fishing net", "B. An API where the server 'pushes' data to you as soon as an event happens (instead of you asking)", "C. A very slow API", "D. A way to delete a bank account"],
+          'question': "When you upload your API project to GitHub, which file should you use to ensure your secret keys are NOT shared with the public?",
+          'options': ["A. README.md", "B. .gitignore", "C. main.py", "D. config.txt"],
           'correct': 1,
-          'explanation': "Webhooks are 'Reverse APIs'. Instead of your script asking 'Did I get paid?', the bank calls your script and says 'Hey, you just got paid!'"
+          'explanation': "The .gitignore file tells Git which files to ignore. By putting your secret keys in a separate file (like .env) and adding that file to .gitignore, you keep your credentials safe while sharing your code."
         }
       ]
     }
@@ -2682,12 +2855,55 @@ The server is "Idle" (doing nothing) for 58 minutes of every hour, but you are s
 
 **What the solution looks like:**
 By switching to Lambda, you've saved the company ₦240,000 a year. This is the kind of "Business Intelligence" that gets MIS professionals promoted. You've proven you understand both the **Code** and the **Cost**.`,
+      'Milestone Project': {
+      'lesson': `## Milestone: The Disaster-Proof Backup System
+In this project, you will move your company's data security to the next level by building an automated, cloud-based backup system. You will ensure that even if the physical office is destroyed, the business continues.
+
+## The Business Case
+Your company, **"Enugu Manufacturing,"** currently saves its daily production logs on a single computer in the factory. If that computer's hard drive fails (or the factory floods), 10 years of data is lost. You need to build a "Cloud Bridge" that pushes these logs to the AWS cloud automatically.
+
+## Your Project Tasks:
+1. **The Bucket**: Create a uniquely named S3 bucket in your AWS account (simulated in code).
+2. **The Script**: Write a Python script using \`boto3\` to detect a new log file in your local "Production" folder.
+3. **The Upload**: Automatically upload the file to S3 with a "Private" access policy.
+4. **The Dashboard**: Print a "Cloud Status Dashboard" showing:
+   - Total Files Backed Up.
+   - Last Sync Timestamp.
+   - A "Security Check" confirming the bucket is not public.
+5. **The Delivery**: Push your \`cloud_sync.py\` and a screenshot of your terminal dashboard to GitHub.
+
+## Show me the code (Cloud Logic)
+\`\`\`python
+# Example of the final Dashboard Output you should generate:
+print("=========================================")
+print("   ENUGU MFG - CLOUD SECURITY DASHBOARD")
+print("=========================================")
+print(f"SYNC STATUS:     [SUCCESS]")
+print(f"FILES PROTECTED: {file_count} CSVs")
+print(f"S3 DESTINATION:  s3://enugu-mfg-secure-backups/")
+print("-----------------------------------------")
+print("Action: Project files pushed to GitHub.")
+\`\`\`
+
+## Presenting to Executives
+Tell the CEO: "We are no longer vulnerable to local disasters. Our business intelligence is now stored in a globally distributed, encrypted digital vault. We can restore our entire operation in under 30 minutes from anywhere in the world."`,
+      'scenario': `## Scenario: The "Oops, I Deleted It" Recovery
+**The situation:** A manager accidentally deleted the "June Production Report" from the local computer. He is panicking. He needs it for a meeting in 10 minutes.
+
+**Your job:**
+1. Use your script (or the AWS CLI) to "Pull" the backup from S3 back to the local computer.
+2. Verify that the file is the correct version.
+3. Show the manager how the "Cloud History" allows you to recover any version of a file from any date.
+
+**Think through these:**
+- Why is "Versioning" (keeping multiple copies of the same file) a life-saver in business?
+- How does the Cloud reduce the "Cost of Mistakes" in an organization?`,
       'quizzes': [
         {
-          'question': "What is the main advantage of 'Serverless' computing like AWS Lambda?",
-          'options': ["A. It is faster than any other computer", "B. You don't have to manage servers and you only pay for the time the code is actually running", "C. It doesn't use the internet", "D. It is only for storing images"],
+          'question': "What is the primary reason for moving backups from a local computer to a service like AWS S3?",
+          'options': ["A. To make the files harder to find", "B. To protect the data from local disasters (fire, theft, hardware failure) by storing it in a remote, secure location", "C. To save money on internet costs", "D. Because the CEO likes the word 'Cloud'"],
           'correct': 1,
-          'explanation': "Serverless allows you to focus on the code while the cloud provider handles the scaling and infrastructure, saving both time and money."
+          'explanation': "The Cloud provides 'Durability'. Services like S3 are designed to never lose a file, even if entire buildings are destroyed."
         }
       ]
     }
@@ -2974,12 +3190,56 @@ The job description asks for "dbt experience," "SQL mastery," and "Data Modeling
 
 **What the solution looks like:**
 By focusing on this high-value career path, you've "upgraded" your future. You've realized that the world doesn't need more "Clickers"; it needs "Builders." You are now a professional who can walk into any boardroom, understand their problems, and go back to your desk to build the technical solution.`,
+      'Milestone Project': {
+      'lesson': `## Milestone: The Executive Decision Portal
+In this final milestone, you will use dbt to create a professional "Data Mart" that serves as the "Single Version of Truth" for your entire company. You will transform chaos into clarity.
+
+## The Business Case
+Your company, **"Owerri Omnichannel,"** sells on Jumia, Konga, and their own website. Each platform uses different names for "Revenue." The CEO is confused. You need to build a dbt project that joins these three sources and creates one master table called \`dim_total_revenue\`.
+
+## Your Project Tasks:
+1. **The Models**: Create three dbt "Staging" models to clean the raw data from Jumia, Konga, and the Website.
+2. **The Mart**: Create a final "Mart" model that uses \`union all\` to combine them into one clean table.
+3. **The Testing**: Write at least two dbt tests (\`not_null\` and \`unique\`) to ensure the data is perfect.
+4. **The Documentation**: Generate a "Data Dictionary" using \`dbt docs generate\` explaining each column to the CEO.
+5. **The GitHub Submission**: Upload your entire \`dbt_project/\` folder (including your \`schema.yml\` and \`models/\`) to GitHub.
+
+## Show me the code (dbt SQL Template)
+\`\`\`sql
+-- Your final executive mart: fct_total_sales.sql
+{{ config(materialized='table') }}
+
+with jumia as (select * from {{ ref('stg_jumia_sales') }}),
+     konga as (select * from {{ ref('stg_konga_sales') }}),
+     web as (select * from {{ ref('stg_web_sales') }})
+
+select * from jumia
+union all
+select * from konga
+union all
+select * from web
+\`\`\`
+
+## Presenting to Executives
+Tell the CEO: "We no longer have three different revenue numbers. This dbt model is the official record. It is tested for accuracy every day, and here is the documentation that explains exactly how we calculated every Naira."`,
+      'scenario': `## Scenario: The "Data Quality" Crisis
+**The situation:** Just before the big quarterly board meeting, your dbt tests fail! They detect that the "Revenue" column has negative numbers (which should be impossible).
+
+**Your job:**
+1. Use the dbt test logs to identify which source (Jumia, Konga, or Web) is sending the bad data.
+2. Fix the "Transformation" logic in your staging model to handle these errors.
+3. Re-run the tests and show the CEO the "Green" checkmarks.
+4. Explain how dbt "Caught the error" before the board saw the wrong numbers.
+
+**Think through these:**
+- Why is a "Failed Test" actually a "Success" for a data engineer?
+- How does "Automated Testing" protect your reputation as an MIS professional?`,
       'quizzes': [
         {
-          'question': "What defines the role of an 'Analytics Engineer'?",
-          'options': ["A. They only fix broken computers", "B. They use software engineering best practices (like dbt) to build clean, reliable data models for the business", "C. They only work in Excel", "D. They are in charge of office security"],
+          'question': "Why is it important to upload your dbt models and schema.yml to GitHub for this project?",
+          'options': ["A. To show off your SQL skills", "B. To allow other engineers to review your logic, collaborate on improvements, and maintain the 'Single Version of Truth' as a team", "C. Because the CEO likes reading SQL", "D. To make the database run faster"],
           'correct': 1,
-          'explanation': "The Analytics Engineer is the bridge. They bring order to the chaos of raw data, making it useful for everyone else."
+          'explanation': "dbt + GitHub = Reliability. By version controlling your models, you ensure that every change to the business logic is tracked, tested, and approved before it hits the executive dashboard."
         }
       ]
     }
