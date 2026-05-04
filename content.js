@@ -675,7 +675,7 @@ Your company, **"Lagos Retail Hub,"** has 5 branches. Each branch saves its sale
 
 ## Your Project Tasks:
 0. **The Data**: Download the [Northwind Relational Database from GitHub](https://github.com/pthom/northwind_psql) (Specifically the Orders, Order Details, and Products CSVs).
-1. **The Script**: Write a Python script using Pandas to read these separate tables and `MERGE` them using their Foreign Keys (e.g., `product_id`).
+1. **The Script**: Write a Python script using Pandas to read these separate tables and \`MERGE\` them using their Foreign Keys (e.g., \`product_id\`).
 2. **The Cleaning**: Handle missing values and ensure the Data Types match before joining (an ID must be an integer in both tables).
 3. **The Analytics**: Calculate Total Revenue per Category by joining the merged data.
 4. **The Dashboard**: Print a clean, formatted text-based dashboard that an executive can read in 10 seconds.
@@ -1304,7 +1304,7 @@ Your startup, **"NaijaPay,"** is seeing "ghost transactions"-where a user says t
 ## Your Project Tasks:
 0. **The Data**: Use the [Instacart Relational Database on Kaggle](https://www.kaggle.com/c/instacart-market-basket-analysis/data) (specifically the Orders, Products, and Departments tables).
 1. **EXTRACT**: Pull the raw data from the separate tables into your Python environment.
-2. **TRANSFORM**: Use Pandas to `JOIN` the tables and identify "Data Anomalies" (e.g., products missing a department_id, or orders with zero items).
+2. **TRANSFORM**: Use Pandas to \`JOIN\` the tables and identify "Data Anomalies" (e.g., products missing a department_id, or orders with zero items).
 3. **LOAD**: Save this cleaned, joined dataset into a final \`unified_warehouse.csv\` table.
 4. **THE DASHBOARD**: Create a simple summary showing:
    - Total Clean Orders Processed.
