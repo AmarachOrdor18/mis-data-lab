@@ -682,6 +682,11 @@ function selectTopic(t) {
   buildSidebar();
   const cr = document.getElementById('chip-row');
   cr.innerHTML = '';
+  
+  // Disable buttons until a subtopic is chosen
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('scen-btn').disabled = true;
+
   TOPICS[t].forEach(s => {
     const c = document.createElement('div');
     c.className = 'chip';
@@ -690,6 +695,9 @@ function selectTopic(t) {
       S.sub = s;
       document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
       c.classList.add('on');
+      // Enable buttons
+      document.getElementById('gen-btn').disabled = false;
+      document.getElementById('scen-btn').disabled = false;
     };
     cr.appendChild(c);
   });
@@ -751,31 +759,29 @@ async function generateLesson(forceNew = false) {
   setLoading(true);
   document.getElementById('regen-btn').style.display = 'none';
 
-  const prompt = `You're teaching "${sub}" in "${S.topic}" to a Nigerian university student studying Management Information Systems (MIS). She already knows Excel, SQL, Power BI, and basic data modeling.
+  const prompt = `You are a Senior Data Engineer directly mentoring a Nigerian university student studying MIS. She already knows Excel, SQL, and Power BI. You are teaching her "${sub}" in "${S.topic}".
 
-Write a lesson that sounds like a smart friend explaining this over coffee. Casual, clear, zero fluff, zero jargon without explanation.
+Do NOT just give a high-level overview. You must actually TEACH her how to do it, step by step, with deep explanations and code.
 
 Use this exact structure:
 
-## What is ${sub}?
-Start with one sentence that a non-technical person could understand. Then 2-3 sentences of real explanation. Use an analogy if it helps.
+## Why are we learning ${sub}?
+Explain the concept in 2-3 sentences. Tell her exactly why this is critical for a data engineer to know, comparing it to things she already knows (like Excel or SQL).
 
-## Why should you care as an MIS student?
-Connect this directly to systems she already knows: ERP systems, BI dashboards, database management, information flows in a business. Make her think "oh that's how that works!"
+## Step-by-Step Tutorial
+Break the concept down into 3 or 4 clear, actionable steps. For each step:
+1. Explain *what* you are doing.
+2. Explain *why* you are doing it.
+3. Provide the exact code block (Python/SQL/etc).
+Do not just dump code. Teach it line by line.
 
-## How it actually works
-Walk through the concept step by step. Be concrete. If there's a process, describe it clearly.
+## Let's look at a Real Business Example
+Walk through a complete, realistic scenario in an African/Nigerian context (e.g., a Fintech, Telecom, or Logistics company). Show exactly how you would apply this concept to solve their specific data problem, complete with the final code snippet.
 
-## Show me the code
-A practical, well-commented code example (Python or SQL). Keep it under 18 lines but make it real, not toy examples.
+## Common Mistakes to Avoid
+List 2 or 3 beginner mistakes people make with this topic and how she can avoid them.
 
-## Real life: How companies use this
-Tell a short story (4-6 sentences) about a real company type: Nigerian bank, telecom like MTN, retail like Shoprite, insurance company. Name the actual problem they had and show exactly how this concept solved it. Make her think "oh THAT'S how they do that."
-
-## Remember these three things
-Three crisp bullet points. The most important takeaways.
-
-Write in warm, encouraging, conversational English. No stiff academic tone.`;
+Write in a warm, encouraging, conversational tone, like you are pair-programming with her. No fluff, no academic jargon.`;
 
   try {
     const text = await callAI(prompt, 1000);
@@ -925,9 +931,31 @@ function renderLesson(text, isCached = false) {
     <button class="speak-btn" id="speak-toggle" onclick="toggleSpeak()">🔊 Read Aloud</button>
     <button class="speak-btn" onclick="speakStop()">⏹ Stop</button>
     <button class="speak-btn quiz-jump-btn" onclick="quickQuiz()">✍️ Take Quick Quiz</button>
+    <button class="speak-btn next-sub-btn" onclick="nextSubtopic()" style="background:var(--accent);color:#000">⏭️ Next Subtopic</button>
     <span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto">AI voice (female)</span>
   `;
   panel.appendChild(speakRow);
+}
+
+function nextSubtopic() {
+  if (!S.topic || !S.sub) return;
+  const subs = TOPICS[S.topic];
+  const idx = subs.indexOf(S.sub);
+  if (idx >= 0 && idx < subs.length - 1) {
+    S.sub = subs[idx + 1];
+    
+    // Highlight correct chip visually
+    document.querySelectorAll('.chip').forEach(x => {
+      if (x.textContent === S.sub) x.classList.add('on');
+      else x.classList.remove('on');
+    });
+    
+    // Auto-generate lesson
+    generateLesson();
+    document.getElementById('lesson-panel').scrollIntoView({ behavior: 'smooth' });
+  } else {
+    alert("You've reached the end of this module! Try the Quiz tab.");
+  }
 }
 
 function quickQuiz() {

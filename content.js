@@ -671,7 +671,7 @@ You would build a "Self-Healing" script. By adding error handling, your pipeline
 This is your first major project. You are going to build an automated Python system that reads messy sales data, cleans it, and generates a formatted "Executive Dashboard" report.
 
 ## The Broad Business Problem
-Your company, **"Lagos Retail Hub,"** is losing money because pricing decisions are too slow. By the time management realizes a product is failing, it's already the end of the month. The root cause? Data fragmentation. The 5 regional branches store their sales in isolated, messy text files, and an intern spends 4 hours manually copying them into Excel. You need to build an automated Python system that instantly consolidates this data so the company can make daily, aggressive pricing decisions.
+Your company, **"Northwind Traders,"** is an international import/export company losing money because pricing decisions are too slow. By the time management realizes a product is failing, it's already the end of the month. The root cause? Data fragmentation. The regional offices store their sales in isolated, messy CSV files, and an intern spends 4 hours manually copying them into Excel. You need to build an automated Python system that instantly consolidates this data so the company can make daily, aggressive pricing decisions.
 
 ## Your Project Tasks:
 0. **The Data**: Download the [Northwind Relational Database from GitHub](https://github.com/pthom/northwind_psql) (Specifically the Orders, Order Details, and Products CSVs).
@@ -1299,7 +1299,7 @@ By building a robust Reconciliation Pipeline, you ensure that "Digital Money" al
 In this project, you will build a complete ETL pipeline that handles the most critical task in banking: **Reconciliation**. You will move data from two sources (Bank Internal Log vs Payment Gateway Log) and find the "Lost Money."
 
 ## The Broad Business Problem
-Your startup, **"NaijaPay,"** is facing a massive customer trust crisis. Thousands of users are complaining on Twitter about "ghost transactions"—being debited without the merchant receiving the money. The core issue is that your internal database and the external Paystack payment gateway are out of sync. You need to build a robust ETL pipeline that performs automated "Reconciliation" to find these missing funds before customers complain, restoring trust in the brand.
+Your grocery delivery startup, **"Instacart,"** is facing a massive data quality crisis. The analytics team is complaining about "ghost data"—orders with zero items, or products linked to departments that don't exist. The core issue is that the raw SQL databases are completely dirty. You need to build a robust ETL pipeline that extracts the Orders, Products, and Departments tables, uses Python to find and clean these specific anomalies, and loads a unified warehouse to restore trust in the data.
 
 ## Your Project Tasks:
 0. **The Data**: Use the [Instacart Relational Database on Kaggle](https://www.kaggle.com/c/instacart-market-basket-analysis/data) (specifically the Orders, Products, and Departments tables).
@@ -1940,7 +1940,7 @@ By building this pipeline, you've created a "Fair and Transparent" business proc
 In this milestone, you are going to orchestrate a multi-step business process using Apache Airflow. You will move from "writing scripts" to "building an autonomous system" that monitors itself.
 
 ## The Broad Business Problem
-Your logistics company, **"Oya Deliveries,"** is suffering from massive driver turnover. Drivers are quitting because their performance bonuses are calculated late and unfairly due to manual data processing delays. The company's operations are fundamentally broken because there is no orchestration. You must build an autonomous Airflow system that automatically detects when delivery data arrives, calculates KPIs, and triggers payroll insights, ensuring operational stability and driver retention.
+Your Brazilian e-commerce company, **"Olist,"** is suffering from massive seller turnover. Sellers are quitting because their performance reports and payments are calculated late due to manual data processing delays. The company's operations are fundamentally broken because there is no orchestration across your 8 different databases (Customers, Payments, Reviews, etc.). You must build an autonomous Airflow system that automatically detects when new Olist data arrives, orchestrates the joins, and ensures the daily report is ready before 6:00 AM.
 
 ## Your Project Tasks:
 0. **The Data**: Download the [Brazilian E-Commerce Relational Dataset by Olist (Kaggle)](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) which contains 8 linked tables (Orders, Customers, Payments, etc).
@@ -2615,7 +2615,7 @@ You've transformed the business. By replacing a manual portal login with an API 
 In this project, you will pull relational data (Users and Posts) from two separate API endpoints, join them together in memory, and generate an executive report.
 
 ## The Broad Business Problem
-Your company, **"Lagos Media Group,"** is losing advertising revenue. Advertisers want to sponsor top content creators, but your marketing team has no idea who the top creators are because the user data and the content data live in completely separate software systems. The database team is too backlogged to help. You must solve this strategic blind spot by building a Python script that pulls data directly from live APIs, joins the systems in memory, and immediately identifies the top talent.
+Your company has acquired a new social network platform (**JSONPlaceholder**), but the marketing team has a strategic blind spot: they have no idea who the top content creators are. The user profiles and the posts live in completely separate API endpoints. The database team is too backlogged to help. You must solve this strategic blind spot by building a Python script that pulls data directly from the live `/users` and `/posts` APIs, joins the systems in memory, and immediately identifies the top talent.
 
 ## Your Project Tasks:
 0. **The Data**: We will use the [JSONPlaceholder Relational API](https://jsonplaceholder.typicode.com/) to simulate linked business systems.
@@ -2906,7 +2906,7 @@ By switching to Lambda, you've saved the company ₦240,000 a year. This is the 
 In this project, you will move your company's data security to the next level by building an automated, cloud-based backup system. You will ensure that even if the physical office is destroyed, the business continues.
 
 ## The Broad Business Problem
-Your manufacturing firm, **"Enugu Manufacturing,"** is operating under extreme existential risk. The entire company's intellectual property and 10 years of production logs are stored on a single physical server in the factory. If a fire or hardware failure occurs, the business goes bankrupt instantly. You have been tasked with solving this critical infrastructure vulnerability by designing an automated, serverless "Cloud Bridge" that securely backs up every file to an indestructible AWS S3 vault.
+Your digital media company, **"Chinook Store,"** is operating under extreme existential risk. The entire company's intellectual property—a heavily linked relational database of Artists, Albums, and Tracks—is stored on a single physical server. If a hardware failure occurs, the business goes bankrupt instantly. You have been tasked with solving this critical infrastructure vulnerability by designing an automated, serverless "Cloud Bridge" that securely backs up every local file to an indestructible AWS S3 vault.
 
 ## Your Project Tasks:
 0. **The Data**: Download the [Chinook Relational Database](https://github.com/lerocha/chinook-database), which simulates an iTunes store with heavily linked Tables (Artists, Albums, and Tracks).
@@ -3251,7 +3251,7 @@ By focusing on this high-value career path, you've "upgraded" your future. You'v
 In this final milestone, you will use dbt to create a professional "Data Mart" that serves as the "Single Version of Truth" for your entire company. You will transform chaos into clarity.
 
 ## The Broad Business Problem
-Your e-commerce company, **"Owerri Omnichannel,"** is paralyzed by internal conflict. Every board meeting ends in an argument because Marketing, Finance, and Operations all bring different "Revenue" numbers. The company cannot secure its next round of funding because investors don't trust the data. You must solve this "Multiple Versions of Truth" crisis by using dbt to unify the raw data from Jumia, Konga, and the Website into a single, rigorously tested, and fully documented master data model.
+Your fast-food chain, **"Jaffle Shop,"** is paralyzed by internal conflict. Every board meeting ends in an argument because Marketing, Finance, and Operations all bring different "Revenue" numbers due to messy, duplicated customer and order records. The company cannot secure its next round of funding because investors don't trust the data. You must solve this "Multiple Versions of Truth" crisis by using dbt to unify the raw customers, orders, and payments tables into a single, rigorously tested, and fully documented master data model.
 
 ## Your Project Tasks:
 0. **The Data**: Fork the [Official Jaffle Shop dbt Tutorial Dataset on GitHub](https://github.com/dbt-labs/jaffle_shop) to use as your raw e-commerce data.
@@ -3529,7 +3529,7 @@ By using the Cloud Service, you maintain strict security. The data stays in the 
 In this final visualization project, you are stepping into the shoes of a Lead BI Developer. You must solve a broad, strategic problem: The company is drowning in data but starving for insights.
 
 ## The Broad Business Problem
-Your company, **"Atlas Global Logistics,"** operates in 40 countries. The executive board is frustrated. Currently, they receive 15 different Excel reports every Friday. It takes them hours to figure out if the company is actually making a profit, and by the time they do, the data is a week old. They are losing market share because they cannot make fast decisions about which regions to expand or cut.
+Your global manufacturing company, **"AdventureWorks,"** operates in 40 countries. The executive board is frustrated. Currently, they receive 15 different static Excel reports every Friday. It takes them hours to figure out if the company is actually making a profit, and by the time they do, the data is a week old. They are losing market share because they cannot make fast decisions about which products or regions to expand.
 
 ## Your Project Tasks:
 0. **The Data**: Download the [AdventureWorks Relational Database](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/adventure-works) (Sales, Customers, Products, and Territories).
