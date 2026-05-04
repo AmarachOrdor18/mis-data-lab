@@ -453,8 +453,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div class="res-top">
         <div class="xp-earned" id="xp-earned">⚡ +0 XP</div>
         <div class="res-score" id="res-score">0%</div>
-        <div class="res-grade" id="res-grade">—</div>
-        <div class="res-msg" id="res-msg">—</div>
+        <div class="res-grade" id="res-grade">-</div>
+        <div class="res-msg" id="res-msg">-</div>
       </div>
       <div class="res-grid">
         <div class="rg"><div class="rg-v" id="r-c">0</div><div class="rg-l">Correct</div></div>
@@ -518,7 +518,7 @@ const TOPICS = {
   ],
   'Apache Airflow': [
     'What is Airflow & Why it Exists',
-    'DAGs — The Big Picture',
+    'DAGs - The Big Picture',
     'Operators & Tasks',
     'Scheduling with Cron',
     'Task Dependencies',
@@ -529,12 +529,12 @@ const TOPICS = {
   ],
   'APIs & REST': [
     'What is an API? (Really)',
-    'HTTP Methods — GET, POST, PUT, DELETE',
+    'HTTP Methods - GET, POST, PUT, DELETE',
     'JSON: The Language of APIs',
     'API Keys & Authentication',
     'Pulling Data into Python',
     'Handling Errors & Timeouts',
-    'Pagination — Getting All the Data',
+    'Pagination - Getting All the Data',
     'APIs in Banking & Fintech',
     'Milestone Project'
   ],
@@ -632,7 +632,7 @@ function updateHdr() {
   document.getElementById('h-lessons').textContent = S.lessons;
   document.getElementById('h-xp').textContent = S.xp;
   document.getElementById('h-streak').textContent = S.streak;
-  const acc = S.qTotal ? Math.round(S.qCorrect/S.qTotal*100)+'%' : '—';
+  const acc = S.qTotal ? Math.round(S.qCorrect/S.qTotal*100)+'%' : '-';
   document.getElementById('h-acc').textContent = acc;
   updateProgress();
   updateTokenUI();
@@ -917,7 +917,7 @@ function renderLesson(text, isCached = false) {
 }
 
 function quickQuiz() {
-  switchTab('quiz');
+  nav('quiz');
   // Scroll to top of quiz panel
   document.getElementById('q-content').scrollIntoView({ behavior: 'smooth' });
   loadQ();
@@ -1180,7 +1180,7 @@ Return ONLY valid JSON (no markdown):
     renderQ(q);
   } catch(e) {
     console.error(e);
-    renderQ({topic, type:'technical', scenario:'', question:'Could not load question — click Next.', options:['A. Skip'], correct:0, explanation:'', mis_link:'', code:''});
+    renderQ({topic, type:'technical', scenario:'', question:'Could not load question - click Next.', options:['A. Skip'], correct:0, explanation:'', mis_link:'', code:''});
   }
   document.getElementById('q-loading').style.display = 'none';
   document.getElementById('q-content').style.display = 'block';
@@ -1192,7 +1192,7 @@ function renderQ(q) {
   document.getElementById('q-content').style.display = 'block';
 
   const badge = document.getElementById('q-badge');
-  badge.textContent = q.type === 'scenario' ? '🏢 SCENARIO — ' + q.topic : q.topic;
+  badge.textContent = q.type === 'scenario' ? '🏢 SCENARIO - ' + q.topic : q.topic;
   badge.className = 'q-badge ' + (q.type === 'scenario' ? 'qb-scen' : 'qb-norm');
 
   document.getElementById('q-text').textContent = q.question;

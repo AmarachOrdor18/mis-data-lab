@@ -674,6 +674,7 @@ This is your first major project. You are going to build an automated Python sys
 Your company, **"Lagos Retail Hub,"** has 5 branches. Each branch saves its sales in a messy text file. Currently, an intern spends 4 hours every Monday copying these into Excel. You are going to automate this.
 
 ## Your Project Tasks:
+0. **The Data**: Download the [Supermarket Sales Dataset from Kaggle](https://www.kaggle.com/datasets/aungpyaeap/supermarket-sales).
 1. **The Script**: Write a Python script that reads data from a list of dictionaries (simulating your branches).
 2. **The Cleaning**: Handle missing values (NaN) and incorrect data types (e.g., prices stored as strings like "₦5,000").
 3. **The Analytics**: Calculate Total Revenue, Average Order Value, and identify the top-performing branch.
@@ -1301,6 +1302,7 @@ In this project, you will build a complete ETL pipeline that handles the most cr
 Your startup, **"NaijaPay,"** is seeing "ghost transactions"-where a user says they were debited, but the payment gateway says they didn't receive the money. You need to build a pipeline that finds these mismatches automatically for the Finance VP.
 
 ## Your Project Tasks:
+0. **The Data**: Use the [Synthetic Financial Datasets for Fraud Detection on Kaggle](https://www.kaggle.com/datasets/ealaxi/paysim1) to simulate your transaction logs.
 1. **EXTRACT**: Create two CSV files (or lists) simulating "Our Database" and "Paystack Logs."
 2. **TRANSFORM**: Use Python to find transactions that exist in "Our Database" but are MISSING in "Paystack."
 3. **LOAD**: Save these "Exceptions" into a new CSV called \`refund_requests.csv\`.
@@ -1945,6 +1947,7 @@ Your company, **"Abuja Logistics,"** delivers 10,000 packages a day. The CEO wan
 If the data is missing or the pipeline fails, you need to know before the CEO wakes up.
 
 ## Your Project Tasks:
+0. **The Data**: Download the [Brazilian E-Commerce Public Dataset by Olist (Kaggle)](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) to simulate your logistics data.
 1. **The DAG**: Create a Python file representing your Airflow DAG.
 2. **The Sensor**: Add a task that "waits" for the daily delivery CSV to arrive.
 3. **The Transformation**: Add a task that calculates the KPIs for the CEO.
@@ -2908,6 +2911,7 @@ In this project, you will move your company's data security to the next level by
 Your company, **"Enugu Manufacturing,"** currently saves its daily production logs on a single computer in the factory. If that computer's hard drive fails (or the factory floods), 10 years of data is lost. You need to build a "Cloud Bridge" that pushes these logs to the AWS cloud automatically.
 
 ## Your Project Tasks:
+0. **The Data**: Use the massive [NYC Yellow Taxi Trip Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) to simulate the heavy logs you need to back up.
 1. **The Bucket**: Create a uniquely named S3 bucket in your AWS account (simulated in code).
 2. **The Script**: Write a Python script using \`boto3\` to detect a new log file in your local "Production" folder.
 3. **The Upload**: Automatically upload the file to S3 with a "Private" access policy.
@@ -3252,6 +3256,7 @@ In this final milestone, you will use dbt to create a professional "Data Mart" t
 Your company, **"Owerri Omnichannel,"** sells on Jumia, Konga, and their own website. Each platform uses different names for "Revenue." The CEO is confused. You need to build a dbt project that joins these three sources and creates one master table called \`dim_total_revenue\`.
 
 ## Your Project Tasks:
+0. **The Data**: Fork the [Official Jaffle Shop dbt Tutorial Dataset on GitHub](https://github.com/dbt-labs/jaffle_shop) to use as your raw e-commerce data.
 1. **The Models**: Create three dbt "Staging" models to clean the raw data from Jumia, Konga, and the Website.
 2. **The Mart**: Create a final "Mart" model that uses \`union all\` to combine them into one clean table.
 3. **The Testing**: Write at least two dbt tests (\`not_null\` and \`unique\`) to ensure the data is perfect.
