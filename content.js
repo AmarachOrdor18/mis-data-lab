@@ -1859,7 +1859,7 @@ response = requests.get(url)
 if response.status_code == 200:
     data = response.json()
     price = data['bpi']['USD']['rate']
-    print(f"Current Bitcoin Price: ${price}")
+    print(f"Current Bitcoin Price: \${price}")
 \`\`\`
 
 ## Real life: How companies use this
