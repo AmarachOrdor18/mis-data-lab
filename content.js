@@ -2,1043 +2,4068 @@
 const STATIC_CONTENT = {
   'Python': {
     'Variables & Data Types': {
-      'lesson': `## What is Variables & Data Types?
-Variables are like labeled containers where you store information. Data types are the "rules" for what kind of information fits in those containers-like numbers, text, or lists.
+      'lesson': `## Variables & Data Types
 
-## Why should you care as an MIS student?
-In an ERP system or a banking app, every piece of data has a type. An account balance must be a number (float), while a customer's name must be text (string). If you try to add a name to a balance, the system crashes. Understanding this is the foundation of data integrity.
+Every program you will ever write — whether it's a banking script, an ETL pipeline, or a machine learning model — starts with this: storing a piece of data and giving it a name. That's a variable. And every piece of data has a type, which determines what you can do with it.
 
-## How it actually works
-1. **Assignment**: You give a name to a value using \`=\`.
-2. **Strings**: Text wrapped in quotes, used for names, addresses, or IDs.
-3. **Integers/Floats**: Whole numbers or decimals, used for quantities and prices.
-4. **Booleans**: True/False values, used for "Is Active?" or "Is Paid?" checks.
+### What's actually happening in memory
 
-## Show me the code
+When you write \`balance = 25000\`, Python doesn't just "store the number." It creates an integer object in memory and binds the name \`balance\` to it. If you later write \`balance = balance + 5000\`, Python creates a *new* integer object (30000) and rebinds the name. The old object gets garbage collected. This is why Python variables behave differently from variables in lower-level languages — you're working with names and objects, not memory slots.
+
+### The core types you'll use daily
+
 \`\`\`python
-# Storing customer data
-customer_name = "Chidi Okafor"  # String
-account_balance = 25050.75      # Float
-is_premium_member = True         # Boolean
-transaction_count = 14           # Integer
+# Strings — any sequence of characters
+customer_name = "Adaeze Okonkwo"
+account_id = "NG-2024-00341"    # Even though it "looks" like a number, it's text
 
-# Quick calculation
-new_balance = account_balance + 5000
-print(f"Update: {customer_name} now has ₦{new_balance}")
+# Integers — whole numbers, no decimal point
+transaction_count = 47
+branch_code = 3
+
+# Floats — numbers with decimals
+account_balance = 125_450.75   # Python allows underscores for readability
+vat_rate = 0.075
+
+# Booleans — True or False, nothing else
+is_premium = True
+is_suspended = False
+
+# None — the absence of a value (not zero, not empty string, literally nothing)
+last_login = None
 \`\`\`
 
-## Real life: How companies use this
-A company like **Interswitch** processes millions of transactions. Their code must strictly define that a "Transaction ID" is a string but the "Amount" is a decimal. If a variable type is wrong, reconciliations fail, and money goes missing from reports.
+### Type conversion: when and how
 
-## Remember these three things
-- Variables store data; Data Types define what that data is.
-- Python is "smart" and guesses the type, but you must keep track of it.
-- Correct data types are the first step to accurate business reporting.`,
+Python won't automatically mix types in math operations. If you try to add a number to a string, it raises a \`TypeError\`. You have to convert explicitly.
+
+\`\`\`python
+# This is what you get from a CSV or API — numbers stored as strings
+raw_amount = "50000"
+raw_vat = "3750.00"
+
+# Wrong: "50000" + "3750.00" = "500003750.00" (string concatenation!)
+# Right: convert first
+amount = int(raw_amount)          # 50000
+vat = float(raw_vat)              # 3750.0
+total = amount + vat              # 53750.0
+
+# Going the other direction
+formatted = f"Total: ₦{total:,.2f}"   # "Total: ₦53,750.00"
+print(formatted)
+\`\`\`
+
+### f-strings: the professional way to format output
+
+\`\`\`python
+name = "Emeka"
+balance = 1_234_567.89
+tier = "Gold"
+
+# Basic
+print(f"Account holder: {name}")
+
+# Number formatting
+print(f"Balance: ₦{balance:,.2f}")      # ₦1,234,567.89
+print(f"Balance: ₦{balance:>15,.2f}")   # right-aligned in 15-char field
+
+# Expressions inside f-strings
+print(f"After 10% fee: ₦{balance * 0.9:,.2f}")
+\`\`\`
+
+### Checking types at runtime
+
+\`\`\`python
+value = "₦50,000"
+
+print(type(value))          # <class 'str'>
+print(isinstance(value, str))   # True
+print(isinstance(value, float)) # False
+
+# Checking before you operate
+if isinstance(value, str):
+    # clean it before converting
+    cleaned = float(value.replace("₦", "").replace(",", ""))
+    print(cleaned)   # 50000.0
+\`\`\`
+
+### Where this breaks in real data work
+
+The most common real-world bug in data engineering is a number stored as a string. It loads fine, looks fine, and then silently produces wrong results — like string concatenation instead of addition.
+
+\`\`\`python
+# Looks correct but wrong
+sales = ["5000", "12000", "8000"]
+total = sum(sales)        # TypeError: unsupported operand type(s)
+
+# Or worse — this doesn't crash but gives wrong output
+a = "100"
+b = "200"
+print(a + b)              # "100200" — not 300
+
+# The fix
+sales = [float(s) for s in sales]
+total = sum(sales)        # 25000.0
+\`\`\`
+
+### None vs zero vs empty string
+
+These three are different things. Confusing them causes silent bugs in financial calculations.
+
+\`\`\`python
+balance_a = 0       # The customer exists and has zero balance
+balance_b = None    # We don't know the balance — data is missing
+balance_c = ""      # Empty string — wrong type for a financial field
+
+# Checking for None
+if balance_b is None:
+    print("Missing data — cannot calculate")
+elif balance_b == 0:
+    print("Account exists but is empty")
+\`\`\`
+
+### Type annotations (how production code looks)
+
+In professional codebases, functions declare what types they expect. You won't be forced to do this, but you will see it constantly.
+
+\`\`\`python
+def calculate_vat(amount: float, rate: float = 0.075) -> float:
+    return amount * rate
+
+def format_naira(value: float) -> str:
+    return f"₦{value:,.2f}"
+
+# Calling it
+tax = calculate_vat(50000)
+print(format_naira(tax))    # ₦3,750.00
+\`\`\``,
+
       'scenario': `## Scenario: The Corrupted Payroll Export
-**The situation:** You are working at a fintech startup in Lagos. The HR department just exported a CSV of employee bonuses, but when you try to calculate the total payout, the system throws a "TypeError."
 
-**What you're seeing:**
-The system says: \`TypeError: can only concatenate str (not "float") to str\`.
-Looking at the data, the bonus column looks like this: \`"₦50,000.00"\`.
+**Context:** You're the data analyst at a mid-size fintech. Every Friday, Payroll exports a CSV from their HR system. Your job is to read that file, calculate the total payout for the finance director, and flag any anomalies.
+
+This week, the script throws a \`TypeError\` before it even gets to the calculations. The error message is:
+
+\`\`\`
+TypeError: unsupported operand type(s) for +: 'int' and 'str'
+\`\`\`
+
+**The raw data looks like this:**
+
+\`\`\`
+employee_id,name,base_salary,bonus
+E001,Chidi Okafor,"₦180,000.00","₦25,000"
+E002,Ngozi Adeyemi,"₦220,000","₦0"
+E003,Fatima Bello,175000,None
+\`\`\`
+
+**What you're dealing with:**
+- Row 1 and 2: currency symbol embedded in the number field
+- Row 2: "₦0" — a string, not a zero
+- Row 3: salary is a clean number but bonus is the string "None" not Python's \`None\`
+- The mix of formats is causing your \`sum()\` to fail
 
 **Your job:**
-1. Identify why the math is failing.
-2. Figure out how to strip the "₦" and the commas.
-3. Convert the resulting text into a proper Float so you can sum it up.
 
-**Code to look at:**
+1. Write a cleaning function that takes any salary string and returns a clean float:
 \`\`\`python
-bonus_text = "₦50,000.00"
-# Current failing line:
-# total = bonus_text + 500.0 
+def clean_currency(value) -> float:
+    if value is None or str(value).strip() == "None":
+        return 0.0
+    cleaned = str(value).replace("₦", "").replace(",", "").strip()
+    return float(cleaned)
 \`\`\`
 
-**Think through these:**
-- Why did the export include the currency symbol inside the data field?
-- How does "dirty data" like this affect automated financial reports?
-- In MIS, why is it better to store raw numbers and handle formatting in the UI layer?
+2. Apply it to both columns and compute:
+   - Total base salary payout
+   - Total bonus payout
+   - Combined total with 7.5% employer pension contribution
 
-**What the solution looks like:**
-A senior engineer would use \`.replace()\` to remove the currency symbol and commas, then use the \`float()\` function to convert the cleaned text into a number. This turns "dirty" text back into usable financial data for the business.`,
+3. Flag any employee where salary is below ₦150,000 (potential data entry error).
+
+**Think about this:** The root cause is that the HR system formats display values for humans, not machines. In a well-designed system, the database stores a raw float (175000.0), and the UI adds the ₦ symbol. Your cleaning function is compensating for a system design flaw — which you'll encounter constantly in real data work.`,
+
       'quizzes': [
         {
-          'question': "Which data type would you use to store a customer's 'Email Address' in a marketing database?",
-          'options': ["A. Integer", "B. Float", "C. String", "D. Boolean"],
-          'correct': 2,
-          'explanation': "Email addresses are text-based, so a String is the correct choice. Integers and Floats are for numbers you do math with."
+          'question': "What does Python actually create when you write `x = 42`?",
+          'options': [
+            "A. A memory slot named x containing the bits for 42",
+            "B. An integer object in memory, with the name 'x' bound to that object",
+            "C. A string 'x' with the value '42'",
+            "D. A reference to the number 42 stored in a global registry"
+          ],
+          'correct': 1,
+          'explanation': "Python uses a name-binding model. The integer object 42 is created first, then the name 'x' is bound to it. This matters when you reassign — the old object can be garbage collected if nothing else references it."
         },
         {
-          'question': "If you see the error 'TypeError: unsupported operand type(s) for +: int and str', what happened?",
-          'options': ["A. The variable name is wrong", "B. You tried to add a number to a piece of text", "C. The database is offline", "D. The internet is slow"],
+          'question': "What does this code print?",
+          'code': "a = '100'\nb = '200'\nprint(a + b)",
+          'options': ["A. 300", "B. '300'", "C. 100200", "D. TypeError"],
+          'correct': 2,
+          'explanation': "Both a and b are strings. The + operator on strings is concatenation, not addition. It silently joins them into '100200'. This is one of the most dangerous silent bugs in data engineering."
+        },
+        {
+          'question': "Which line of code will raise a TypeError?",
+          'code': "name = 'Kemi'\nage = 28\nresult_a = name + ' is here'\nresult_b = str(age) + ' years'\nresult_c = name + age",
+          'options': [
+            "A. result_a = name + ' is here'",
+            "B. result_b = str(age) + ' years'",
+            "C. result_c = name + age",
+            "D. None of them — Python auto-converts"
+          ],
+          'correct': 2,
+          'explanation': "result_c tries to add a string ('Kemi') to an integer (28). Python does not auto-convert. You must explicitly write str(age) or use an f-string."
+        },
+        {
+          'question': "You receive a column from a CSV where all values look like '₦1,250,000.00'. What is the correct sequence of operations to convert one value to a usable float?",
+          'options': [
+            "A. float(value)",
+            "B. int(value.replace('₦', ''))",
+            "C. float(value.replace('₦', '').replace(',', ''))",
+            "D. value.strip('₦')"
+          ],
+          'correct': 2,
+          'explanation': "You need to remove both the ₦ symbol and the comma separators before float() can parse it. Removing only the symbol still leaves commas, which float() cannot handle."
+        },
+        {
+          'question': "What is the difference between `balance = 0` and `balance = None`?",
+          'options': [
+            "A. None and 0 are the same in Python",
+            "B. balance = 0 means the account exists with an empty balance; balance = None means the data is missing or unknown",
+            "C. None is faster than 0 for calculations",
+            "D. 0 is for integers, None is for strings"
+          ],
           'correct': 1,
-          'explanation': "This error happens when you try to perform math between a number and text. Python doesn't know how to 'add' a number to a word."
+          'explanation': "This is a critical data quality distinction. Zero means 'we know the value and it is zero.' None means 'we don't have this data.' Treating missing data as zero leads to incorrect totals in financial reports."
         }
       ]
     },
+
     'Lists, Dicts & Loops': {
-      'lesson': `## What is Lists, Dicts & Loops?
-Lists are ordered collections of items (like a shopping list). Dictionaries (Dicts) are pairs of Keys and Values (like a contact list where a Name points to a Number). Loops are the "engines" that go through these collections one by one.
+      'lesson': `## Lists, Dicts & Loops
 
-## Why should you care as an MIS student?
-Business data is rarely just one number; it's a list of customers, a dictionary of product prices, or a loop that processes every invoice in a month. This is how you automate repetitive tasks.
+If variables are single containers, lists and dictionaries are the shelves and filing cabinets. Almost every dataset you work with in data engineering is fundamentally a collection of items — a list of transactions, a dictionary of customer records, a list of dictionaries representing rows in a table.
 
-## How it actually works
-1. **Lists**: \`['Apple', 'Samsung', 'Google']\`. Good for simple sequences.
-2. **Dicts**: \`{'ID': 101, 'Name': 'Kuda'}\`. Good for structured records.
-3. **For Loops**: "For every item in this list, do this action."
+### Lists: ordered, mutable sequences
 
-## Show me the code
 \`\`\`python
-# A list of daily sales
-sales = [1200, 4500, 3200, 8000]
-total_revenue = 0
+# Creating lists
+daily_sales = [12500, 44000, 8200, 67000, 31500]
+branch_names = ["Lagos", "Abuja", "Kano", "PH"]
+mixed = [101, "Kuda", True, 45000.0]   # valid, but avoid in real data
 
-# A loop to calculate total
-for sale in sales:
-    total_revenue += sale
+# Indexing (zero-based)
+print(daily_sales[0])    # 12500 — first element
+print(daily_sales[-1])   # 31500 — last element
+print(daily_sales[-2])   # 67000 — second from last
 
-# A dictionary for a specific branch
-branch_info = {
-    "name": "Ikeja Branch",
-    "manager": "Mrs. Adeyemi",
+# Slicing: [start:stop:step] — stop is exclusive
+print(daily_sales[1:4])  # [44000, 8200, 67000]
+print(daily_sales[:3])   # [12500, 44000, 8200]
+print(daily_sales[::2])  # [12500, 8200, 31500] — every other element
+\`\`\`
+
+### Mutating lists
+
+\`\`\`python
+transactions = [500, 1200, 800]
+
+transactions.append(2500)           # add to end → [500, 1200, 800, 2500]
+transactions.insert(1, 750)         # insert at index 1 → [500, 750, 1200, 800, 2500]
+transactions.remove(800)            # remove first occurrence of 800
+popped = transactions.pop()         # removes and returns last item → 2500
+transactions.sort(reverse=True)     # sort descending in-place
+print(len(transactions))            # count of items
+\`\`\`
+
+### Dictionaries: key-value storage
+
+\`\`\`python
+# A dictionary is like a row in a database table
+customer = {
+    "id": "C-0042",
+    "name": "Amara Eze",
+    "balance": 250_000.0,
+    "tier": "Gold",
     "active": True
 }
 
-print(f"{branch_info['name']} total revenue: ₦{total_revenue}")
+# Accessing values
+print(customer["name"])               # "Amara Eze"
+print(customer.get("email"))          # None — safe access, no KeyError
+print(customer.get("email", "N/A"))   # "N/A" — with a default
+
+# Modifying
+customer["balance"] += 10_000
+customer["email"] = "amara@example.com"   # add new key
+del customer["tier"]                       # remove a key
+
+# Iterating over a dict
+for key, value in customer.items():
+    print(f"{key}: {value}")
 \`\`\`
 
-## Real life: How companies use this
-**Jumia** uses loops and dictionaries for their inventory. When you search for a phone, the system loops through a list of thousands of products. Each product is a dictionary containing its price, specs, and stock level. Without loops, an employee would have to check each item manually.
+### For loops: from basic to production patterns
 
-## Remember these three things
-- Lists keep things in order; Dicts keep things labeled.
-- Loops save you hours of manual work by repeating code.
-- Combining these three allows you to process entire business datasets at once.`,
+\`\`\`python
+# Basic loop over a list
+totals = [5000, 12000, 3400, 8800]
+running_total = 0
+for amount in totals:
+    running_total += amount
+print(f"Total: ₦{running_total:,}")
+
+# enumerate — when you need the index too
+for i, amount in enumerate(totals):
+    print(f"Transaction {i+1}: ₦{amount:,}")
+
+# zip — looping two lists in parallel
+branches = ["Lagos", "Abuja", "Kano"]
+revenues = [450_000, 280_000, 190_000]
+for branch, revenue in zip(branches, revenues):
+    print(f"{branch}: ₦{revenue:,}")
+\`\`\`
+
+### List comprehensions: concise and fast
+
+List comprehensions are not just "shorter loops" — they are significantly faster than regular for loops for building lists. You'll see them constantly in production code.
+
+\`\`\`python
+amounts = [5000, 500, 120000, 85000, 300, 42000]
+
+# Regular loop version
+large_transactions = []
+for a in amounts:
+    if a > 10000:
+        large_transactions.append(a)
+
+# List comprehension — same result, one line
+large_transactions = [a for a in amounts if a > 10000]
+# [120000, 85000, 42000]
+
+# With transformation
+discounted = [a * 0.9 for a in amounts if a > 50000]
+# [108000.0, 76500.0]
+
+# Dict comprehension
+branch_lookup = {name: rev for name, rev in zip(branches, revenues)}
+# {"Lagos": 450000, "Abuja": 280000, "Kano": 190000}
+\`\`\`
+
+### Lists of dictionaries: the real data structure
+
+In practice, your data almost always comes as a list of dictionaries — which is exactly what a Pandas DataFrame is under the hood, and exactly what an API returns as JSON.
+
+\`\`\`python
+transactions = [
+    {"id": "T001", "branch": "Lagos", "amount": 45000, "status": "settled"},
+    {"id": "T002", "branch": "Abuja", "amount": 12000, "status": "pending"},
+    {"id": "T003", "branch": "Lagos", "amount": 89000, "status": "settled"},
+    {"id": "T004", "branch": "Kano",  "amount": 3000,  "status": "failed"},
+]
+
+# Filter settled transactions
+settled = [t for t in transactions if t["status"] == "settled"]
+
+# Total for Lagos branch
+lagos_total = sum(t["amount"] for t in transactions if t["branch"] == "Lagos")
+print(f"Lagos total: ₦{lagos_total:,}")    # ₦134,000
+
+# Group by branch — build a dict of totals
+branch_totals = {}
+for t in transactions:
+    branch = t["branch"]
+    branch_totals[branch] = branch_totals.get(branch, 0) + t["amount"]
+# {"Lagos": 134000, "Abuja": 12000, "Kano": 3000}
+\`\`\`
+
+### Nested data structures
+
+\`\`\`python
+# A company structure: dict of dicts
+company = {
+    "Lagos": {
+        "manager": "Mrs. Adeyemi",
+        "revenue": 450_000,
+        "staff_count": 12
+    },
+    "Abuja": {
+        "manager": "Mr. Okafor",
+        "revenue": 280_000,
+        "staff_count": 8
+    }
+}
+
+# Accessing nested data
+print(company["Lagos"]["manager"])    # "Mrs. Adeyemi"
+
+# Looping nested
+for branch, info in company.items():
+    print(f"{branch} — Manager: {info['manager']}, Revenue: ₦{info['revenue']:,}")
+\`\`\``,
+
       'scenario': `## Scenario: The Bulk Discount Automation
-**The situation:** You work for a large retail distributor in Onitsha. The manager wants to apply a 10% discount to every item in a shipment list that costs more than ₦10,000. There are 500 items.
 
-**What you're seeing:**
-A list of prices. Some are low, some are high. Doing this in Excel takes time and is prone to human error if items are added later.
+**Context:** You work for a wholesale distributor. Pricing rules change quarterly, and the pricing team is manually updating a 500-row spreadsheet every time. They've asked you to automate it.
+
+**Current rules:**
+- Items over ₦10,000: apply 10% discount
+- Items over ₦50,000: apply 15% discount (the higher rule wins)
+- Items in the "clearance" category: apply 25% regardless
+
+**The data:**
+\`\`\`python
+inventory = [
+    {"sku": "P001", "name": "Laptop Stand", "price": 8500,  "category": "office"},
+    {"sku": "P002", "name": "Monitor",      "price": 85000, "category": "electronics"},
+    {"sku": "P003", "name": "USB Hub",      "price": 3200,  "category": "clearance"},
+    {"sku": "P004", "name": "Desk Chair",   "price": 55000, "category": "furniture"},
+    {"sku": "P005", "name": "Webcam",       "price": 12500, "category": "clearance"},
+]
+\`\`\`
 
 **Your job:**
-1. Create a loop to look at each price.
-2. Use an "If" statement to find prices over 10,000.
-3. Update those specific prices in the list.
 
-**Code to look at:**
-\`\`\`python
-prices = [5000, 12000, 8500, 25000]
-# How do we loop and change only the big ones?
+1. Write a function \`apply_discount(item)\` that takes a single item dict and returns the discounted price.
+2. Use a list comprehension to build a new list with a "discounted_price" key added to each item.
+3. Calculate: total original value, total discounted value, and total savings.
+4. Print the results with proper formatting.
+
+**The output you're aiming for:**
+\`\`\`
+=== PRICING REPORT ===
+P001 Laptop Stand     ₦8,500.00  → ₦8,500.00   (0% off)
+P002 Monitor          ₦85,000.00 → ₦72,250.00  (15% off)
+P003 USB Hub          ₦3,200.00  → ₦2,400.00   (25% off)
+P004 Desk Chair       ₦55,000.00 → ₦46,750.00  (15% off)
+P005 Webcam           ₦12,500.00 → ₦9,375.00   (25% off)
+
+Original Total:    ₦164,200.00
+After Discounts:   ₦139,275.00
+Total Savings:     ₦24,925.00
 \`\`\`
 
-**Think through these:**
-- Why is it better to automate this rather than doing it manually in a spreadsheet?
-- What happens if the discount rule changes to 15% tomorrow? How fast can you fix it?
-- How does this help maintain "one version of truth" in your pricing data?
+The key insight is that the pricing logic lives in one function. When the rules change next quarter, you change one function — not 500 rows in a spreadsheet.`,
 
-**What the solution looks like:**
-A data analyst would write a short \`for\` loop that checks each item. If the item qualifies, the code does the math and updates the value. This ensures the 10% discount is applied perfectly to every single eligible item in seconds.`,
       'quizzes': [
         {
-          'question': "Which data structure is best for storing a user's profile where you need to access their 'Age' by its label?",
-          'options': ["A. List", "B. Dictionary", "C. Integer", "D. String"],
+          'question': "What is the output of this code?",
+          'code': "prices = [100, 200, 300, 400]\nprint(prices[-2])",
+          'options': ["A. 200", "B. 300", "C. 400", "D. IndexError"],
           'correct': 1,
-          'explanation': "Dictionaries use 'Key-Value' pairs, making it easy to look up data by a label (the key) like 'Age'."
+          'explanation': "Negative indexing counts from the end. prices[-1] is 400, prices[-2] is 300. This is useful when you need the last or second-to-last item without knowing the list length."
         },
         {
-          'question': "What is the primary purpose of a 'For Loop' in data engineering?",
-          'options': ["A. To store a single value", "B. To repeat an action for every item in a collection", "C. To delete a database", "D. To change a variable name"],
+          'question': "What does `.get()` on a dictionary do that direct bracket access `[]` does not?",
+          'options': [
+            "A. It returns the value faster",
+            "B. It returns None (or a default) instead of raising a KeyError if the key doesn't exist",
+            "C. It creates the key if it doesn't exist",
+            "D. It only works on nested dictionaries"
+          ],
           'correct': 1,
-          'explanation': "Loops are used to iterate through collections (lists, dicts, rows) and perform actions on each item automatically."
+          'explanation': "customer['email'] raises a KeyError if 'email' is not in the dict. customer.get('email') returns None. customer.get('email', 'N/A') returns 'N/A'. In data pipelines where fields may be missing, .get() prevents crashes."
+        },
+        {
+          'question': "What does this list comprehension produce?",
+          'code': "amounts = [500, 8000, 12000, 3000, 45000]\nresult = [a for a in amounts if a > 5000]",
+          'options': [
+            "A. [8000, 12000, 45000]",
+            "B. [500, 3000]",
+            "C. True, True, True",
+            "D. [8000, 12000, 3000, 45000]"
+          ],
+          'correct': 0,
+          'explanation': "The comprehension filters the list to only include values greater than 5000. 500 and 3000 are excluded."
+        },
+        {
+          'question': "You have a list of transaction dicts and want to total amounts for a specific branch. Which approach is correct?",
+          'code': "txns = [\n  {'branch': 'Lagos', 'amount': 5000},\n  {'branch': 'Abuja', 'amount': 3000},\n  {'branch': 'Lagos', 'amount': 8000}\n]",
+          'options': [
+            "A. sum(txns['amount'] for t in txns if t['branch'] == 'Lagos')",
+            "B. sum(t['amount'] for t in txns if t['branch'] == 'Lagos')",
+            "C. txns.sum('amount', where='Lagos')",
+            "D. for t in txns: sum(t['amount'])"
+          ],
+          'correct': 1,
+          'explanation': "A generator expression inside sum() is the idiomatic Python approach. Option A has a bug — it references 'txns' instead of 't' inside the loop variable."
+        },
+        {
+          'question': "What is the difference between `list.append(x)` and `list.insert(0, x)`?",
+          'options': [
+            "A. There is no difference",
+            "B. append adds x to the end; insert(0, x) adds x to the beginning",
+            "C. append is for strings, insert is for numbers",
+            "D. insert is faster than append"
+          ],
+          'correct': 1,
+          'explanation': "append always adds to the end in O(1) time. insert(0, x) adds to the beginning but must shift every existing element, making it O(n) — much slower for large lists."
         }
       ]
     },
+
     'Functions': {
-      'lesson': `## What is a Function?
-A function is a reusable block of code that performs a specific task. Think of it as a "Recipe." Instead of writing the same steps every time you want to make jollof rice, you just call the "Jollof Recipe."
+      'lesson': `## Functions
 
-## Why should you care as an MIS student?
-In business, we repeat tasks constantly. Calculating tax, formatting currency, or checking if an account is overdrawn. If you write that logic 20 times and the tax rate changes, you have to fix it 20 times. With a function, you fix it once.
+A function is a named, reusable block of code that takes inputs, performs a defined task, and optionally returns an output. The reason functions exist isn't just to "avoid repetition" — it's to isolate logic so that a change in business rules means changing one place, not hunting across a thousand lines of code.
 
-## How it actually works
-1. **Definition**: Use \`def\` to name your function.
-2. **Parameters**: The "inputs" the function needs (like the amount to tax).
-3. **Logic**: The code inside that does the work.
-4. **Return**: Sending the final answer back to the main program.
+### The anatomy of a function
 
-## Show me the code
 \`\`\`python
-def calculate_vat(amount):
-    """Calculates 7.5% VAT for Nigerian business"""
-    vat_rate = 0.075
-    return amount * vat_rate
+def calculate_vat(amount: float, rate: float = 0.075) -> float:
+    """
+    Calculate VAT on a given amount.
+    Nigeria's standard VAT rate is 7.5%.
+    """
+    if amount < 0:
+        raise ValueError(f"Amount cannot be negative: {amount}")
+    return amount * rate
 
-# Using the function
-order_total = 50000
-tax = calculate_vat(order_total)
-print(f"Total: ₦{order_total} | VAT: ₦{tax}")
+# Calling it
+vat = calculate_vat(50000)          # uses default rate → 3750.0
+vat_uk = calculate_vat(50000, 0.20) # custom rate → 10000.0
 \`\`\`
 
-## Real life: How companies use this
-**Flutterwave** uses functions for every transaction. They have a function called \`process_payment(card_info, amount)\`. Whether you are paying for a movie ticket or a flight, the system calls that same "recipe" every time. This makes their system reliable and easy to update.
+### Parameters: positional, keyword, default
 
-## Remember these three things
-- Functions stop you from repeating yourself (DRY principle).
-- They make your code organized and easy for others to read.
-- Inputs go in (parameters), an answer comes out (return).`,
+\`\`\`python
+def generate_report(branch: str, date: str, include_vat: bool = True) -> str:
+    vat_note = "incl. VAT" if include_vat else "excl. VAT"
+    return f"Report for {branch} on {date} ({vat_note})"
+
+# Positional — order matters
+generate_report("Lagos", "2024-01-15")
+
+# Keyword — order doesn't matter
+generate_report(date="2024-01-15", branch="Abuja")
+
+# Override the default
+generate_report("Kano", "2024-01-15", include_vat=False)
+\`\`\`
+
+### *args and **kwargs
+
+When you don't know ahead of time how many arguments a function will receive:
+
+\`\`\`python
+def total_transactions(*amounts: float) -> float:
+    """Accept any number of transaction amounts."""
+    return sum(amounts)
+
+total_transactions(5000, 12000, 8500)            # 25500.0
+total_transactions(500, 200)                      # 700.0
+
+# **kwargs — variable keyword arguments
+def create_customer_record(**fields):
+    return {k: v for k, v in fields.items()}
+
+record = create_customer_record(name="Chidi", tier="Gold", balance=100_000)
+# {"name": "Chidi", "tier": "Gold", "balance": 100000}
+\`\`\`
+
+### Return values
+
+A function can return any Python object — a number, a string, a list, a dictionary, or even another function. If you don't write a \`return\` statement, the function returns \`None\` silently, which is a common source of bugs.
+
+\`\`\`python
+def analyze_transactions(transactions: list) -> dict:
+    """Returns a summary dictionary — not just a single number."""
+    amounts = [t["amount"] for t in transactions]
+    return {
+        "count": len(amounts),
+        "total": sum(amounts),
+        "average": sum(amounts) / len(amounts) if amounts else 0,
+        "max": max(amounts) if amounts else 0,
+        "min": min(amounts) if amounts else 0,
+    }
+
+txns = [
+    {"id": "T1", "amount": 5000},
+    {"id": "T2", "amount": 32000},
+    {"id": "T3", "amount": 8500},
+]
+
+summary = analyze_transactions(txns)
+print(f"Total: ₦{summary['total']:,}")    # ₦45,500
+print(f"Avg:   ₦{summary['average']:,.2f}")
+\`\`\`
+
+### Lambda functions
+
+Lambdas are anonymous one-line functions. They're most useful as arguments to sorting or filtering operations.
+
+\`\`\`python
+transactions = [
+    {"id": "T1", "amount": 32000},
+    {"id": "T2", "amount": 8500},
+    {"id": "T3", "amount": 67000},
+]
+
+# Sort by amount
+sorted_txns = sorted(transactions, key=lambda t: t["amount"])
+# Sort descending
+sorted_txns = sorted(transactions, key=lambda t: t["amount"], reverse=True)
+
+# Filter with a lambda (less common — list comp is usually cleaner)
+large = list(filter(lambda t: t["amount"] > 20000, transactions))
+\`\`\`
+
+### Variable scope
+
+\`\`\`python
+tax_rate = 0.075   # module-level (global)
+
+def calculate_total(subtotal: float) -> float:
+    # Reads the global tax_rate, but does not modify it
+    tax = subtotal * tax_rate   # tax_rate is accessible here
+    return subtotal + tax
+
+# If you need to modify a global (generally avoid this pattern)
+count = 0
+def increment():
+    global count
+    count += 1
+\`\`\`
+
+### Functions as arguments (higher-order functions)
+
+\`\`\`python
+def apply_rule(transactions: list, rule_func) -> list:
+    """Apply any rule function to filter transactions."""
+    return [t for t in transactions if rule_func(t)]
+
+# Define different rules
+def is_large(t):
+    return t["amount"] > 50000
+
+def is_suspicious(t):
+    return t["amount"] > 100000 and t.get("hour", 12) < 5
+
+# Use them interchangeably
+large = apply_rule(transactions, is_large)
+suspicious = apply_rule(transactions, is_suspicious)
+\`\`\`
+
+### The DRY principle in practice
+
+The real cost of duplicated logic isn't the lines of code — it's the maintenance. When a tax rate changes from 7.5% to 10%, if that logic is in 20 places you will miss one. That one becomes a financial discrepancy nobody can explain.
+
+\`\`\`python
+# Bad: logic duplicated in 3 places
+# In script A: total = amount * 1.075
+# In script B: total = amount + (amount * 0.075)
+# In script C: vat = amount / 13.33 * 1  # someone's creative interpretation
+
+# Good: one place
+VAT_RATE = 0.075
+
+def add_vat(amount: float) -> float:
+    return amount * (1 + VAT_RATE)
+
+# When rate changes, change VAT_RATE — everything else updates automatically
+\`\`\``,
+
       'scenario': `## Scenario: The Messy Discount Logic
-**The situation:** Your company has a rule: "Give 5% discount if the customer is premium, and another 2% if they spend over ₦100,000." This logic is currently copy-pasted in 10 different scripts.
 
-**What you're seeing:**
-The company just changed the premium discount to 7%. You now have to find every script and change the number manually. You've already missed two scripts, and customers are complaining.
+**Context:** The company has pricing rules that were written by different people at different times. The rules are now spread across 8 scripts, inconsistently implemented, and the Finance team has flagged a discrepancy — some customers got 2% more discount than others for identical orders.
 
-**Your job:**
-1. Write one function called \`get_final_price(price, is_premium)\`.
-2. Put all the "if/else" logic inside it.
-3. Update all your scripts to just call this one function.
-
-**Code to look at:**
+**Current state (the mess):**
 \`\`\`python
-def get_final_price(price, is_premium):
-    discount = 0
-    if is_premium:
-        discount += 0.07 # Updated rate
-    if price > 100000:
-        discount += 0.02
-    return price * (1 - discount)
+# Script A
+if is_premium: discount = 0.07
+if amount > 100000: discount += 0.02
+final = amount * (1 - discount)
+
+# Script B
+if customer_tier == "premium": disc = 0.07
+elif customer_tier == "gold": disc = 0.05
+final = amount - (amount * disc)   # forgot the bulk discount entirely
+
+# Script C
+vip_disc = 0.07 if vip else 0
+big_disc = 0.02 if amount > 100000 else 0
+result = amount * (1 - vip_disc - big_disc)   # double-counting issue
 \`\`\`
 
-**Think through these:**
-- How does putting logic in one place reduce "Human Error"?
-- Why is a function name like \`calculate_tax\` better than just writing math directly?
-- How does this help a team of 5 engineers work on the same app?
+**Your job:**
 
-**What the solution looks like:**
-A senior MIS analyst would "encapsulate" this logic. By having one source of truth for the discount math, the whole company stays consistent. If the rule changes again, you change one line of code and the entire system is updated instantly.`,
+1. Write a single authoritative function \`calculate_final_price(amount, tier, quantity=1)\` that implements the correct logic:
+   - "standard" tier: 0% base discount
+   - "gold" tier: 5% base discount
+   - "premium" tier: 7% base discount
+   - Order over ₦100,000: additional 2% (stacks with tier discount)
+   - Quantity >= 100 units: flat 3% bulk discount (does not stack with other discounts — takes effect only if higher than combined)
+
+2. The function should return a dict: \`{"original": ..., "discount_pct": ..., "final": ...}\`
+
+3. Write at least 4 test cases that confirm the logic is correct before you replace all 8 scripts.
+
+This is a real pattern in MIS work — not writing new features, but consolidating fragmented business logic into a single, testable source of truth.`,
+
       'quizzes': [
         {
-          'question': "Look at this code. What will it print?",
-          'code': "def greet(name):\n    return 'Hello ' + name\n\nprint(greet('Amarachi'))",
-          'options': ["A. Hello name", "B. Hello Amarachi", "C. Amarachi", "D. Error"],
+          'question': "What does this function return when called as `result = greet()`?",
+          'code': "def greet(name='World'):\n    message = 'Hello, ' + name + '!'\n\nresult = greet()\nprint(result)",
+          'options': ["A. 'Hello, World!'", "B. None", "C. ''", "D. NameError"],
           'correct': 1,
-          'explanation': "The function takes 'Amarachi' as the 'name' parameter and returns the string 'Hello Amarachi'."
+          'explanation': "The function builds the message string but never returns it. Without a return statement, Python functions implicitly return None. This is a very common bug — don't forget the 'return' keyword."
+        },
+        {
+          'question': "What will this print?",
+          'code': "def add_fee(amount, fee=50):\n    return amount + fee\n\nprint(add_fee(1000))\nprint(add_fee(1000, 100))",
+          'options': [
+            "A. 1050 then 1100",
+            "B. 1000 then 1000",
+            "C. 1050 then 1050",
+            "D. TypeError on the second call"
+          ],
+          'correct': 0,
+          'explanation': "The first call uses the default fee=50, so 1000+50=1050. The second call passes fee=100 explicitly, overriding the default, so 1000+100=1100."
+        },
+        {
+          'question': "What is wrong with this code?",
+          'code': "total = 0\n\ndef add_transaction(amount):\n    total = total + amount\n    return total\n\nadd_transaction(5000)",
+          'options': [
+            "A. Nothing is wrong",
+            "B. UnboundLocalError — Python sees 'total = ...' inside the function and treats 'total' as local, but it's used before assignment",
+            "C. total will be updated to 5000 globally",
+            "D. The function should use *args"
+          ],
+          'correct': 1,
+          'explanation': "When Python sees any assignment to a variable inside a function (total = total + amount), it marks that variable as local to the function. Then the right side of the assignment tries to read 'total' before it's been assigned locally — hence UnboundLocalError. Fix: either pass total as a parameter, or declare 'global total' (though global state is usually the wrong solution)."
+        },
+        {
+          'question': "What is the output of this code?",
+          'code': "def process(items, multiplier=2):\n    return [x * multiplier for x in items]\n\nprint(process([1, 2, 3]))\nprint(process([1, 2, 3], 3))",
+          'options': [
+            "A. [2, 4, 6] then [3, 6, 9]",
+            "B. [1, 2, 3] then [1, 2, 3]",
+            "C. [2, 4, 6] then [2, 4, 6]",
+            "D. TypeError"
+          ],
+          'correct': 0,
+          'explanation': "First call uses default multiplier=2: [1*2, 2*2, 3*2] = [2, 4, 6]. Second call uses multiplier=3: [1*3, 2*3, 3*3] = [3, 6, 9]."
+        },
+        {
+          'question': "Which is the correct way to call this function for the Abuja branch?",
+          'code': "def get_branch_report(branch, date, currency='NGN'):\n    return f'{branch} report for {date} in {currency}'",
+          'options': [
+            "A. get_branch_report('2024-01-01', 'Abuja')",
+            "B. get_branch_report(date='2024-01-01', branch='Abuja')",
+            "C. get_branch_report('Abuja', currency='USD', date='2024-01-01')",
+            "D. Both B and C are correct"
+          ],
+          'correct': 3,
+          'explanation': "Keyword arguments can be passed in any order. B and C are both valid. A is wrong because the first positional parameter is 'branch', so it would set branch='2024-01-01'."
         }
       ]
     },
+
     'Reading & Writing Files': {
-      'lesson': `## What is Reading & Writing Files?
-Data engineering is mostly about moving data from point A to point B. This often involves opening files (Reading) and saving results (Writing), usually in CSV, JSON, or TXT formats.
+      'lesson': `## Reading & Writing Files
 
-## Why should you care as an MIS student?
-Not all data is in a database. Many bank reports, inventory lists, and payroll exports are sent as CSV files. If you can't automate reading these, you'll spend your whole career copy-pasting into Excel.
+Data engineering starts with files. Before you can analyze anything in Pandas or load it into a database, you need to read it from wherever it lives. Mastering file I/O — and understanding the failure modes — is the difference between a script that works on your laptop and a pipeline that runs reliably at 2 AM.
 
-## How it actually works
-1. **Open**: Python "grabs" the file from your computer.
-2. **Mode**: Tell Python if you want to 'r' (read), 'w' (write), or 'a' (append).
-3. **Content**: Reading the lines or writing new text.
-4. **Close**: Releasing the file so other apps can use it.
+### Basic open/read/write
 
-## Show me the code
 \`\`\`python
-# Writing a new report
-with open('report.txt', 'w') as f:
-    f.write("Daily Sales Report - Lagos Branch\n")
-    f.write("Total: ₦450,000")
+# Writing a file — 'w' creates the file or overwrites it
+with open("report.txt", "w", encoding="utf-8") as f:
+    f.write("Sales Report — 2024-01-15\\n")
+    f.write("Lagos Branch: ₦450,000\\n")
 
-# Reading it back
-with open('report.txt', 'r') as f:
-    content = f.read()
+# Reading back
+with open("report.txt", "r", encoding="utf-8") as f:
+    content = f.read()        # entire file as one string
     print(content)
+
+# Read line by line (memory-efficient for large files)
+with open("report.txt", "r", encoding="utf-8") as f:
+    for line in f:
+        print(line.strip())   # strip() removes trailing newline
+
+# Appending — never use 'w' when you want to add to existing content
+with open("log.txt", "a", encoding="utf-8") as f:
+    f.write("New entry added\\n")
 \`\`\`
 
-## Real life: How companies use this
-A logistics company like **GIG Logistics** might receive a manifest of 1,000 packages in a CSV file every morning. Instead of a person typing this into their system, a Python script reads the file, extracts the tracking numbers, and updates their database automatically.
+### Always specify encoding
 
-## Remember these three things
-- The \`with\` keyword is best because it closes the file for you automatically.
-- CSV is the most common "Data Language" for business files.
-- Always be careful with 'w' mode-it will erase the old file before writing!`,
-      'scenario': `## Scenario: The Yearly Archive
-**The situation:** You have 365 daily sales files in a folder. Your boss wants one single file that contains every single sale from the entire year.
+If you don't specify \`encoding="utf-8"\`, Python uses the system default, which on Windows might be cp1252. This will silently corrupt Nigerian names with special characters (è, ọ, etc.) or break entirely.
 
-**What you're seeing:**
-A folder full of files like \`sales_jan_01.csv\`, \`sales_jan_02.csv\`, etc. Opening each one manually would take days.
+### Working with CSV files properly
+
+\`\`\`python
+import csv
+
+# Writing a CSV
+employees = [
+    {"id": "E001", "name": "Chidi Okafor", "salary": 180000},
+    {"id": "E002", "name": "Ngozi Adeyemi", "salary": 220000},
+]
+
+with open("employees.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=["id", "name", "salary"])
+    writer.writeheader()
+    writer.writerows(employees)
+
+# Reading a CSV
+with open("employees.csv", "r", encoding="utf-8") as f:
+    reader = csv.DictReader(f)    # each row is a dict, keys from header
+    for row in reader:
+        print(row["name"], row["salary"])
+\`\`\`
+
+### Working with JSON files
+
+JSON is the native format of APIs and modern configuration. Knowing how to read and write it is essential.
+
+\`\`\`python
+import json
+
+# Writing JSON
+config = {
+    "database": "warehouse_prod",
+    "host": "db.company.ng",
+    "port": 5432,
+    "tables": ["transactions", "customers", "products"]
+}
+
+with open("config.json", "w", encoding="utf-8") as f:
+    json.dump(config, f, indent=2)   # indent makes it human-readable
+
+# Reading JSON
+with open("config.json", "r", encoding="utf-8") as f:
+    loaded = json.load(f)
+    print(loaded["database"])   # "warehouse_prod"
+    print(loaded["tables"][0])  # "transactions"
+\`\`\`
+
+### Using pathlib for path handling
+
+The old way (\`os.path\`) works but pathlib is cleaner and more reliable cross-platform.
+
+\`\`\`python
+from pathlib import Path
+
+# Define paths
+data_dir = Path("data")
+input_file = data_dir / "raw_sales.csv"
+output_file = data_dir / "clean_sales.csv"
+
+# Check before reading
+if not input_file.exists():
+    raise FileNotFoundError(f"Expected input not found: {input_file}")
+
+# List all CSV files in a folder
+csv_files = list(data_dir.glob("*.csv"))
+print(f"Found {len(csv_files)} CSV files")
+
+# Get file info
+print(input_file.stem)     # "raw_sales" (name without extension)
+print(input_file.suffix)   # ".csv"
+print(input_file.parent)   # "data"
+\`\`\`
+
+### Handling multiple files: the archive merge pattern
+
+\`\`\`python
+import csv
+from pathlib import Path
+
+def merge_daily_files(input_dir: str, output_file: str) -> int:
+    """Merge all CSV files in a directory into one output file."""
+    input_path = Path(input_dir)
+    csv_files = sorted(input_path.glob("sales_*.csv"))
+
+    if not csv_files:
+        raise FileNotFoundError(f"No CSV files found in {input_dir}")
+
+    rows_written = 0
+    header_written = False
+
+    with open(output_file, "w", newline="", encoding="utf-8") as out:
+        writer = None
+
+        for file in csv_files:
+            with open(file, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                if not header_written:
+                    writer = csv.DictWriter(out, fieldnames=reader.fieldnames)
+                    writer.writeheader()
+                    header_written = True
+                for row in reader:
+                    writer.writerow(row)
+                    rows_written += 1
+
+    return rows_written
+
+count = merge_daily_files("data/daily", "data/annual_sales.csv")
+print(f"Merged {count} records")
+\`\`\`
+
+### Common file errors and how to handle them
+
+\`\`\`python
+from pathlib import Path
+
+def safe_read_csv(filepath: str) -> list:
+    path = Path(filepath)
+
+    if not path.exists():
+        print(f"Warning: {filepath} does not exist — skipping")
+        return []
+
+    if path.stat().st_size == 0:
+        print(f"Warning: {filepath} is empty — skipping")
+        return []
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            return list(reader)
+    except UnicodeDecodeError:
+        # Try latin-1 fallback for legacy Windows exports
+        with open(path, "r", encoding="latin-1") as f:
+            reader = csv.DictReader(f)
+            return list(reader)
+\`\`\``,
+
+      'scenario': `## Scenario: The Yearly Sales Archive
+
+**Context:** Your company's file server has 365 daily sales files for 2023, each named like \`sales_2023_01_01.csv\` through \`sales_2023_12_31.csv\`. The Finance Director wants a single merged file for the external auditors, and she needs it by end of day.
+
+The files have a known problem: the Abuja office uses commas as decimal separators (European format — "1.250,00" instead of "1,250.00"). If you don't handle this, your totals will be off by a factor of 1000 for some rows.
 
 **Your job:**
-1. Create a "Master" file in 'Append' mode.
-2. Loop through every file in the folder.
-3. Read the content of the daily file and write it into the Master file.
 
-**Code to look at:**
+1. Scan the folder and count how many files are there (should be 365 — report any missing dates).
+2. Write a \`normalize_amount(raw: str) -> float\` function that handles both "1,250.00" and "1.250,00" formats.
+3. Merge all files, applying the normalization to the \`amount\` column.
+4. Write the result to \`2023_annual_sales.csv\` and print a summary:
+   - Total rows merged
+   - Total revenue (₦)
+   - Any dates with missing files
+   - Processing time in seconds
+
+**Hint for detecting European format:**
 \`\`\`python
-# Example of appending
-with open('master_sales.csv', 'a') as master:
-    with open('daily_file.csv', 'r') as daily:
-        master.write(daily.read())
+def normalize_amount(raw: str) -> float:
+    raw = str(raw).strip()
+    # European: last separator is comma and has dot as thousands
+    if raw.count(',') == 1 and raw.index(',') > raw.rfind('.'):
+        raw = raw.replace('.', '').replace(',', '.')
+    else:
+        raw = raw.replace(',', '')
+    return float(raw)
 \`\`\`
 
-**Think through these:**
-- Why is 'a' (append) better than 'w' (write) for this task?
-- What happens if one of the daily files is corrupted or empty?
-- How much time did you just save compared to a manual Excel merge?
+This is real data engineering — the messy, undocumented format differences that nobody tells you about until a number is wrong.`,
 
-**What the solution looks like:**
-You would use a loop combined with \`open(..., 'a')\`. This "stitches" the files together into one large dataset. This is the first step in almost every data engineering pipeline: gathering raw files into one place.`,
       'quizzes': [
         {
-          'question': "Which 'mode' should you use if you want to add new data to the END of an existing file without deleting what is already there?",
-          'code': "with open('logs.txt', mode='?') as f:\n    f.write('New log entry')",
-          'options': ["A. 'r'", "B. 'w'", "C. 'a'", "D. 'x'"],
+          'question': "What happens if you open a file in 'w' mode when the file already exists?",
+          'options': [
+            "A. Python raises a FileExistsError",
+            "B. Python appends to the existing content",
+            "C. The existing file is completely overwritten and its content is lost",
+            "D. Python creates a backup file first"
+          ],
           'correct': 2,
-          'explanation': "'a' stands for Append. It adds to the end of the file. 'w' (Write) would overwrite/delete the existing content."
+          'explanation': "'w' mode truncates the file to zero bytes before writing. The original content is permanently lost. Use 'a' mode to preserve existing content, or check with Path.exists() first if you're unsure."
+        },
+        {
+          'question': "What is the purpose of `newline=''` when writing a CSV file?",
+          'code': "with open('data.csv', 'w', newline='', encoding='utf-8') as f:\n    writer = csv.writer(f)\n    writer.writerow(['name', 'amount'])",
+          'options': [
+            "A. It makes the file smaller",
+            "B. It prevents Python from adding extra blank lines between rows on Windows",
+            "C. It tells Python to use Unix line endings",
+            "D. It is optional and makes no difference"
+          ],
+          'correct': 1,
+          'explanation': "On Windows, Python's universal newline handling adds a \\r\\n, and the csv module adds its own \\r\\n, resulting in double blank lines between rows. newline='' disables Python's translation and lets the csv module control line endings."
+        },
+        {
+          'question': "What does this code print?",
+          'code': "import json\ndata = '{\"name\": \"Aisha\", \"score\": 95}'\nparsed = json.loads(data)\nprint(type(parsed), parsed['name'])",
+          'options': [
+            "A. <class 'str'> Aisha",
+            "B. <class 'dict'> Aisha",
+            "C. <class 'json'> Aisha",
+            "D. KeyError: 'name'"
+          ],
+          'correct': 1,
+          'explanation': "json.loads() converts a JSON string into a Python dictionary. After parsing, parsed is a dict, and you access it with bracket notation. Note: json.loads() parses a string; json.load() reads from a file object."
+        },
+        {
+          'question': "You need to check if a file exists before reading it. Which is the correct modern approach?",
+          'options': [
+            "A. try: open(file) except: pass",
+            "B. if os.path.isfile(file): open(file)",
+            "C. from pathlib import Path; if Path(file).exists(): ...",
+            "D. Both B and C work correctly"
+          ],
+          'correct': 3,
+          'explanation': "Both work. pathlib (option C) is the modern, recommended approach — it's more readable and cross-platform. os.path (option B) is the older way but still valid. Option A works too but swallows all exceptions including permissions errors."
+        },
+        {
+          'question': "Why should you always specify `encoding='utf-8'` when opening files?",
+          'options': [
+            "A. UTF-8 files are smaller than other encodings",
+            "B. Without it, Python uses the system default which can vary by OS and corrupt non-ASCII characters like Nigerian names",
+            "C. It makes the file read faster",
+            "D. The csv module requires it"
+          ],
+          'correct': 1,
+          'explanation': "Windows systems often default to cp1252 or similar encodings. A file containing 'Adéọlá' might read fine on the system that wrote it but corrupt on another. Explicitly specifying UTF-8 makes your code consistent everywhere."
         }
       ]
     },
+
     'Pandas Basics': {
-      'lesson': `## What is Pandas?
-Pandas is a Python library that gives you "Excel-like" powers inside your code. Its main tool is the **DataFrame**, which is essentially a high-performance table.
+      'lesson': `## Pandas Basics
 
-## Why should you care as an MIS student?
-Excel is great, but it gets slow and crashes when you have 500,000 rows. Pandas can handle millions of rows in seconds. It is the "Industry Standard" tool for cleaning and analyzing business data.
+Pandas is the foundation of data analysis in Python. Its core object — the DataFrame — is a two-dimensional table where each column can hold a different data type, and every operation is vectorized (applies to the whole column at once, not row by row). This is what makes it orders of magnitude faster than using Python lists for data work.
 
-## How it actually works
-1. **Import**: Bringing the library into your script.
-2. **Read**: Loading data from CSV, Excel, or SQL.
-3. **Head/Tail**: Quickly looking at the top or bottom of your data.
-4. **Summary**: Using \`.describe()\` to get the average, min, and max of your numbers.
+### Getting started: loading data
 
-## Show me the code
 \`\`\`python
 import pandas as pd
 
-# Loading a sales file
-df = pd.read_csv('sales_data.csv')
+# From a CSV
+df = pd.read_csv("sales.csv")
 
-# Look at the first 5 rows
-print(df.head())
+# From a CSV with options
+df = pd.read_csv(
+    "sales.csv",
+    parse_dates=["transaction_date"],    # convert date column automatically
+    dtype={"customer_id": str},          # keep IDs as strings, not integers
+    encoding="utf-8"
+)
 
-# Get total revenue
-total = df['amount'].sum()
-print(f"Total Revenue: ₦{total}")
+# From Excel
+df = pd.read_excel("report.xlsx", sheet_name="Q1 Sales")
 
-# Get average sale
-avg = df['amount'].mean()
-print(f"Average Sale: ₦{avg}")
+# From a list of dicts (what you'd get from an API)
+data = [
+    {"branch": "Lagos", "amount": 45000, "date": "2024-01-15"},
+    {"branch": "Abuja", "amount": 28000, "date": "2024-01-15"},
+]
+df = pd.DataFrame(data)
 \`\`\`
 
-## Real life: How companies use this
-A company like **Shoprite** uses Pandas to analyze what people buy. They might load a week's worth of transactions and use Pandas to find which branch sold the most milk or which day had the lowest customer traffic. It turns a giant "ocean" of numbers into a clear report.
+### First look at your data
 
-## Remember these three things
-- Pandas makes Python feel like a super-powered version of Excel.
-- A 'DataFrame' is just a table with rows and columns.
-- Use it when your data is too big or the math is too complex for basic Python lists.`,
+When you load a new dataset, always run these five commands before doing anything else:
+
+\`\`\`python
+df.shape            # (rows, columns) — how big is it?
+df.dtypes           # what type is each column?
+df.head(10)         # first 10 rows
+df.info()           # non-null counts + dtype for every column
+df.describe()       # count, mean, std, min, quartiles, max for numeric cols
+\`\`\`
+
+### Column selection
+
+\`\`\`python
+# Single column — returns a Series (1D)
+amounts = df["amount"]
+
+# Multiple columns — returns a DataFrame (2D)
+subset = df[["branch", "amount", "date"]]
+
+# All column names
+print(df.columns.tolist())
+\`\`\`
+
+### Basic statistics
+
+\`\`\`python
+df["amount"].sum()       # total
+df["amount"].mean()      # average
+df["amount"].median()    # median (more robust to outliers than mean)
+df["amount"].max()       # highest transaction
+df["amount"].min()       # lowest transaction
+df["amount"].std()       # standard deviation
+df["amount"].count()     # count of non-null values
+
+# Count occurrences of each value
+df["branch"].value_counts()
+df["status"].value_counts(normalize=True)  # as percentages
+\`\`\`
+
+### Handling missing values
+
+\`\`\`python
+# Detect missing data
+df.isnull().sum()       # count of nulls per column
+df.isnull().any()       # True/False per column
+
+# Remove rows where specific column is null
+df_clean = df.dropna(subset=["amount"])
+
+# Fill nulls with a value
+df["notes"] = df["notes"].fillna("No notes")
+df["amount"] = df["amount"].fillna(0)
+
+# Forward-fill (use previous value — common for time series)
+df["price"] = df["price"].ffill()
+\`\`\`
+
+### Sorting and ranking
+
+\`\`\`python
+# Sort by amount descending
+df_sorted = df.sort_values("amount", ascending=False)
+
+# Sort by multiple columns
+df_sorted = df.sort_values(["branch", "date"], ascending=[True, False])
+
+# Reset the index after sorting
+df_sorted = df_sorted.reset_index(drop=True)
+\`\`\`
+
+### Adding and modifying columns
+
+\`\`\`python
+# Add a calculated column
+df["amount_with_vat"] = df["amount"] * 1.075
+
+# Conditional column
+df["size_category"] = df["amount"].apply(
+    lambda x: "large" if x > 50000 else ("medium" if x > 10000 else "small")
+)
+
+# Rename columns
+df = df.rename(columns={"amt": "amount", "dt": "date"})
+
+# Drop a column
+df = df.drop(columns=["temp_column"])
+\`\`\`
+
+### Exporting results
+
+\`\`\`python
+df.to_csv("output.csv", index=False, encoding="utf-8")
+df.to_excel("output.xlsx", sheet_name="Results", index=False)
+
+# JSON (useful for APIs)
+df.to_json("output.json", orient="records", indent=2)
+\`\`\`
+
+### Understanding dtypes — why they matter
+
+\`\`\`python
+# Example of dtype problem
+df = pd.read_csv("transactions.csv")
+print(df["amount"].dtype)    # object (string!) — not float
+
+# Try to sum it
+df["amount"].sum()    # "5000100002500..." — string concatenation
+
+# Fix: convert
+df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+# errors="coerce" turns anything that can't convert into NaN instead of crashing
+
+# Check for conversion failures
+failed = df["amount"].isnull().sum()
+print(f"{failed} rows could not be converted to numeric")
+\`\`\``,
+
       'scenario': `## Scenario: The Mystery Average
-**The situation:** Your manager gives you a CSV of 50,000 sales and asks: "What was the average transaction size for the Ikeja branch?"
 
-**What you're seeing:**
-A file with columns: \`branch_name\`, \`product\`, \`amount\`, and \`date\`. If you used Excel, you'd have to filter, copy, and then calculate. 
+**Context:** Your manager drops a file on your desk — 87,000 rows of transaction data for Q1 2024. She wants to know:
+1. Average transaction size per branch
+2. Which branch had the single highest transaction
+3. How many transactions failed vs settled
+4. Any branches where the average failed transaction is larger than the average settled one (potential fraud signal)
 
-**Your job:**
-1. Load the data using Pandas.
-2. Filter the data to show only "Ikeja".
-3. Use the \`.mean()\` method on the "amount" column.
+The file has these columns: \`transaction_id\`, \`branch\`, \`amount\`, \`status\`, \`datetime\`, \`channel\`
 
-**Code to look at:**
+**Your job — write the complete analysis:**
+
 \`\`\`python
 import pandas as pd
-df = pd.read_csv('all_sales.csv')
 
-# How do we filter for Ikeja?
-ikeja_sales = df[df['branch_name'] == 'Ikeja']
-print(ikeja_sales['amount'].mean())
+df = pd.read_csv("q1_transactions.csv", parse_dates=["datetime"])
+
+# 1. Average per branch
+branch_avg = df.groupby("branch")["amount"].mean().sort_values(ascending=False)
+
+# 2. Single highest transaction
+max_row = df.loc[df["amount"].idxmax()]
+print(f"Highest: ₦{max_row['amount']:,.0f} at {max_row['branch']} on {max_row['datetime'].date()}")
+
+# 3. Status breakdown
+status_counts = df["status"].value_counts()
+
+# 4. Fraud signal check — branches where avg failed > avg settled
+pivot = df.groupby(["branch", "status"])["amount"].mean().unstack()
+if "failed" in pivot.columns and "settled" in pivot.columns:
+    flagged = pivot[pivot["failed"] > pivot["settled"]]
+    print("\\nBranches flagging for review:")
+    print(flagged[["failed", "settled"]])
 \`\`\`
 
-**Think through these:**
-- Why is it faster to type two lines of code than to set up filters in Excel?
-- What happens if the manager then asks for the Abuja branch? How fast can you change the code?
-- How does this help ensure that the "Average" is calculated correctly every single time?
+The point of this exercise isn't just getting the numbers — it's recognizing that a 2-line Pandas query can answer a question that would take an analyst 30 minutes in Excel, and that you can answer the fraud-signal question without writing a single loop.`,
 
-**What the solution looks like:**
-By using Pandas, you can answer complex business questions in seconds. You don't just "calculate" the answer; you create a "reusable script" that can generate the same report for any branch or any date range by changing one word.`,
       'quizzes': [
         {
-          'question': "What does the .head() method do in Pandas?",
-          'code': "import pandas as pd\ndf = pd.read_csv('data.csv')\nprint(df.head())",
-          'options': ["A. Deletes the first row", "B. Shows the last 5 rows", "C. Shows the first 5 rows", "D. Prints the column names only"],
+          'question': "What does `df.info()` show that `df.describe()` does not?",
+          'options': [
+            "A. Statistical summaries like mean and standard deviation",
+            "B. Non-null counts and data types for every column — it tells you where data is missing",
+            "C. The first 5 rows of data",
+            "D. The file size on disk"
+          ],
+          'correct': 1,
+          'explanation': "df.describe() gives statistics for numeric columns. df.info() shows you the dtype of every column and how many non-null values are in each — essential for spotting missing data and wrong types before you start analysis."
+        },
+        {
+          'question': "What is the difference between `df['amount']` and `df[['amount']]`?",
+          'options': [
+            "A. No difference — both select the amount column",
+            "B. Single brackets return a Series (1D); double brackets return a DataFrame (2D with one column)",
+            "C. Double brackets select two columns",
+            "D. Single brackets are faster"
+          ],
+          'correct': 1,
+          'explanation': "This is a subtle but important distinction. A Series and a single-column DataFrame behave differently when you try to merge, apply functions, or write to file. Many Pandas operations require a DataFrame, not a Series."
+        },
+        {
+          'question': "What does `errors='coerce'` do in `pd.to_numeric(df['amount'], errors='coerce')`?",
+          'options': [
+            "A. It raises an error and stops processing",
+            "B. It skips invalid values silently",
+            "C. It converts invalid values (like '₦5,000') to NaN instead of raising an exception",
+            "D. It forces the entire column to be integers"
+          ],
           'correct': 2,
-          'explanation': ".head() is used to take a 'peek' at the first few rows of your data to make sure it loaded correctly."
+          'explanation': "Without errors='coerce', a single un-parseable value crashes your entire pipeline. With it, bad values become NaN, which you can then handle (fill, drop, flag) without crashing."
+        },
+        {
+          'question': "You have a DataFrame and call `df['status'].value_counts()`. What does this return?",
+          'code': "# status column contains: 'settled', 'pending', 'failed', 'settled', 'settled', 'pending'",
+          'options': [
+            "A. A count of all rows in the DataFrame",
+            "B. A Series with each unique status as index and its count as value, sorted by count descending",
+            "C. A list of unique statuses",
+            "D. The percentage of each status"
+          ],
+          'correct': 1,
+          'explanation': "value_counts() is one of the most useful exploratory tools. It shows you the distribution of a categorical column. For the given data it returns: settled=3, pending=2, failed=1."
+        },
+        {
+          'question': "What is wrong with this code?",
+          'code': "df = pd.read_csv('sales.csv')\ntotal = df['amount'] + df['tax']\nprint(total.sum())",
+          'options': [
+            "A. Nothing — this is correct",
+            "B. You can't add two columns directly — you must use df.apply()",
+            "C. If either column has NaN values, the addition will produce NaN for those rows, silently undercounting the total",
+            "D. sum() requires a numeric argument, not a Series"
+          ],
+          'correct': 2,
+          'explanation': "NaN + any_number = NaN in Pandas. If 100 rows have a missing tax value, those rows contribute nothing to the total. You should check for nulls first with df[['amount','tax']].isnull().sum() and decide how to handle them before summing."
         }
       ]
     },
+
     'DataFrames & Filtering': {
-      'lesson': `## What is DataFrames & Filtering?
-Filtering is the act of selecting specific rows from a DataFrame based on a condition (like "All sales over ₦50k" or "All customers in Kano").
+      'lesson': `## DataFrames & Filtering
 
-## Why should you care as an MIS student?
-MIS is about getting the *right* information to the *right* people. A CEO doesn't want to see 100,000 individual sales; they want to see "High-Value Sales" or "Pending Shipments." Filtering is how you slice the data to reveal these insights.
+Filtering is how you go from "all the data" to "the data that answers a specific question." In Pandas, filtering uses boolean indexing — you create a condition that evaluates to True or False for every row, then pass that condition back to the DataFrame to keep only the True rows.
 
-## How it actually works
-1. **Conditions**: Using \`==\`, \`>\`, \`<\`, or \`!=\` to define your rule.
-2. **Boolean Masking**: Pandas creates a list of True/False for every row.
-3. **Selection**: You pass that list back to the DataFrame to keep only the 'True' rows.
+### Boolean indexing: how it works
 
-## Show me the code
 \`\`\`python
 import pandas as pd
-df = pd.read_csv('customers.csv')
 
-# 1. Filter for big spenders
-big_spenders = df[df['total_spend'] > 100000]
+df = pd.DataFrame({
+    "branch": ["Lagos", "Abuja", "Lagos", "Kano", "Abuja"],
+    "amount": [45000, 12000, 89000, 5000, 67000],
+    "status": ["settled", "pending", "settled", "failed", "settled"],
+    "channel": ["web", "atm", "web", "pos", "atm"]
+})
 
-# 2. Filter for customers in a specific city
-lagos_customers = df[df['city'] == 'Lagos']
+# Step 1: The condition creates a boolean Series
+condition = df["amount"] > 40000
+# 0    True
+# 1    False
+# 2    True
+# 3    False
+# 4    True
 
-# 3. Multiple conditions (Lagos AND Big Spenders)
-vip_list = df[(df['city'] == 'Lagos') & (df['total_spend'] > 200000)]
-
-print(vip_list)
+# Step 2: Pass it to the DataFrame to filter
+big_txns = df[condition]
+# or in one line:
+big_txns = df[df["amount"] > 40000]
 \`\`\`
 
-## Real life: How companies use this
-**MTN** uses filtering to find "Churn Risks." They might filter their database for customers who haven't made a call in 30 days and have a balance of less than ₦100. They then send these specific people a "We miss you" discount SMS.
+### String conditions
 
-## Remember these three things
-- Filtering doesn't delete data; it creates a new view of the data.
-- Use \`&\` for AND, and \`|\` for OR when using multiple filters.
-- Mastering this is how you turn "Big Data" into "Targeted Information."`,
-      'scenario': `## Scenario: The Fraud Alert
-**The situation:** Your bank's security team wants a list of every transaction that happened between 12 AM and 4 AM that was over ₦500,000.
+\`\`\`python
+# Exact match
+lagos_txns = df[df["branch"] == "Lagos"]
 
-**What you're seeing:**
-A massive table of every single transaction. Looking for these manually is impossible.
+# Multiple values (isin)
+southern = df[df["branch"].isin(["Lagos", "PH", "Enugu"])]
+
+# Contains (case-insensitive)
+web_channels = df[df["channel"].str.contains("web", case=False)]
+
+# Starts/ends with
+ng_ids = df[df["customer_id"].str.startswith("NG-")]
+\`\`\`
+
+### Combining conditions
+
+\`\`\`python
+# AND (both must be true) — use & not 'and'
+high_value_settled = df[(df["amount"] > 50000) & (df["status"] == "settled")]
+
+# OR (at least one must be true) — use | not 'or'
+flagged = df[(df["amount"] > 100000) | (df["status"] == "failed")]
+
+# NOT — use ~ not 'not'
+not_failed = df[~(df["status"] == "failed")]
+# Same as: df[df["status"] != "failed"]
+
+# Complex: settled AND (Lagos OR Abuja) AND amount > 20000
+result = df[
+    (df["status"] == "settled") &
+    (df["branch"].isin(["Lagos", "Abuja"])) &
+    (df["amount"] > 20000)
+]
+\`\`\`
+
+### .loc and .iloc: precise selection
+
+\`\`\`python
+# .loc: label-based — use column names and index labels
+df.loc[df["branch"] == "Lagos", "amount"]   # amounts for Lagos rows only
+df.loc[0:2, ["branch", "amount"]]            # rows 0-2, specific columns
+
+# .iloc: position-based — use integer positions
+df.iloc[0]          # first row
+df.iloc[0:5]        # first 5 rows
+df.iloc[:, 1:3]     # all rows, columns at positions 1 and 2
+df.iloc[-1]         # last row
+\`\`\`
+
+### .query(): readable syntax for complex filters
+
+\`\`\`python
+# Equivalent to df[(df["amount"] > 50000) & (df["status"] == "settled")]
+result = df.query("amount > 50000 and status == 'settled'")
+
+# Using variables in query
+threshold = 50000
+branch_name = "Lagos"
+result = df.query("amount > @threshold and branch == @branch_name")
+\`\`\`
+
+### GroupBy: aggregating by category
+
+\`\`\`python
+# Total revenue per branch
+branch_totals = df.groupby("branch")["amount"].sum()
+
+# Multiple aggregations at once
+branch_stats = df.groupby("branch")["amount"].agg(
+    total="sum",
+    average="mean",
+    count="count",
+    max_txn="max"
+)
+
+# GroupBy on multiple columns
+channel_branch = df.groupby(["branch", "channel"])["amount"].sum().unstack()
+\`\`\`
+
+### apply(): row-level logic when vectorized isn't enough
+
+\`\`\`python
+def classify_risk(row) -> str:
+    if row["amount"] > 500000 and row["channel"] == "atm":
+        return "HIGH"
+    elif row["amount"] > 100000:
+        return "MEDIUM"
+    return "LOW"
+
+df["risk_level"] = df.apply(classify_risk, axis=1)
+# axis=1 means apply to each row; axis=0 would apply to each column
+\`\`\`
+
+### between() and cut(): range filtering and binning
+
+\`\`\`python
+# Filter for a range
+mid_range = df[df["amount"].between(10000, 50000)]
+
+# Bin continuous values into categories (bucketing)
+df["amount_bucket"] = pd.cut(
+    df["amount"],
+    bins=[0, 10000, 50000, 200000, float("inf")],
+    labels=["micro", "small", "medium", "large"]
+)
+
+# How many transactions in each bucket?
+df["amount_bucket"].value_counts()
+\`\`\`
+
+### Pivot tables: the executive summary format
+
+\`\`\`python
+# Revenue by branch and status
+pivot = df.pivot_table(
+    values="amount",
+    index="branch",
+    columns="status",
+    aggfunc="sum",
+    fill_value=0
+)
+# This produces a table where rows are branches,
+# columns are statuses (settled, pending, failed),
+# and each cell is the total amount
+\`\`\``,
+
+      'scenario': `## Scenario: The Fraud Alert System
+
+**Context:** The compliance team has asked you to build an automated script that runs every morning and produces three outputs from the previous night's transaction log:
+
+1. **High-risk transactions:** amount > ₦500,000, between midnight and 5 AM, through ATM channel
+2. **Velocity alerts:** any account_id appearing more than 5 times in a single hour
+3. **Cross-border anomalies:** transactions where the IP address country code doesn't match the branch country
+
+**The dataset columns:**
+\`transaction_id, account_id, branch, amount, channel, datetime, ip_country\`
 
 **Your job:**
-1. Filter the "amount" column for values > 500,000.
-2. Filter the "time" column for the early morning hours.
-3. Export the list to the security team as a "Potential Fraud" report.
 
-**Code to look at:**
 \`\`\`python
-# Hint: Combining conditions
-suspicious = df[(df['amount'] > 500000) & (df['hour'] < 4)]
+import pandas as pd
+
+df = pd.read_csv("overnight_transactions.csv", parse_dates=["datetime"])
+
+# 1. High-risk transactions
+df["hour"] = df["datetime"].dt.hour
+high_risk = df[
+    (df["amount"] > 500_000) &
+    (df["hour"] < 5) &
+    (df["channel"] == "atm")
+][["transaction_id", "account_id", "branch", "amount", "datetime"]]
+
+# 2. Velocity alerts
+df["hour_bucket"] = df["datetime"].dt.floor("h")
+velocity = (
+    df.groupby(["account_id", "hour_bucket"])
+    .size()
+    .reset_index(name="txn_count")
+)
+alerts = velocity[velocity["txn_count"] > 5]
+
+# 3. Cross-border (assuming branch country code is the first 2 chars of branch column)
+df["branch_country"] = df["branch"].str[:2].str.upper()
+cross_border = df[df["ip_country"] != df["branch_country"]]
 \`\`\`
 
-**Think through these:**
-- Why is speed so important in this specific business scenario?
-- What happens if you accidentally filter for \`<\` 500,000? How does that affect the security team?
-- In MIS, how does "Filtering" help in risk management?
+Write these three DataFrames to separate sheets in an Excel file: \`compliance_report_{today}.xlsx\`. This kind of script runs every morning at 6 AM and feeds the compliance team their daily review queue.`,
 
-**What the solution looks like:**
-You would write a script that "slices" the main database down to just the high-risk rows. This is much more accurate than manual checking and can be set to run automatically every hour, keeping the bank's money safe.`,
       'quizzes': [
         {
-          'question': "Which line of code correctly filters a DataFrame 'df' for rows where the 'status' column is 'Paid'?",
-          'options': ["A. df['status'] == 'Paid'", "B. df[df['status'] == 'Paid']", "C. df.filter('Paid')", "D. df.select('Paid')"],
+          'question': "Why must you use `&` instead of `and` when combining Pandas filter conditions?",
+          'options': [
+            "A. 'and' is reserved for Python 2 only",
+            "B. 'and' operates on two boolean values; '&' operates element-wise on two boolean Series",
+            "C. They are interchangeable — both work",
+            "D. '&' is faster"
+          ],
           'correct': 1,
-          'explanation': "The correct syntax is to pass the condition inside square brackets: df[condition]."
+          'explanation': "Python's 'and' keyword compares two objects as a single boolean — it cannot handle a Series of True/False values. '&' is the bitwise AND operator that applies element-by-element across two Series. Using 'and' with Series raises a ValueError."
+        },
+        {
+          'question': "What does this code return?",
+          'code': "import pandas as pd\ndf = pd.DataFrame({'x': [1,2,3,4,5], 'y': ['a','b','a','b','a']})\nresult = df[df['y'] == 'a']['x'].sum()",
+          'options': ["A. 6", "B. 9", "C. 15", "D. 3"],
+          'correct': 1,
+          'explanation': "df['y'] == 'a' selects rows 0, 2, 4 (where y is 'a'). The x values for those rows are 1, 3, 5. Their sum is 9."
+        },
+        {
+          'question': "What is the difference between `.loc` and `.iloc`?",
+          'options': [
+            "A. .loc is for columns, .iloc is for rows",
+            "B. .loc uses label-based indexing (column names, index values); .iloc uses integer position-based indexing",
+            "C. .iloc is faster than .loc for large DataFrames",
+            "D. They are identical"
+          ],
+          'correct': 1,
+          'explanation': "If your DataFrame index is [10, 20, 30], df.loc[10] gets the row labeled 10. df.iloc[0] gets the first row regardless of its label. The distinction matters most after filtering, when row labels no longer match positions."
+        },
+        {
+          'question': "What does `groupby('branch')['amount'].agg(['sum', 'mean', 'count'])` produce?",
+          'options': [
+            "A. Three separate DataFrames",
+            "B. A DataFrame with branch as index and columns sum, mean, count for the amount",
+            "C. A list of three numbers",
+            "D. A syntax error — agg doesn't accept lists"
+          ],
+          'correct': 1,
+          'explanation': "agg() with a list of function names creates a multi-column result. You get one row per unique branch and one column for each aggregation function — a clean summary table ready for reporting."
+        },
+        {
+          'question': "Which filter correctly selects rows where amount is between 10,000 and 50,000 inclusive?",
+          'options': [
+            "A. df[df['amount'] > 10000 and df['amount'] < 50000]",
+            "B. df[(df['amount'] >= 10000) & (df['amount'] <= 50000)]",
+            "C. df[df['amount'].between(10000, 50000)]",
+            "D. Both B and C are correct"
+          ],
+          'correct': 3,
+          'explanation': "Both work. .between(a, b) is inclusive by default, equivalent to (col >= a) & (col <= b). Option A fails because 'and' doesn't work element-wise on Series."
         }
       ]
     },
+
     'The Requests Library': {
-      'lesson': `## What is the Requests Library?
-Requests is a Python library used to "talk" to the internet. It allows your script to visit a URL and pull data down, just like your browser does, but in a way that code can understand.
+      'lesson': `## The Requests Library
 
-## Why should you care as an MIS student?
-Many modern business systems don't give you a file; they give you an **API Endpoint**. If you want to get live exchange rates from a bank, weather data for a farm, or stock levels from a supplier, you use Requests to "fetch" that data automatically.
+The requests library lets your Python code talk to the internet the same way a web browser does — but instead of rendering a webpage, you get the raw data back to work with programmatically. This is how you pull live exchange rates, query public APIs, send data to external services, or build integrations between systems.
 
-## How it actually works
-1. **GET**: Asking for data from a URL.
-2. **POST**: Sending data to a URL (like submitting a form).
-3. **Status Code**: Checking if the request worked (200 = OK, 404 = Missing).
-4. **JSON**: Converting the response into a Python dictionary.
+### The basics: GET request
 
-## Show me the code
 \`\`\`python
 import requests
 
-# Fetching data from a public API
-response = requests.get("https://api.kuda.com/v1/rates")
+# Simple GET — fetch data from a URL
+response = requests.get("https://restcountries.com/v3.1/name/nigeria")
 
-if response.status_code == 200:
-    data = response.json()
-    print("Rates loaded successfully!")
-else:
-    print(f"Error: {response.status_code}")
-\`\`\`
+# Always check status code before using the data
+print(response.status_code)    # 200 = success
 
-## Real life: How companies use this
-A price comparison site like **PriceCheck** uses the Requests library to "scrape" or pull prices from various retail websites. Every hour, their script visits hundreds of URLs, gets the latest prices, and updates their own site. This is how they always show the cheapest deal without a person checking manually.
-
-## Remember these three things
-- Requests is the "Messenger" of the internet for Python.
-- Always check the \`status_code\` before trying to use the data.
-- It turns the entire web into a database you can query with code.`,
-      'scenario': `## Scenario: The Dynamic Currency Converter
-**The situation:** You are building a dashboard for an import-export business in Lagos. The owner wants to see their costs in both Naira and Dollars, but the exchange rate changes every day.
-
-**What you're seeing:**
-The owner currently types the exchange rate into Excel every morning. Sometimes they forget, and the calculations are wrong.
-
-**Your job:**
-1. Find a currency API.
-2. Use the Requests library to fetch the live rate at 9 AM every day.
-3. Automatically update the dashboard with the new rate.
-
-**Code to look at:**
-\`\`\`python
-import requests
-# How do we get the 'naira_rate' from this response?
-response = requests.get("https://api.exchangerate.host/latest?base=USD")
+# Get the response body as JSON
 data = response.json()
-naira_val = data['rates']['NGN']
+print(data[0]["name"]["common"])    # "Nigeria"
+print(data[0]["population"])        # 218541212
 \`\`\`
 
-**Think through these:**
-- Why is an automated API better than a human typing in a rate?
-- What happens if the API website goes down? How should your code handle that?
-- How does "Real-Time Data" improve business decision-making?
+### Status codes you need to know
 
-**What the solution looks like:**
-You would build a "Data Connector." Instead of relying on a human, your script talks directly to a financial data provider. This eliminates human error and ensures the business is always working with the most accurate, up-to-date financial information.`,
-      'quizzes': [
-        {
-          'question': "What does a status code of '200' mean when using the Requests library?",
-          'code': "response = requests.get(url)\nprint(response.status_code)",
-          'options': ["A. Page Not Found", "B. Server Error", "C. Success / OK", "D. Access Denied"],
-          'correct': 2,
-          'explanation': "200 is the standard HTTP response for a successful request. It means the data was found and sent correctly."
-        }
-      ]
-    },
-    'Writing Automation Scripts': {
-      'lesson': `## What is Automation?
-Automation is writing a script that performs a repetitive task without any human intervention. It's the "Holy Grail" of MIS-making the computer do the boring work while you focus on strategy.
+| Code | Meaning | What to do |
+|------|---------|------------|
+| 200 | OK | Proceed |
+| 201 | Created | Data was saved (for POST) |
+| 400 | Bad Request | Your request has an error |
+| 401 | Unauthorized | Wrong or missing API key |
+| 403 | Forbidden | You don't have permission |
+| 404 | Not Found | Wrong URL or resource doesn't exist |
+| 429 | Too Many Requests | Slow down — you're rate limited |
+| 500 | Server Error | Their problem, not yours |
 
-## Why should you care as an MIS student?
-Business is full of "Monkey Work." Downloading a file, renaming it, calculating a total, and emailing it to a boss. If you can automate this, you become 10x more productive than your peers. You don't "do" the work; you "build" the worker.
+### Query parameters
 
-## How it actually works
-1. **Schedule**: Setting a time for the script to run (e.g., every morning at 8 AM).
-2. **Logic**: The script performs the steps (Download → Clean → Save → Email).
-3. **Logging**: The script writes a "diary" of what it did so you can check it later.
-4. **Alerts**: Sending you an email only if something goes wrong.
-
-## Show me the code
 \`\`\`python
-import pandas as pd
-import datetime
+# Without query params: requests.get(url)
+# With query params — the clean way
+params = {
+    "base": "USD",
+    "symbols": "NGN,GHS,KES",
+    "format": "json"
+}
+response = requests.get("https://api.exchangerate.host/latest", params=params)
+# This builds: https://api.exchangerate.host/latest?base=USD&symbols=NGN,GHS,KES&format=json
 
-def run_daily_report():
-    # 1. Get Data
-    df = pd.read_csv('raw_sales.csv')
-    
-    # 2. Process
-    daily_total = df['amount'].sum()
-    
-    # 3. Save with Today's Date
-    today = datetime.date.today()
-    with open(f'report_{today}.txt', 'w') as f:
-        f.write(f"Total Sales for {today}: ₦{daily_total}")
-    
-    print("Report Generated Successfully!")
-
-# This could be scheduled to run every night
-run_daily_report()
+data = response.json()
+ngn_rate = data["rates"]["NGN"]
+print(f"1 USD = ₦{ngn_rate:,.2f}")
 \`\`\`
 
-## Real life: How companies use this
-A bank like **Kuda** might have an automation script that runs at midnight. It looks for any customer who had a failed transfer, automatically retries the transfer, and sends a "Your transfer is now successful" notification to the customer's phone-all while the bank's employees are asleep.
+### Headers: authentication and content type
 
-## Remember these three things
-- Automation is about replacing "Human Effort" with "Computer Logic."
-- A good automation script is "Silent"-it only talks to you if it fails.
-- It turns a 2-hour daily task into a 0-second task.`,
-      'scenario': `## Scenario: The Monday Morning Panic
-**The situation:** Every Monday, your boss spends 3 hours gathering Excel files from 5 different managers to create a "Weekly Summary." He hates it and is always late for the 11 AM meeting.
-
-**What you're seeing:**
-Five different managers emailing five different files. Your boss has to open each one, copy the data, and paste it into a master sheet.
-
-**Your job:**
-1. Write a script that "watches" the email folder or a shared drive.
-2. Automatically reads the five files when they arrive.
-3. Merges them and emails the finished "Weekly Summary" to the boss at 9 AM.
-
-**Code to look at:**
 \`\`\`python
-# Steps to automate:
-# 1. Use os.listdir() to find files
-# 2. Use pd.concat() to merge them
-# 3. Use an email library to send the result
+import os
+
+# Most production APIs require an API key in the Authorization header
+api_key = os.environ.get("EXCHANGE_API_KEY")    # never hardcode keys
+
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+}
+
+response = requests.get(
+    "https://api.provider.com/data",
+    headers=headers
+)
 \`\`\`
 
-**Think through these:**
-- How does this change your boss's opinion of your MIS skills?
-- What happens to the "Accuracy" of the report when a human is no longer copy-pasting the numbers?
-- How much "Value" did you just create for the company in terms of saved hours?
+### POST requests: sending data
 
-**What the solution looks like:**
-You would build a "Data Pipeline." By automating the collection and merging of data, you've removed a major bottleneck in the company's information flow. The report is now always on time, always accurate, and requires zero manual effort.`,
-      'quizzes': [
-        {
-          'question': "What is the most important rule for a production-ready automation script?",
-          'options': ["A. It must have a pretty user interface", "B. It must handle errors and notify you if it fails", "C. It must be written in the most complex language possible", "D. It must be run manually every time"],
-          'correct': 1,
-          'explanation': "Since automation runs without you watching, it MUST be able to handle errors (like a missing file) and alert you, otherwise, the business might rely on wrong or missing data."
-        }
-      ]
-    },
-    'Error Handling': {
-      'lesson': `## What is Error Handling?
-Error handling is the art of predicting when your code might fail and telling the computer what to do instead of just crashing. We use **Try / Except** blocks for this.
-
-## Why should you care as an MIS student?
-Real-world data is messy. A file might be missing, a website might be down, or a user might type a word where a number should be. If your script crashes, the business process stops. Error handling makes your systems "Resilient."
-
-## How it actually works
-1. **Try**: "Try to run this code."
-2. **Except**: "If it crashes with this specific error, do this instead."
-3. **Finally**: "No matter what happens (success or failure), do this last action" (like closing a database connection).
-
-## Show me the code
 \`\`\`python
-try:
-    # Trying to open a file that might not exist
-    with open('important_data.csv', 'r') as f:
-        print(f.read())
-except FileNotFoundError:
-    print("Error: The file is missing! Please check the source folder.")
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
-finally:
-    print("Cleanup: System check complete.")
+# POST — sending JSON to an API (e.g., creating a record)
+payload = {
+    "amount": 50000,
+    "currency": "NGN",
+    "reference": "TXN-2024-00341",
+    "email": "customer@example.com"
+}
+
+response = requests.post(
+    "https://api.paymentprovider.com/transactions",
+    json=payload,        # automatically sets Content-Type: application/json
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+if response.status_code == 201:
+    result = response.json()
+    print(f"Transaction created: {result['id']}")
+else:
+    print(f"Failed: {response.status_code} — {response.text}")
 \`\`\`
 
-## Real life: How companies use this
-An ATM uses massive error handling. 
-**Try**: Dispense cash. 
-**Except (No Cash in Machine)**: Show "Temporarily Out of Cash" message. 
-**Except (Network Down)**: Show "System Offline." 
-Without error handling, the ATM would just show a "Blue Screen of Death" or a computer code that customers wouldn't understand.
+### Session objects: reusing connections
 
-## Remember these three things
-- Never let your code "Fail Silently"-always log what happened.
-- Error handling turns a "Crash" into a "Handled Situation."
-- It is the difference between a "Toy Script" and a "Professional Business Tool."`,
-      'scenario': `## Scenario: The Silent Pipeline Failure
-**The situation:** You built a script that downloads sales data from an API. One day, the API website was down for maintenance. Your script crashed halfway through, and the daily report was never sent.
+\`\`\`python
+# Instead of creating a new connection for every request (slow),
+# use a Session to reuse the connection and set headers once
+session = requests.Session()
+session.headers.update({
+    "Authorization": f"Bearer {api_key}",
+    "Accept": "application/json"
+})
 
-**What you're seeing:**
-A "ConnectionError" in your terminal. Because the script crashed, the steps that come *after* the download (cleaning and saving) never happened.
+# Now all requests use the same connection and headers
+r1 = session.get("https://api.example.com/products")
+r2 = session.get("https://api.example.com/customers")
+r3 = session.get("https://api.example.com/orders")
+\`\`\`
 
-**Your job:**
-1. Wrap the API call in a \`try/except\` block.
-2. If it fails, wait 10 minutes and try again (Retry logic).
-3. If it still fails, send a Slack message to the team saying "API is down, report will be late."
+### Handling pagination
 
-**Code to look at:**
+Real APIs don't return 100,000 records in one call. They paginate.
+
+\`\`\`python
+def fetch_all_pages(base_url: str, headers: dict) -> list:
+    """Fetch all pages from a paginated API."""
+    all_records = []
+    page = 1
+
+    while True:
+        response = requests.get(
+            base_url,
+            params={"page": page, "per_page": 100},
+            headers=headers
+        )
+        response.raise_for_status()    # raises exception for 4xx/5xx
+
+        data = response.json()
+        records = data.get("data", [])
+
+        if not records:
+            break                       # no more pages
+
+        all_records.extend(records)
+        page += 1
+
+        print(f"Fetched page {page - 1}: {len(records)} records")
+
+    return all_records
+\`\`\`
+
+### Robust error handling for production pipelines
+
 \`\`\`python
 import requests
 import time
 
-try:
-    response = requests.get("https://api.business.com/data")
-    response.raise_for_status() # Check for 404/500 errors
-except requests.exceptions.RequestException as e:
-    print(f"Warning: API is down. Retrying... {e}")
-    # Logic to retry or alert goes here
+def fetch_with_retry(url: str, headers: dict = None, max_retries: int = 3) -> dict:
+    """Fetch a URL with automatic retry on transient failures."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.get(url, headers=headers, timeout=30)
+
+            if response.status_code == 429:
+                wait = int(response.headers.get("Retry-After", 60))
+                print(f"Rate limited — waiting {wait}s")
+                time.sleep(wait)
+                continue
+
+            response.raise_for_status()    # raises for 4xx/5xx
+            return response.json()
+
+        except requests.exceptions.ConnectionError:
+            print(f"Attempt {attempt}: Connection failed")
+        except requests.exceptions.Timeout:
+            print(f"Attempt {attempt}: Timed out after 30s")
+        except requests.exceptions.HTTPError as e:
+            print(f"HTTP error: {e}")
+            raise    # don't retry client errors (4xx)
+
+        if attempt < max_retries:
+            time.sleep(2 ** attempt)    # exponential backoff: 2s, 4s, 8s
+
+    raise Exception(f"All {max_retries} attempts failed for {url}")
+\`\`\``,
+
+      'scenario': `## Scenario: The Dynamic Currency Converter
+
+**Context:** You're building an automated pricing pipeline for an import-export company. Their product prices are stored in USD (supplier pricing), but invoices go out in NGN. They want prices updated every morning at 7 AM before the sales team starts work.
+
+**Your job:**
+
+1. Fetch the live USD→NGN rate from the World Bank API (free, no auth needed):
+   \`https://api.worldbank.org/v2/country/NG/indicator/PA.NUS.FCRF?format=json&per_page=1\`
+
+2. Load the product catalog CSV (columns: \`sku, name, cost_usd, markup_pct\`)
+
+3. Calculate: \`selling_price_ngn = cost_usd * ngn_rate * (1 + markup_pct) * 1.075\` (includes VAT)
+
+4. Write the updated catalog with a timestamp column showing when prices were last refreshed.
+
+5. If the API fails, fall back to the last successful rate stored in \`last_rate.json\`, and log a warning.
+
+\`\`\`python
+import requests, json, os
+from datetime import datetime
+from pathlib import Path
+
+RATE_CACHE = Path("last_rate.json")
+
+def get_ngn_rate() -> float:
+    try:
+        r = requests.get(
+            "https://api.worldbank.org/v2/country/NG/indicator/PA.NUS.FCRF",
+            params={"format": "json", "per_page": 1},
+            timeout=10
+        )
+        r.raise_for_status()
+        rate = r.json()[1][0]["value"]
+        RATE_CACHE.write_text(json.dumps({"rate": rate, "fetched": str(datetime.now())}))
+        return float(rate)
+    except Exception as e:
+        print(f"Warning: live rate fetch failed ({e}) — using cached rate")
+        if RATE_CACHE.exists():
+            return json.loads(RATE_CACHE.read_text())["rate"]
+        raise RuntimeError("No cached rate available — cannot proceed")
 \`\`\`
 
-**Think through these:**
-- Why is it better to send a "Warning" than to just let the script stop working?
-- How does this build "Trust" with the business users who rely on your data?
-- In MIS, what is the cost of "System Downtime"?
+This pattern — try live, fall back to cache, raise only if both fail — is the standard approach for any pipeline that depends on an external API.`,
 
-**What the solution looks like:**
-You would build a "Self-Healing" script. By adding error handling, your pipeline becomes smart enough to navigate common internet problems. If a critical failure happens, it "raises an alarm" properly so you can fix it, rather than leaving everyone in the dark.`,
       'quizzes': [
         {
-          'question': "What happens if an error occurs inside a 'try' block that has a matching 'except' block?",
-          'options': ["A. The program stops and shows a red error message", "B. The computer restarts", "C. The code in the 'except' block runs, and the program continues", "D. The error is ignored completely"],
+          'question': "What does `response.raise_for_status()` do?",
+          'options': [
+            "A. Prints the status code",
+            "B. Raises an HTTPError exception if the status code is 4xx or 5xx",
+            "C. Returns True if the request was successful",
+            "D. Retries the request automatically"
+          ],
+          'correct': 1,
+          'explanation': "raise_for_status() is a clean way to check for errors. Instead of writing 'if response.status_code >= 400: raise Exception(...)' every time, this one method handles it. The exception includes the status code and message."
+        },
+        {
+          'question': "What does this code print if the API returns `{\"rate\": 1580.5, \"currency\": \"NGN\"}`?",
+          'code': "import requests\nr = requests.get('https://api.example.com/rate')\ndata = r.json()\nprint(type(data), data['rate'] * 100)",
+          'options': [
+            "A. <class 'str'> 158050.0",
+            "B. <class 'dict'> 158050.0",
+            "C. <class 'dict'> 1580.5100",
+            "D. TypeError"
+          ],
+          'correct': 1,
+          'explanation': "r.json() returns a Python dictionary. data['rate'] is 1580.5 (a float). 1580.5 * 100 = 158050.0. The type() of data is <class 'dict'>."
+        },
+        {
+          'question': "Why is it dangerous to pass query parameters by appending them directly to the URL string?",
+          'code': "# Option A\nrequests.get(f'https://api.com/data?user={username}&key={api_key}')\n\n# Option B\nrequests.get('https://api.com/data', params={'user': username, 'key': api_key})",
+          'options': [
+            "A. Option A is actually safer — it gives you more control",
+            "B. Option A risks injection attacks if username contains special characters like '&' or '='; Option B handles encoding automatically",
+            "C. Both options are identical",
+            "D. Option A is faster"
+          ],
+          'correct': 1,
+          'explanation': "If username is 'john&admin=true', Option A would append that as-is, injecting a new parameter. The requests library's params dict URL-encodes values automatically, escaping special characters."
+        },
+        {
+          'question': "You call an API and get status code 429. What should your code do?",
+          'options': [
+            "A. Immediately retry the request",
+            "B. Raise an exception and stop",
+            "C. Wait (using the Retry-After header if present) and then retry",
+            "D. Switch to a different API endpoint"
+          ],
           'correct': 2,
-          'explanation': "The 'except' block catches the error, allowing you to handle it (like showing a friendly message) instead of letting the program crash."
+          'explanation': "429 means you've exceeded the rate limit. Immediately retrying will just get you another 429. The correct response is to pause for the time indicated by the Retry-After header (or a reasonable backoff) before retrying."
+        },
+        {
+          'question': "What is wrong with this code for a production pipeline?",
+          'code': "API_KEY = 'sk_live_abc123xyz'\nresponse = requests.get(url, headers={'Authorization': f'Bearer {API_KEY}'})",
+          'options': [
+            "A. The header format is wrong",
+            "B. The API key is hardcoded in the source code — it will be exposed if the code is shared or pushed to GitHub",
+            "C. requests.get() doesn't support headers",
+            "D. f-strings can't be used in dictionaries"
+          ],
+          'correct': 1,
+          'explanation': "Hardcoded credentials are a major security risk. If this file gets committed to GitHub (even a private repo), the key is compromised. Use os.environ.get('API_KEY') or a .env file with python-dotenv."
         }
       ]
     },
-    'Milestone Project': {
-      'lesson': `## Milestone: The Corporate Sales Reporter
-This is your first major project. You are going to build an automated Python system that reads messy sales data, cleans it, and generates a formatted "Executive Dashboard" report.
 
-## The Broad Business Problem
-Your company, **"Northwind Traders,"** is an international import/export company losing money because pricing decisions are too slow. By the time management realizes a product is failing, it's already the end of the month. The root cause? Data fragmentation. The regional offices store their sales in isolated, messy CSV files, and an intern spends 4 hours manually copying them into Excel. You need to build an automated Python system that instantly consolidates this data so the company can make daily, aggressive pricing decisions.
+    'Writing Automation Scripts': {
+      'lesson': `## Writing Automation Scripts
 
-## Your Project Tasks:
-0. **The Data**: Download the [Northwind Relational Database from GitHub](https://github.com/pthom/northwind_psql) (Specifically the Orders, Order Details, and Products CSVs).
-1. **The Script**: Write a Python script using Pandas to read these separate tables and \`MERGE\` them using their Foreign Keys (e.g., \`product_id\`).
-2. **The Cleaning**: Handle missing values and ensure the Data Types match before joining (an ID must be an integer in both tables).
-3. **The Analytics**: Calculate Total Revenue per Category by joining the merged data.
-4. **The Dashboard**: Print a clean, formatted text-based dashboard that an executive can read in 10 seconds.
-5. **The Delivery**: Create a new GitHub repository, upload your \`main.py\` and a \`README.md\` explaining how the "Dashboard" works.
+Automation is about replacing a person clicking through a process with code that does it reliably, every time, without being asked. A well-written automation script is invisible — it runs silently in the background, does its job, and only draws attention to itself when something goes wrong.
 
-## Show me the code (Project Template)
+### The anatomy of a production script
+
 \`\`\`python
-# Example of the final Dashboard Output you should generate:
-print("=========================================")
-print("   LAGOS RETA HUB - WEEKLY EXECUTIVE REPORT")
-print("=========================================")
-print(f"TOTAL REVENUE:   ₦{total_rev:,.2f}")
-print(f"TOP BRANCH:      {top_branch}")
-print("-----------------------------------------")
-print("Action: Pushing clean report to GitHub...")
+import logging
+import os
+from pathlib import Path
+from datetime import datetime
+
+# Logging: the professional alternative to print()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s — %(levelname)s — %(message)s",
+    handlers=[
+        logging.FileHandler("pipeline.log"),
+        logging.StreamHandler()     # also print to console
+    ]
+)
+logger = logging.getLogger(__name__)
+
+def main():
+    logger.info("Pipeline started")
+    try:
+        run_pipeline()
+        logger.info("Pipeline completed successfully")
+    except Exception as e:
+        logger.error(f"Pipeline failed: {e}", exc_info=True)
+        raise
+
+if __name__ == "__main__":
+    main()
 \`\`\`
 
-## Presenting to Executives
-When you present this, don't show the code. Show the **Dashboard**. Explain how you've reduced a 4-hour manual task to a 2-second automated process. This is how you prove your value as an MIS professional.`,
-      'scenario': `## Scenario: The CEO's GitHub Request
-**The situation:** You showed the CEO your automated report. He is impressed but says, "Chidi, what if you're not in the office? How do we see the latest version of the code and the report?"
+### The os and pathlib modules for file system work
 
-**Your job:**
-1. Initialize a Git repository in your project folder.
-2. Commit your code with a professional message.
-3. Push it to a public GitHub repository.
-4. Send the link to the CEO (and your instructor).
+\`\`\`python
+import os
+from pathlib import Path
 
-**Think through these:**
-- Why is GitHub a better "Single Version of Truth" than sending files over Email?
-- How does a "Public Portfolio" help your career growth in MIS?`,
+# Listing files in a directory
+data_dir = Path("data/incoming")
+files = list(data_dir.glob("*.csv"))
+print(f"Found {len(files)} files to process")
+
+# Working with paths safely
+for file in files:
+    if file.stat().st_size == 0:
+        logger.warning(f"Skipping empty file: {file.name}")
+        continue
+
+    processed_dir = Path("data/processed")
+    processed_dir.mkdir(parents=True, exist_ok=True)   # create if doesn't exist
+
+    output_path = processed_dir / f"clean_{file.stem}_{datetime.today().strftime('%Y%m%d')}.csv"
+    # process and save...
+    file.rename(Path("data/archive") / file.name)    # move original to archive
+\`\`\`
+
+### The datetime module
+
+\`\`\`python
+from datetime import datetime, timedelta, date
+
+# Current time
+now = datetime.now()
+today = date.today()
+
+# Formatting for filenames
+filename = f"report_{today.strftime('%Y-%m-%d')}.csv"   # "report_2024-01-15.csv"
+
+# Date arithmetic
+yesterday = today - timedelta(days=1)
+last_week = today - timedelta(weeks=1)
+next_month = today + timedelta(days=30)
+
+# Parsing a date string
+date_str = "2024-01-15"
+parsed = datetime.strptime(date_str, "%Y-%m-%d")
+\`\`\`
+
+### Building a real automation: daily sales report
+
+\`\`\`python
+import pandas as pd
+import requests
+import logging
+from datetime import date, timedelta
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+def extract_sales(report_date: date) -> pd.DataFrame:
+    """Pull sales for a specific date from the API."""
+    response = requests.get(
+        "https://api.company.com/sales",
+        params={"date": str(report_date)},
+        headers={"Authorization": f"Bearer {os.environ['SALES_API_KEY']}"},
+        timeout=30
+    )
+    response.raise_for_status()
+    return pd.DataFrame(response.json()["transactions"])
+
+def transform(df: pd.DataFrame) -> dict:
+    """Compute the summary statistics."""
+    return {
+        "date": str(df["date"].iloc[0]),
+        "total_revenue": df["amount"].sum(),
+        "transaction_count": len(df),
+        "top_branch": df.groupby("branch")["amount"].sum().idxmax(),
+        "failed_count": (df["status"] == "failed").sum(),
+    }
+
+def save_report(summary: dict, output_dir: Path) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / f"daily_report_{summary['date']}.txt"
+    with open(output_file, "w", encoding="utf-8") as f:
+        for key, value in summary.items():
+            f.write(f"{key}: {value}\\n")
+    return output_file
+
+def run_daily_report():
+    yesterday = date.today() - timedelta(days=1)
+    logger.info(f"Running daily report for {yesterday}")
+
+    df = extract_sales(yesterday)
+    logger.info(f"Extracted {len(df)} transactions")
+
+    summary = transform(df)
+    output = save_report(summary, Path("reports"))
+    logger.info(f"Report saved to {output}")
+    return summary
+\`\`\`
+
+### Environment variables: the right way to handle secrets
+
+\`\`\`python
+import os
+from dotenv import load_dotenv   # pip install python-dotenv
+
+load_dotenv()    # reads .env file into environment
+
+DB_HOST = os.environ["DB_HOST"]         # raises KeyError if missing
+DB_PASS = os.environ.get("DB_PASS", "") # returns "" if missing
+
+# In your .env file (never commit this to git):
+# DB_HOST=prod-db.company.ng
+# DB_PASS=supersecret123
+# SALES_API_KEY=sk_live_abc123
+\`\`\`
+
+### Command-line arguments: making scripts flexible
+
+\`\`\`python
+import argparse
+
+parser = argparse.ArgumentParser(description="Daily sales pipeline")
+parser.add_argument("--date", help="Date to process (YYYY-MM-DD)", default=None)
+parser.add_argument("--dry-run", action="store_true", help="Run without saving output")
+args = parser.parse_args()
+
+target_date = args.date or str(date.today() - timedelta(days=1))
+\`\`\`
+
+Now you can run \`python pipeline.py --date 2024-01-10\` to reprocess a specific day.`,
+
+      'scenario': `## Scenario: The Monday Morning Report
+
+**Context:** Every Monday at 8:45 AM, your manager manually opens 5 Excel files from 5 regional managers, copies the data into a master sheet, and emails it to the Executive Committee. It takes 2 hours. He's missed the 9 AM meeting twice because of this.
+
+**Your brief:** Build a script that runs automatically every Monday at 8 AM, collects the files, merges them, generates the report, and emails it — all without human involvement.
+
+**Technical requirements:**
+1. Scan a shared folder for files matching \`weekly_*_<YYYY-MM-DD>.xlsx\`
+2. Verify all 5 regional files are present — if not, send a warning email listing which are missing and exit gracefully
+3. Merge the data with a \`source_region\` column added
+4. Calculate summary: total revenue per region, WoW growth (compare to the file from last Monday), top 3 products by revenue
+5. Generate a formatted text report and send it via the \`smtplib\` email library
+
+**Key pattern to use:**
+
+\`\`\`python
+from pathlib import Path
+from datetime import date, timedelta
+
+EXPECTED_REGIONS = ["Lagos", "Abuja", "Kano", "PH", "Enugu"]
+report_date = date.today() - timedelta(days=date.today().weekday() + 7)  # last Monday
+
+present = [
+    r for r in EXPECTED_REGIONS
+    if (Path("reports") / f"weekly_{r}_{report_date}.xlsx").exists()
+]
+missing = [r for r in EXPECTED_REGIONS if r not in present]
+
+if missing:
+    send_warning_email(missing)
+    exit(1)
+\`\`\`
+
+The bigger lesson: a good automation script doesn't just "do the happy path" — it also knows when it can't complete its job safely and communicates that clearly instead of silently producing a partial result.`,
+
       'quizzes': [
         {
-          'question': "Why is it important to include a README.md file when you upload your project to GitHub?",
-          'options': ["A. It makes the code run faster", "B. It explains to other people (and your boss) what the project does and how to use it", "C. It is required by the Nigerian government", "D. It stores the customer passwords"],
+          'question': "Why is `logging.info()` better than `print()` in a production automation script?",
+          'options': [
+            "A. logging is faster than print",
+            "B. logging adds timestamps, severity levels, and can write to files or monitoring systems — print just writes to the terminal",
+            "C. print() doesn't work in automated scripts",
+            "D. logging doesn't require an import"
+          ],
           'correct': 1,
-          'explanation': "The README is the 'front door' of your project. It translates your code into business value for anyone viewing your portfolio."
+          'explanation': "When a pipeline runs at 2 AM with no one watching, print() output disappears. Logging writes timestamped, leveled records to files you can review later. It's also easy to route to monitoring systems like CloudWatch or Datadog."
+        },
+        {
+          'question': "What does this code do?",
+          'code': "from datetime import date, timedelta\nyesterday = date.today() - timedelta(days=1)\nprint(yesterday.strftime('%Y%m%d'))",
+          'options': [
+            "A. Prints yesterday's date as 'YYYY-MM-DD'",
+            "B. Prints yesterday's date as 'YYYYMMDD' with no separators",
+            "C. Raises a TypeError",
+            "D. Prints today's date"
+          ],
+          'correct': 1,
+          'explanation': "timedelta(days=1) subtracted from today gives yesterday. strftime('%Y%m%d') formats it without separators — useful for filenames like 'report_20240115.csv'."
+        },
+        {
+          'question': "Why should secrets like API keys never be hardcoded in a Python script?",
+          'options': [
+            "A. Python can't parse them correctly",
+            "B. They will accidentally be committed to version control where anyone with access can read them",
+            "C. They make the script run slower",
+            "D. They expire after 24 hours"
+          ],
+          'correct': 1,
+          'explanation': "Even 'private' GitHub repos can be accidentally made public. Even local scripts can be shared. The right approach is os.environ.get() with values stored in a .env file that's excluded from version control via .gitignore."
+        },
+        {
+          'question': "What does `processed_dir.mkdir(parents=True, exist_ok=True)` do?",
+          'options': [
+            "A. Raises an error if the directory already exists",
+            "B. Creates the directory (and any missing parent directories) if they don't exist; does nothing if they already do",
+            "C. Deletes and recreates the directory",
+            "D. Creates a file called 'processed_dir'"
+          ],
+          'correct': 1,
+          'explanation': "parents=True means it will create intermediate directories (e.g., 'data/processed/2024' creates 'data' and 'data/processed' if they don't exist). exist_ok=True prevents an exception if the directory already exists."
+        },
+        {
+          'question': "What is the purpose of the `if __name__ == '__main__':` pattern?",
+          'options': [
+            "A. It makes the script run faster",
+            "B. It means the code inside only runs when the file is executed directly, not when it's imported as a module by another script",
+            "C. It's required for all Python scripts",
+            "D. It sets the script's display name"
+          ],
+          'correct': 1,
+          'explanation': "If you have a function `run_pipeline()` in your script, and another script imports it, you don't want the pipeline to auto-run on import. The `if __name__ == '__main__':` guard prevents that. It only runs when you execute the file directly."
+        }
+      ]
+    },
+
+    'Error Handling': {
+      'lesson': `## Error Handling
+
+In production, data pipelines deal with missing files, unreachable APIs, malformed data, and network timeouts on a regular basis. Error handling isn't optional — a script with no error handling will eventually crash silently and leave you with a broken dashboard and no idea why.
+
+### The try/except structure
+
+\`\`\`python
+try:
+    result = do_something_risky()
+except SomeSpecificError as e:
+    handle_the_error(e)
+else:
+    # Runs only if no exception was raised
+    process_result(result)
+finally:
+    # Runs always — exception or not
+    cleanup()
+\`\`\`
+
+### Catching specific exceptions (not everything)
+
+\`\`\`python
+# Bad: catches everything, hides bugs
+try:
+    data = load_data()
+except:
+    print("Something went wrong")
+
+# Good: catch specific, expected errors
+try:
+    with open("sales.csv", "r") as f:
+        data = csv.DictReader(f)
+except FileNotFoundError:
+    logger.error("sales.csv is missing — check the data source")
+    raise    # re-raise so the pipeline knows to stop
+except PermissionError:
+    logger.error("Cannot read sales.csv — check file permissions")
+    raise
+except UnicodeDecodeError as e:
+    logger.error(f"Encoding error in sales.csv: {e}")
+    raise
+\`\`\`
+
+### Common exceptions in data work
+
+\`\`\`python
+# FileNotFoundError — file doesn't exist
+# PermissionError — can't read/write the file
+# ValueError — conversion failed: int("hello")
+# KeyError — dict key doesn't exist: d["missing_key"]
+# IndexError — list position doesn't exist: lst[999]
+# TypeError — wrong type for operation: 5 + "hello"
+# requests.exceptions.ConnectionError — no internet
+# requests.exceptions.Timeout — took too long
+# json.JSONDecodeError — response isn't valid JSON
+
+# Catching requests errors
+import requests
+
+try:
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+    return response.json()
+except requests.exceptions.Timeout:
+    logger.error("API request timed out after 10s")
+    raise
+except requests.exceptions.ConnectionError:
+    logger.error("Cannot reach API — check internet/VPN")
+    raise
+except requests.exceptions.HTTPError as e:
+    logger.error(f"API returned error: {e.response.status_code}")
+    raise
+except requests.exceptions.JSONDecodeError:
+    logger.error(f"API returned non-JSON: {response.text[:200]}")
+    raise
+\`\`\`
+
+### Custom exceptions for business logic
+
+\`\`\`python
+class DataQualityError(Exception):
+    """Raised when incoming data fails quality checks."""
+    pass
+
+class MissingBranchError(Exception):
+    """Raised when an expected branch has no data."""
+    def __init__(self, branch: str, date: str):
+        self.branch = branch
+        self.date = date
+        super().__init__(f"No data for branch '{branch}' on {date}")
+
+def validate_daily_data(df, expected_branches: list):
+    missing = set(expected_branches) - set(df["branch"].unique())
+    if missing:
+        raise MissingBranchError(list(missing)[0], df["date"].iloc[0])
+
+    if df["amount"].isnull().sum() > 0:
+        raise DataQualityError(f"{df['amount'].isnull().sum()} null amounts in dataset")
+\`\`\`
+
+### The retry pattern
+
+\`\`\`python
+import time
+import functools
+
+def retry(max_attempts: int = 3, delay: float = 2.0, backoff: float = 2.0):
+    """Decorator that retries a function on failure."""
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            wait = delay
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return func(*args, **kwargs)
+                except (ConnectionError, TimeoutError) as e:
+                    if attempt == max_attempts:
+                        raise
+                    logger.warning(f"{func.__name__} failed (attempt {attempt}): {e}")
+                    time.sleep(wait)
+                    wait *= backoff    # 2s, 4s, 8s...
+        return wrapper
+    return decorator
+
+@retry(max_attempts=3, delay=5.0)
+def fetch_transactions():
+    return requests.get(url, timeout=10).json()
+\`\`\`
+
+### Logging errors properly
+
+\`\`\`python
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
+
+try:
+    process_file("data.csv")
+except Exception as e:
+    # exc_info=True attaches the full stack trace to the log
+    logger.error("Failed to process file", exc_info=True)
+
+    # For alerting systems: structured log
+    logger.error("PIPELINE_FAILURE", extra={
+        "file": "data.csv",
+        "error_type": type(e).__name__,
+        "error_message": str(e)
+    })
+\`\`\`
+
+### Finally: cleanup that always runs
+
+\`\`\`python
+import sqlite3
+
+conn = None
+try:
+    conn = sqlite3.connect("warehouse.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO transactions VALUES (?, ?)", (1, 5000))
+    conn.commit()
+    logger.info("Transaction saved")
+except sqlite3.Error as e:
+    logger.error(f"Database error: {e}")
+    if conn:
+        conn.rollback()
+finally:
+    if conn:
+        conn.close()    # always close, even if an exception occurred
+\`\`\``,
+
+      'scenario': `## Scenario: The Silent Pipeline Failure
+
+**Context:** Your pipeline runs every night at 2 AM. Last Tuesday, the API it calls was down for maintenance from 1:30–3:00 AM. Your pipeline crashed at 2:00 AM, the morning report was empty, and nobody knew why until 9 AM when the regional managers started calling.
+
+**The current code (no error handling):**
+\`\`\`python
+def run_pipeline():
+    data = fetch_from_api()
+    clean = transform(data)
+    load_to_database(clean)
+    generate_report(clean)
+\`\`\`
+
+**Your job:**
+
+1. Wrap each step in appropriate try/except blocks
+2. Add retry logic (3 attempts, 5-minute backoff) for the API fetch
+3. If the fetch fails all 3 times, fall back to yesterday's cached data (save it daily)
+4. Send a Slack alert via webhook if the pipeline uses fallback data
+5. Log every step with timestamps and outcomes
+
+**Expected behavior after your changes:**
+- API is down: retries 3×, falls back to cache, sends Slack warning, pipeline completes with stale data
+- API returns corrupted data: \`DataQualityError\` is raised, Slack alert with details, pipeline stops gracefully
+- Everything works: silent success, summary logged
+
+A pipeline that "fails gracefully and communicates" is worth ten times a pipeline that "works perfectly until it doesn't."`,
+
+      'quizzes': [
+        {
+          'question': "What is wrong with this error handling?",
+          'code': "try:\n    result = call_external_api()\nexcept:\n    pass",
+          'options': [
+            "A. Nothing — ignoring errors is fine in simple scripts",
+            "B. The bare except: catches everything including KeyboardInterrupt and SystemExit, and pass silently hides all errors — you'll never know the pipeline failed",
+            "C. You need to specify 'Exception' not leave it blank",
+            "D. try/except blocks can't be used with API calls"
+          ],
+          'correct': 1,
+          'explanation': "A bare 'except: pass' is sometimes called 'Pokemon exception handling' (gotta catch 'em all). It swallows every possible error, including keyboard interrupts. The pipeline continues as if nothing happened with whatever partial result it had — often producing wrong output silently."
+        },
+        {
+          'question': "What does this code print?",
+          'code': "try:\n    x = int('hello')\nexcept ValueError:\n    print('caught')\nelse:\n    print('success')\nfinally:\n    print('done')",
+          'options': [
+            "A. caught, done",
+            "B. success, done",
+            "C. caught, success, done",
+            "D. done"
+          ],
+          'correct': 0,
+          'explanation': "int('hello') raises a ValueError, so the except block runs: prints 'caught'. The else block only runs if no exception was raised — so it's skipped. finally always runs: prints 'done'. Output: 'caught' then 'done'."
+        },
+        {
+          'question': "When should you use `raise` inside an except block?",
+          'options': [
+            "A. Never — catching an exception means you've handled it",
+            "B. When you want to log the error but still propagate it up to the caller to decide what to do",
+            "C. Only when using custom exceptions",
+            "D. When the error was caused by user input"
+          ],
+          'correct': 1,
+          'explanation': "A common pattern is: log the error (for observability), then re-raise it (so the caller can decide whether to retry, use fallback data, or halt). If you swallow the exception without re-raising, the calling code thinks everything worked."
+        },
+        {
+          'question': "What is the difference between `except Exception as e` and `except BaseException as e`?",
+          'options': [
+            "A. They are identical",
+            "B. Exception catches most runtime errors; BaseException also catches SystemExit and KeyboardInterrupt — you almost never want to catch those",
+            "C. BaseException is for database errors; Exception is for network errors",
+            "D. BaseException only works in Python 3"
+          ],
+          'correct': 1,
+          'explanation': "SystemExit is raised by sys.exit(). KeyboardInterrupt is raised by Ctrl+C. If you catch BaseException and your pipeline is stuck, Ctrl+C won't work to stop it. Always use 'except Exception' unless you have a specific reason to catch system events."
+        },
+        {
+          'question': "What is the purpose of the `finally` clause?",
+          'options': [
+            "A. It runs only if an exception was raised",
+            "B. It runs only if no exception was raised",
+            "C. It always runs, regardless of whether an exception occurred — used for cleanup like closing database connections",
+            "D. It suppresses the exception"
+          ],
+          'correct': 2,
+          'explanation': "finally is for cleanup that must happen no matter what — closing files, releasing database connections, removing temp files. Without it, if an exception occurs before your cleanup code, the connection stays open or the file stays locked."
+        }
+      ]
+    },
+
+    'Milestone Project': {
+      'lesson': `## Milestone: The Corporate Sales Intelligence Pipeline
+
+This is your first capstone project. You're not building a toy — you're building a data pipeline that reads from a real relational database, merges multiple tables, performs analysis, and produces an executive-ready report.
+
+## The Business Problem
+
+**"Northwind Traders"** is an international import/export company whose management team is making pricing decisions based on gut instinct. Their data lives in a relational SQLite database with 8 interconnected tables, and nobody on the business side can query it. You've been asked to build an automated Python analysis system that extracts insights from the relational data and produces a daily executive summary.
+
+## The Data Source (Public Relational Database)
+
+Download the **Northwind SQLite database** — it's a classic relational database used throughout the industry for learning:
+
+\`\`\`
+URL: https://github.com/jpwhite3/northwind-SQLite3/raw/main/Northwind_large.sqlite
+Tables: Categories, Products, Suppliers, Orders, OrderDetails, Customers, Employees, Shippers
+\`\`\`
+
+This is real relational data: Products belong to Categories, OrderDetails reference both Orders and Products, Customers are linked to Orders, etc.
+
+## Project Tasks
+
+**1. Connect to the SQLite database using Python:**
+\`\`\`python
+import sqlite3
+import pandas as pd
+
+conn = sqlite3.connect("Northwind_large.sqlite")
+
+# Load related tables
+orders = pd.read_sql("SELECT * FROM Orders", conn)
+details = pd.read_sql("SELECT * FROM OrderDetails", conn)
+products = pd.read_sql("SELECT * FROM Products", conn)
+categories = pd.read_sql("SELECT * FROM Categories", conn)
+customers = pd.read_sql("SELECT * FROM Customers", conn)
+conn.close()
+\`\`\`
+
+**2. Join the tables using their foreign keys:**
+\`\`\`python
+# OrderDetails links Orders and Products
+merged = details.merge(products[["ProductID", "ProductName", "CategoryID", "UnitPrice"]],
+                       on="ProductID")
+merged = merged.merge(categories[["CategoryID", "CategoryName"]],
+                       on="CategoryID")
+merged = merged.merge(orders[["OrderID", "CustomerID", "OrderDate", "ShipCountry"]],
+                       on="OrderID")
+# Calculate line total
+merged["LineTotal"] = merged["Quantity"] * merged["UnitPrice"] * (1 - merged["Discount"])
+\`\`\`
+
+**3. Answer these business questions:**
+- Total revenue per product category (sorted descending)
+- Top 10 customers by total spend
+- Month-over-month revenue trend
+- Which country generates the most revenue?
+- Average order value by ShipCountry
+
+**4. Build the Executive Dashboard output:**
+\`\`\`
+==========================================
+   NORTHWIND TRADERS — EXECUTIVE SUMMARY
+==========================================
+Report Generated: 2024-01-15 08:00:00
+Reporting Period: All Time
+
+TOP REVENUE CATEGORIES:
+  1. Beverages        $102,074.31
+  2. Dairy Products    $76,294.77
+  3. Confections       $55,277.60
+
+TOP CUSTOMER:         QUICK-Stop ($117,483.39)
+HIGHEST REVENUE MARKET: Germany ($230,284.90)
+AVG ORDER VALUE:      $1,525.05
+==========================================
+\`\`\`
+
+**5. Data quality checks before reporting:**
+- Flag any OrderDetail rows with missing ProductID (orphaned records)
+- Flag any orders with no matching customer
+- Report the count of cleaned/excluded rows
+
+**6. Deliver to GitHub:**
+- \`pipeline.py\` — the main script
+- \`analysis.ipynb\` — Jupyter notebook with visualizations (optional)
+- \`README.md\` — explains what the pipeline does, how to run it, and the key business insights found
+
+## Presenting This Work
+
+Don't show the code first. Start with the dashboard output and say: "This script connects to the company's relational database, joins 5 tables, performs quality checks, and produces this summary. It runs in under 3 seconds. What used to take an analyst half a day can now be run by anyone with one command: \`python pipeline.py\`."`,
+
+      'scenario': `## Scenario: The CEO's Reprocessing Request
+
+**The situation:** The CEO has seen your pipeline and wants the same analysis for a specific time window: "Can you show me just Q3 2013? And I want to compare it to Q3 2012."
+
+Your script currently processes all-time data. You need to make it flexible enough to accept date range parameters.
+
+**Your job:**
+1. Add command-line arguments for \`--start-date\` and \`--end-date\`
+2. Filter the orders DataFrame to only include orders in that range
+3. Run the same analysis on the filtered data
+4. Print both periods side by side:
+   - Q3 2013 Total Revenue vs Q3 2012 Total Revenue
+   - % change YoY
+   - Any new customers acquired in Q3 2013 who weren't active in Q3 2012
+
+\`\`\`python
+import argparse
+from datetime import datetime
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--start-date", required=True)
+parser.add_argument("--end-date", required=True)
+args = parser.parse_args()
+
+orders["OrderDate"] = pd.to_datetime(orders["OrderDate"])
+mask = (orders["OrderDate"] >= args.start_date) & (orders["OrderDate"] <= args.end_date)
+filtered_orders = orders[mask]
+\`\`\``,
+
+      'quizzes': [
+        {
+          'question': "In the Northwind database, you want to find the total revenue for each product category. Which table join sequence is correct?",
+          'options': [
+            "A. Orders → OrderDetails → Customers",
+            "B. OrderDetails → Products → Categories — because revenue (Quantity × Price) is in OrderDetails, Products holds the name, Categories holds the group",
+            "C. Categories → Suppliers → Products",
+            "D. Customers → Orders → Shippers"
+          ],
+          'correct': 1,
+          'explanation': "OrderDetails contains the actual transaction lines (Quantity, UnitPrice, Discount). Products gives you ProductName and CategoryID. Categories gives you CategoryName. You join them in this chain using their foreign keys."
+        },
+        {
+          'question': "Why is it better to use SQLite with Python than to load the data as CSV files?",
+          'options': [
+            "A. SQLite is faster for single-table operations",
+            "B. SQLite maintains the relational structure and foreign key constraints — you query only what you need rather than loading entire tables",
+            "C. CSV files can't be opened with pandas",
+            "D. SQLite is required for production deployments"
+          ],
+          'correct': 1,
+          'explanation': "With SQL you can filter before loading: SELECT * FROM Orders WHERE ShipCountry = 'Germany'. With CSV you load everything then filter in Python. For large databases this makes a significant performance difference."
+        },
+        {
+          'question': "What does `merge(df1, df2, on='ProductID', how='left')` do vs `how='inner'`?",
+          'options': [
+            "A. They are identical",
+            "B. left keeps all rows from df1 even if there's no matching ProductID in df2 (filling with NaN); inner only keeps rows where ProductID exists in both",
+            "C. left is faster than inner",
+            "D. inner adds a new column; left replaces existing ones"
+          ],
+          'correct': 1,
+          'explanation': "In data analysis, a left join is usually what you want — it keeps your 'base' table complete and adds information from the second table where available. An inner join silently drops rows that don't match, which can cause underreporting if there's a data quality issue."
         }
       ]
     }
   },
+
   'ETL Pipelines': {
     'What is ETL? (Plain English)': {
-      'lesson': `## Why are we learning ETL?
-Data engineering is mostly about moving data from where it is created (like a cash register) to where it is analyzed (like a dashboard). **ETL** stands for **Extract, Transform, Load**. It is the "Pipeline" that makes this journey happen.
+      'lesson': `## ETL: Extract, Transform, Load
 
-## Step-by-Step Tutorial: The 3 Pillars
-1. **Extract**: Grabbing raw data from its source (Excel, a SQL database, or an API).
-2. **Transform**: The "Kitchen" phase. You clean the data, fix typos, calculate totals, and remove private information.
-3. **Load**: Delivering the clean data to its final destination (a Data Warehouse or a CSV for a boss).
+ETL is the backbone of all data engineering. Every company that uses data for decisions has an ETL process — whether it's a formal pipeline or someone manually copying CSVs into Excel. Your job as a data engineer is to automate and harden that process so it runs reliably without human intervention.
 
-## Let's look at a Real Business Example
-Imagine **Shoprite**. Every time a customer buys a soda, that data is created at the cash register.
-- **Extract**: At 11 PM, a script pulls all sales from every branch.
-- **Transform**: The script calculates the total VAT and changes "soda" to "Beverage."
-- **Load**: The clean data is saved into a central database. Now, the CEO can see exactly how much profit was made across all of Nigeria.
+### The three phases, precisely defined
 
-## Common Mistakes to Avoid
-- **Dirty Loading**: Loading data without cleaning it first. If you load ₦5,000 as "5000NGN", your dashboard won't be able to do math on it.
-- **Manual Extract**: Trying to copy-paste data yourself. A real ETL pipeline must be automated.`,
+**Extract** — pulling raw data from its source system exactly as it exists there. You are not cleaning or calculating anything yet. You are taking a snapshot. Sources can be: relational databases (SQL), flat files (CSV, Excel, JSON), APIs (REST, SOAP), message queues (Kafka), or legacy systems with proprietary formats.
+
+**Transform** — applying business logic to the raw data. This is where you clean nulls, standardize formats, calculate new fields, join datasets, deduplicate, and apply rules. The key word is *logic* — every transformation should be defensible ("we exclude refunded orders because they don't represent revenue").
+
+**Load** — writing the transformed data to the destination. This could be a data warehouse (BigQuery, Snowflake, Redshift), a data lake (S3), a reporting database, or a file. Loading strategy matters: do you append, replace, or upsert?
+
+### A minimal but complete ETL pipeline
+
+\`\`\`python
+import pandas as pd
+import sqlite3
+from datetime import date
+
+# EXTRACT
+def extract(source_db: str) -> pd.DataFrame:
+    conn = sqlite3.connect(source_db)
+    df = pd.read_sql(
+        "SELECT * FROM transactions WHERE processed = 0",
+        conn
+    )
+    conn.close()
+    print(f"Extracted {len(df)} unprocessed rows")
+    return df
+
+# TRANSFORM
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    # Drop rows with no amount
+    df = df.dropna(subset=["amount"])
+
+    # Standardize status values
+    df["status"] = df["status"].str.lower().str.strip()
+
+    # Calculate fee (1.5% on all settled transactions)
+    df["fee"] = df.apply(
+        lambda r: r["amount"] * 0.015 if r["status"] == "settled" else 0,
+        axis=1
+    )
+
+    # Add processing date
+    df["processed_date"] = str(date.today())
+
+    print(f"Transformed: {len(df)} rows remain after cleaning")
+    return df
+
+# LOAD
+def load(df: pd.DataFrame, dest_db: str) -> int:
+    conn = sqlite3.connect(dest_db)
+    df.to_sql("clean_transactions", conn, if_exists="append", index=False)
+    conn.close()
+    print(f"Loaded {len(df)} rows to warehouse")
+    return len(df)
+
+# ORCHESTRATE
+def run_etl():
+    raw = extract("production.db")
+    clean = transform(raw)
+    count = load(clean, "warehouse.db")
+    print(f"ETL complete: {count} records processed")
+
+run_etl()
+\`\`\`
+
+### The staging area pattern
+
+Professional ETL never processes data in-place. Raw data is always saved first (staging), then transformed. This gives you a fallback if the transformation logic has a bug.
+
+\`\`\`python
+from pathlib import Path
+import json
+
+def extract_and_stage(api_url: str, stage_dir: str) -> Path:
+    """Extract from API and save raw to staging before any transformation."""
+    import requests
+    response = requests.get(api_url, timeout=30)
+    response.raise_for_status()
+
+    stage_path = Path(stage_dir)
+    stage_path.mkdir(exist_ok=True)
+    output = stage_path / f"raw_{date.today()}.json"
+
+    with open(output, "w") as f:
+        json.dump(response.json(), f)
+
+    print(f"Staged raw data to {output}")
+    return output
+\`\`\`
+
+### Why ETL fails in production (and how to prevent it)
+
+| Failure Type | Example | Prevention |
+|---|---|---|
+| Source unavailable | API is down at 2 AM | Retry logic + fallback to cache |
+| Schema change | Column renamed upstream | Schema validation before transform |
+| Data volume spike | 10x rows on sale day | Chunked processing, memory limits |
+| Duplicate load | Pipeline ran twice | Upsert logic or idempotency keys |
+| Silent data corruption | Wrong dtype after join | Row count + sum checks post-load |`,
+
       'scenario': `## Scenario: The "Where is the Money?" Crisis
-**The situation:** Your manager says the company made ₦10M today, but your dashboard only shows ₦8M.
 
-**Your job:**
-1. Check the **Extract** step: Did the data from the Abuja branch actually arrive?
-2. Check the **Transform** step: Is the math accidentally excluding "Online Payments"?
-3. Check the **Load** step: Is the final database rejecting some rows because they are too large?
+**Context:** The CFO calls you at 9 AM — the dashboard shows ₦8M in yesterday's revenue, but the sales ops team says the actual figure is ₦10M. Two million naira is unaccounted for.
 
-**What the solution looks like:**
-By understanding the ETL flow, you can troubleshoot exactly where the "missing ₦2M" is. You realize the Abuja branch internet was down during the Extract phase. You re-run the script, and the dashboard is fixed.`,
+**Your investigation checklist:**
+
+1. **Check the Extract:** Did all source systems deliver data?
+\`\`\`python
+# Check staging files for yesterday
+from pathlib import Path
+from datetime import date, timedelta
+
+yesterday = date.today() - timedelta(days=1)
+stage_files = list(Path("staging").glob(f"*{yesterday}*.json"))
+print(f"Staging files found: {len(stage_files)}")
+# Expected: 5 (one per region). If 4 — missing region = missing ₦2M
+\`\`\`
+
+2. **Check the Transform:** Is any filter incorrectly excluding rows?
+\`\`\`python
+raw_count = len(raw_df)
+clean_count = len(clean_df)
+dropped = raw_count - clean_count
+print(f"Dropped {dropped} rows during transform ({dropped/raw_count:.1%})")
+# If >5% dropped, investigate the filter logic
+\`\`\`
+
+3. **Check the Load:** Did all rows make it to the warehouse?
+\`\`\`python
+warehouse_count = pd.read_sql(
+    f"SELECT COUNT(*) as n FROM clean_transactions WHERE date = '{yesterday}'",
+    warehouse_conn
+).iloc[0]["n"]
+print(f"Clean rows: {clean_count}, Warehouse rows: {warehouse_count}")
+# These must match
+\`\`\`
+
+The answer in this scenario: the Extract step was scheduled at 11 PM, but the Abuja branch closes their books at midnight. Their data hadn't arrived yet. The fix: move the extract to 1 AM, or add an explicit wait/retry for each branch's data.`,
+
       'quizzes': [
         {
-          'question': "What happens in the 'Transform' phase of ETL?",
-          'options': ["A. Data is deleted", "B. Data is cleaned, calculated, and formatted for the business", "C. Data is moved to a new folder", "D. The computer is turned off"],
+          'question': "What is the purpose of a 'staging area' in ETL?",
+          'options': [
+            "A. To store transformed data before loading",
+            "B. To save raw extracted data before any transformation — so you can re-run transformations if the logic had a bug without re-extracting",
+            "C. A temporary table in the warehouse",
+            "D. The server that runs the ETL script"
+          ],
           'correct': 1,
-          'explanation': "Transformation is where the 'magic' happens. Messy raw data becomes clean, useful business information."
+          'explanation': "Staging preserves the original data. If your transform script has a bug, you don't need to re-hit the source system — you just fix the script and re-process the staged file."
+        },
+        {
+          'question': "Which of these is a Transform step, not an Extract or Load step?",
+          'options': [
+            "A. Reading a CSV file into a DataFrame",
+            "B. Writing clean data to a database table",
+            "C. Converting '₦50,000' string values to float 50000.0 and calculating a fee column",
+            "D. Connecting to the source database"
+          ],
+          'correct': 2,
+          'explanation': "Cleaning data types, applying business rules (fee calculation), and creating derived columns are all Transform operations. Reading = Extract. Writing = Load."
+        },
+        {
+          'question': "What is 'idempotency' in the context of ETL loading?",
+          'options': [
+            "A. The ability to run the load step multiple times and get the same result — no duplicates",
+            "B. The speed of the load operation",
+            "C. Loading data in alphabetical order",
+            "D. Encrypting data during load"
+          ],
+          'correct': 0,
+          'explanation': "If a pipeline crashes midway and reruns, idempotency ensures the same rows aren't loaded twice. Typically achieved with UPSERT (insert if not exists, update if exists) using a unique key."
+        },
+        {
+          'question': "You run your ETL and the row count drops from 50,000 (extracted) to 38,000 (loaded). What should you do?",
+          'options': [
+            "A. Nothing — some rows always get lost",
+            "B. Check each transformation step to find which filter or join is dropping 12,000 rows and verify it's intentional",
+            "C. Re-extract the data",
+            "D. Add the missing rows manually"
+          ],
+          'correct': 1,
+          'explanation': "A 24% row drop is significant and could indicate a bug. Always add row-count assertions between ETL steps. If rows are legitimately excluded (e.g., cancelled orders), log the reason and count."
+        },
+        {
+          'question': "What is wrong with this extract code in a production pipeline?",
+          'code': "conn = sqlite3.connect('production.db')\ndf = pd.read_sql('SELECT * FROM transactions', conn)\n# ... transform ...",
+          'options': [
+            "A. pd.read_sql is not a valid function",
+            "B. SELECT * on a large production table at any time can lock the table and slow down the app — should use incremental extraction with a WHERE clause and run during off-peak hours",
+            "C. The connection is not closed",
+            "D. Both B and C"
+          ],
+          'correct': 3,
+          'explanation': "Two issues: SELECT * with no filter loads the entire history every run (wasteful and locks the table). The connection is also never closed — add conn.close() or use a context manager. Both are real production bugs."
         }
       ]
     },
+
     'The Extract Phase': {
-      'lesson': `## Why are we learning Extraction?
-Extraction is the "First Mile" of data engineering. If you can't get the data out of the source, you can't analyze it. Professionals use Python to "Reach into" systems and pull data automatically.
+      'lesson': `## The Extract Phase
 
-## Step-by-Step Tutorial: Pulling Data
-1. **Source Identification**: Where does the data live? (CSV, SQL, or API).
-2. **Connection**: Using a "Driver" or "Library" (like \`pandas\` or \`requests\`) to talk to that system.
-3. **The Snapshot**: Pulling the data and saving it in a temporary "Staging Area."
+Extraction is where your pipeline meets the real world, and the real world is messy. Source systems weren't designed for you to read from them. They're built to serve the app, and your extraction is a side effect.
 
-## Let's look at a Real Business Example
-**GTBank** extracts thousands of records from their ATM network every hour. Instead of a human checking each ATM, a Python script visits each machine's IP address, "Extracts" the transaction log, and saves it. This allows the bank to detect a broken ATM in seconds.
+### Common extraction sources and how to connect
 
-## Common Mistakes to Avoid
-- **Hard-coding credentials**: Never put a database password directly in your Extract script.
-- **Overloading the source**: If you extract 1 million rows at 2 PM, the database might slow down and prevent customers from buying things. Always extract during "Off-Peak" hours (like midnight).`,
+\`\`\`python
+import pandas as pd
+import sqlite3
+import requests
+
+# 1. From a relational database (SQLite/PostgreSQL/MySQL)
+conn = sqlite3.connect("source.db")
+df = pd.read_sql(
+    "SELECT id, amount, status, created_at FROM transactions WHERE created_at >= date('now', '-1 day')",
+    conn,
+    parse_dates=["created_at"]
+)
+conn.close()
+
+# 2. From a REST API with pagination
+def extract_from_api(base_url: str, api_key: str) -> list:
+    all_records = []
+    page = 1
+    while True:
+        r = requests.get(
+            base_url,
+            params={"page": page, "limit": 500},
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30
+        )
+        r.raise_for_status()
+        batch = r.json().get("data", [])
+        if not batch:
+            break
+        all_records.extend(batch)
+        page += 1
+    return all_records
+
+# 3. From multiple CSV files
+from pathlib import Path
+frames = []
+for f in Path("incoming").glob("*.csv"):
+    frames.append(pd.read_csv(f, encoding="utf-8"))
+df = pd.concat(frames, ignore_index=True)
+\`\`\`
+
+### Incremental extraction: only pull what's new
+
+\`\`\`python
+import json
+from pathlib import Path
+from datetime import datetime
+
+WATERMARK_FILE = Path("watermark.json")
+
+def get_watermark() -> str:
+    if WATERMARK_FILE.exists():
+        return json.loads(WATERMARK_FILE.read_text())["last_extracted"]
+    return "1970-01-01T00:00:00"   # first run: pull everything
+
+def save_watermark(ts: str):
+    WATERMARK_FILE.write_text(json.dumps({"last_extracted": ts}))
+
+def incremental_extract(conn) -> pd.DataFrame:
+    last_ts = get_watermark()
+    df = pd.read_sql(
+        f"SELECT * FROM transactions WHERE updated_at > '{last_ts}'",
+        conn,
+        parse_dates=["updated_at"]
+    )
+    if not df.empty:
+        new_watermark = df["updated_at"].max().isoformat()
+        save_watermark(new_watermark)
+        print(f"Extracted {len(df)} new rows (watermark updated to {new_watermark})")
+    return df
+\`\`\`
+
+### Schema validation: catch changes before they corrupt your pipeline
+
+\`\`\`python
+EXPECTED_COLUMNS = {"id", "amount", "status", "branch", "created_at"}
+EXPECTED_DTYPES = {"amount": "float64", "status": "object"}
+
+def validate_schema(df: pd.DataFrame) -> None:
+    missing = EXPECTED_COLUMNS - set(df.columns)
+    if missing:
+        raise ValueError(f"Schema change detected — missing columns: {missing}")
+
+    for col, expected_dtype in EXPECTED_DTYPES.items():
+        actual = str(df[col].dtype)
+        if actual != expected_dtype:
+            raise TypeError(f"Column '{col}': expected {expected_dtype}, got {actual}")
+
+    print("Schema validation passed")
+\`\`\`
+
+### Handling extraction errors gracefully
+
+\`\`\`python
+import time
+import logging
+
+logger = logging.getLogger(__name__)
+
+def extract_with_retry(query: str, conn_factory, max_attempts=3) -> pd.DataFrame:
+    for attempt in range(1, max_attempts + 1):
+        try:
+            conn = conn_factory()
+            df = pd.read_sql(query, conn)
+            conn.close()
+            logger.info(f"Extracted {len(df)} rows on attempt {attempt}")
+            return df
+        except Exception as e:
+            logger.warning(f"Extract attempt {attempt} failed: {e}")
+            if attempt == max_attempts:
+                raise
+            time.sleep(30 * attempt)   # 30s, 60s, 90s
+\`\`\``,
+
       'scenario': `## Scenario: The Locked Database
-**The situation:** You are trying to extract sales data at 10 AM, but the IT team says you are slowing down the system and customers can't check out.
 
-**Your job:**
-1. Schedule your extraction script to run at 2 AM instead of 10 AM.
-2. Use "Incremental Extraction" (only pull today's rows) instead of pulling the whole history.
+**Context:** Your nightly extract runs at 10 PM. The IT team has flagged that your queries are causing lock contention — online customers are experiencing slow checkouts between 10:00 and 10:45 PM.
 
-**What the solution looks like:**
-You've balanced the needs of the "Business" (speed for customers) with the needs of "Analytics" (data for you). This is the mark of a professional MIS analyst.`,
+**Root cause:** Your extract does \`SELECT * FROM transactions\` on a 50M-row table with no index hint, full table scan, holding a shared lock for 45 minutes.
+
+**Fix 1 — Incremental extraction (pull only new rows):**
+\`\`\`python
+# Instead of full scan
+df = pd.read_sql("SELECT * FROM transactions", conn)
+
+# Use watermark — only rows since last run
+df = pd.read_sql(
+    "SELECT * FROM transactions WHERE id > :last_id",
+    conn, params={"last_id": last_processed_id}
+)
+\`\`\`
+
+**Fix 2 — Use a read replica:**
+Most production databases have a replica server that mirrors the primary but handles read traffic. Point your extract at the replica so your full-table scan never touches the production system.
+
+**Fix 3 — Schedule during off-peak hours:**
+Move the extract to 2 AM when transaction volume is lowest. Add a check: if peak-hour traffic is detected (avg TPS > threshold), delay the extract automatically.
+
+\`\`\`python
+from datetime import datetime
+
+def is_peak_hour() -> bool:
+    hour = datetime.now().hour
+    return 8 <= hour <= 22    # business hours
+
+if is_peak_hour():
+    logger.warning("Skipping extract during peak hours — will retry at 2 AM")
+    sys.exit(0)
+\`\`\``,
+
       'quizzes': [
         {
-          'question': "When is the best time to perform a large data extraction from a production database?",
-          'options': ["A. During peak business hours", "B. Monday morning at 9 AM", "C. During off-peak hours (like midnight) when the system is not busy", "D. Never, just use Excel"],
-          'correct': 2,
-          'explanation': "Extraction can be 'heavy'. Doing it at night ensures you don't slow down the system for paying customers."
+          'question': "What is a 'watermark' in incremental extraction?",
+          'options': [
+            "A. A security stamp on exported files",
+            "B. A saved timestamp or ID marking where the last extraction ended, used to pull only new/changed records next time",
+            "C. A limit on how many rows to extract",
+            "D. An encryption method for extracted data"
+          ],
+          'correct': 1,
+          'explanation': "The watermark is your bookmark. Instead of re-reading 50M rows every night, you remember 'last time I stopped at row 4,872,104' and next time you only fetch rows after that point."
+        },
+        {
+          'question': "What does this code do differently from `SELECT * FROM transactions`?",
+          'code': "df = pd.read_sql(\n    \"SELECT * FROM transactions WHERE created_at > :ts\",\n    conn,\n    params={'ts': last_run_timestamp}\n)",
+          'options': [
+            "A. It runs faster because SQL is compiled",
+            "B. It only extracts rows created after the last pipeline run — incremental extraction",
+            "C. It extracts from a different table",
+            "D. It validates the schema"
+          ],
+          'correct': 1,
+          'explanation': "The WHERE clause filters at the database level before data is transferred to Python. This is far more efficient than pulling everything and filtering in Pandas — especially on tables with millions of rows."
+        },
+        {
+          'question': "Why is hardcoding `SELECT *` dangerous in a production extract?",
+          'options': [
+            "A. It is slower than named columns",
+            "B. If the source table adds a column with sensitive data (SSNs, passwords), your pipeline silently starts extracting it",
+            "C. * is not valid SQL",
+            "D. It returns too many rows"
+          ],
+          'correct': 1,
+          'explanation': "Schema changes in source systems are common. SELECT * means you get whatever columns exist, including ones you don't want. Explicitly naming columns also documents your data contract and catches unexpected schema changes."
+        },
+        {
+          'question': "You need to extract data from 5 different branch CSV files and combine them. What must you add to the combined DataFrame that's missing from the individual files?",
+          'options': [
+            "A. A row index",
+            "B. A source identifier column (e.g., 'branch_name') so you know which file each row came from after merging",
+            "C. A timestamp",
+            "D. A hash column"
+          ],
+          'correct': 1,
+          'explanation': "When you concat multiple files, all rows look identical structurally. Adding a source column before concatenation lets you filter, audit, and debug by source later."
         }
       ]
     },
+
     'Cleaning & Transforming Data': {
-      'lesson': `## Why are we learning Transformation?
-Transformation is where you add **Value**. Raw data is just a pile of bricks; transformation is the process of building a house.
+      'lesson': `## Cleaning & Transforming Data
 
-## Step-by-Step Tutorial: The "Cleaning" Checklist
-1. **Standardization**: Change all dates to the same format (\`YYYY-MM-DD\`).
-2. **Currency Conversion**: Convert all prices (USD, GBP) into Naira using a live exchange rate.
-3. **De-duplication**: If a customer is listed twice by mistake, delete the duplicate.
-4. **Calculations**: Create new columns like "Profit Margin" (Revenue - Cost).
+Transformation is where raw data becomes business-grade data. The goal isn't just "make it clean" — it's to apply documented, reproducible rules that any analyst can understand and verify.
 
-## Let's look at a Real Business Example
-**Paystack** receives payment data from thousands of websites. Some write "lagos", some write "LAGOS", and some write "Lagos State." Paystack uses a transformation script to change all of these to just "Lagos" so their "Sales by City" chart is accurate.
+### The standard cleaning checklist
 
-## Common Mistakes to Avoid
-- **Losing the Raw Data**: Never delete your original messy data. If your transformation script has a bug, you'll need the raw data to try again.
-- **Formatting in Excel**: Don't manually fix data in a spreadsheet. Use a script so the cleaning happens automatically every time new data arrives.`,
+\`\`\`python
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv("raw_transactions.csv")
+
+# 1. Check what you're working with
+print(df.shape)
+print(df.dtypes)
+print(df.isnull().sum())
+print(df.duplicated().sum())
+
+# 2. Fix column names (lowercase, underscores)
+df.columns = df.columns.str.lower().str.replace(" ", "_").str.strip()
+
+# 3. Fix data types
+df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+df["transaction_date"] = pd.to_datetime(df["transaction_date"], errors="coerce")
+
+# 4. Standardize string values
+df["status"] = df["status"].str.lower().str.strip()
+df["branch"] = df["branch"].str.title().str.strip()
+
+# 5. Handle nulls with intention
+df = df.dropna(subset=["amount", "transaction_id"])   # required fields
+df["notes"] = df["notes"].fillna("")                   # optional field
+df["fee"] = df["fee"].fillna(0.0)                      # default to zero
+
+# 6. Remove duplicates
+before = len(df)
+df = df.drop_duplicates(subset=["transaction_id"])
+print(f"Removed {before - len(df)} duplicate transaction IDs")
+\`\`\`
+
+### Applying business rules as transformations
+
+\`\`\`python
+# Categorize transaction sizes
+def categorize_size(amount: float) -> str:
+    if amount >= 1_000_000:  return "enterprise"
+    if amount >= 100_000:    return "large"
+    if amount >= 10_000:     return "medium"
+    return "small"
+
+df["size_tier"] = df["amount"].apply(categorize_size)
+
+# Calculate net amount after fee
+FEE_RATE = 0.015
+df["fee"] = df.apply(
+    lambda r: round(r["amount"] * FEE_RATE, 2) if r["status"] == "settled" else 0,
+    axis=1
+)
+df["net_amount"] = df["amount"] - df["fee"]
+
+# Flag suspicious records without deleting them
+df["flagged"] = (
+    (df["amount"] > 500_000) &
+    (df["transaction_date"].dt.hour < 5)
+)
+\`\`\`
+
+### Currency and format normalization
+
+\`\`\`python
+def clean_currency(val) -> float:
+    """Handle ₦1,250,000.00 or 1.250.000,00 or 1250000"""
+    if pd.isnull(val):
+        return np.nan
+    s = str(val).strip()
+    # Remove currency symbols and spaces
+    for ch in ["₦", "$", "€", "£", ",", " "]:
+        s = s.replace(ch, "")
+    # European decimal comma
+    if s.count(".") > 1:
+        s = s.replace(".", "").replace(",", ".")
+    try:
+        return float(s)
+    except ValueError:
+        return np.nan
+
+df["amount"] = df["raw_amount"].apply(clean_currency)
+\`\`\`
+
+### Asserting data quality after transformation
+
+\`\`\`python
+def assert_quality(df: pd.DataFrame, source_count: int) -> None:
+    """Run quality checks and raise if data doesn't meet expectations."""
+    assert len(df) > 0, "Transform produced empty DataFrame"
+    assert len(df) >= source_count * 0.95, \
+        f"Too many rows dropped: {source_count} → {len(df)}"
+    assert df["amount"].isnull().sum() == 0, \
+        f"{df['amount'].isnull().sum()} null amounts after cleaning"
+    assert (df["amount"] >= 0).all(), \
+        "Negative amounts found — check refund handling logic"
+    assert df["transaction_id"].nunique() == len(df), \
+        "Duplicate transaction IDs after deduplication"
+    print(f"Quality checks passed: {len(df)} rows")
+\`\`\``,
+
       'scenario': `## Scenario: The Duplicate Customer Disaster
-**The situation:** Your company ran a promo, and 500 customers signed up twice with different emails. Your "Total Customers" report is now wrong.
+
+**Context:** A "Refer a Friend" promo had a bug — users who clicked the referral link multiple times got registered multiple times. Your CRM now has 12,400 records but the marketing team can only find 9,800 unique email addresses. Management is about to announce "12,400 users" to investors.
 
 **Your job:**
-1. Write a Python script to find customers with the same "Phone Number."
-2. Delete the duplicate rows, keeping only the most recent one.
 
-**What the solution looks like:**
-You've restored "Data Integrity." The CEO now has the real number of customers, which helps him plan the budget for next year correctly.`,
+\`\`\`python
+import pandas as pd
+
+df = pd.read_csv("customers.csv")
+print(f"Raw count: {len(df)}")   # 12,400
+
+# Step 1: Understand the duplicates
+dups = df[df.duplicated(subset=["email"], keep=False)]
+print(f"Rows involved in email duplicates: {len(dups)}")
+
+# Step 2: For each email, keep the earliest registration
+df["created_at"] = pd.to_datetime(df["created_at"])
+df_clean = (
+    df.sort_values("created_at")
+      .drop_duplicates(subset=["email"], keep="first")
+      .reset_index(drop=True)
+)
+print(f"After deduplication: {len(df_clean)}")  # 9,800
+
+# Step 3: Document what was removed
+removed = df[~df["customer_id"].isin(df_clean["customer_id"])]
+removed.to_csv("dedup_audit_log.csv", index=False)
+print(f"Audit log: {len(removed)} duplicate records archived")
+\`\`\`
+
+The audit log matters: you're not deleting data, you're archiving it with justification. This is how you defend your transformation logic if an auditor asks "where did those 2,600 customers go?"`,
+
       'quizzes': [
         {
-          'question': "What is 'De-duplication' in data transformation?",
-          'options': ["A. Adding more data", "B. Removing identical records that were accidentally saved twice", "C. Changing the data type", "D. Sending an email"],
-          'correct': 1,
-          'explanation': "Duplicates lead to 'double counting', which makes your reports lie. De-duplication ensures each event is only counted once."
-        }
-      ]
-    },
-    'Loading into a Warehouse': {
-      'lesson': `## Why are we learning Loading?
-Loading is the final step. You've extracted the data and cleaned it; now you must "Park" it in a secure, high-performance home called a **Data Warehouse** (like Google BigQuery or Snowflake) so people can use it.
-
-## Step-by-Step Tutorial: The Delivery
-1. **Destination Schema**: Creating a table that has exactly the right columns to fit your clean data.
-2. **Upsert vs. Append**: 
-   - **Append**: Just add the new rows to the end.
-   - **Upsert**: If the row already exists, update it; if not, add it.
-3. **Verification**: Checking that 100 rows were sent and 100 rows arrived.
-
-## Let's look at a Real Business Example
-A bank like **Kuda** loads their "Clean Transactions" into a warehouse every 30 minutes. This warehouse is separate from their "Banking App." Why? So that analysts can run heavy reports all day without slowing down the app for customers.
-
-## Common Mistakes to Avoid
-- **Loading into Production**: Never load your analytics data back into the main database that runs the app. Use a separate Warehouse.
-- **No Error Checks**: If the loading fails and you don't know, your dashboard will be empty. Always check the "Load Status."`,
-      'scenario': `## Scenario: The "App is Slow" Complaint
-**The situation:** You are running your analytics reports directly on the main database. Every time you run a "Top Customers" query, the mobile app becomes slow for everyone.
-
-**Your job:**
-1. Create a separate **Data Warehouse**.
-2. Update your ETL pipeline to "Load" the data into this Warehouse once a night.
-3. Tell the analysts to run their reports only on the Warehouse.
-
-**What the solution looks like:**
-You've improved the "System Architecture." The app stays fast for customers, and the analysts can run as many reports as they want without any risk.`,
-      'quizzes': [
-        {
-          'question': "Why do companies use a separate 'Data Warehouse' for analytics instead of the main app database?",
-          'options': ["A. To waste money", "B. To ensure that heavy analytics reports don't slow down the main app for customers", "C. Because warehouses are bigger than databases", "D. To hide data from hackers"],
-          'correct': 1,
-          'explanation': "Separating 'Production' (the app) from 'Analytics' (the reports) is a fundamental rule of MIS and Data Engineering."
-        }
-      ]
-    },
-    'Handling Pipeline Failures': {
-      'lesson': `## Why are we learning Failure Handling?
-In the real world, things break. The internet cuts out, a password changes, or a file is missing. If your ETL pipeline crashes and stays dead, the business stops getting its reports. Handling failures is what separates a "Student" from a "Senior Engineer."
-
-## Step-by-Step Tutorial: Building Resilient Systems
-1. **Retries**: If a connection fails, don't give up! Tell the computer to wait 5 minutes and try again. 90% of errors are temporary.
-2. **Alerting**: If the script fails 3 times, send an immediate Slack/Email to you. "Hey! The pipeline is broken. Check the Abuja branch connection."
-3. **Idempotency**: Ensuring that if you run a failed job again, it doesn't create duplicate rows. (e.g., using \`id\` to check if a row already exists).
-
-## Let's look at a Real Business Example
-**Flutterwave** processes millions of transactions. If their reconciliation pipeline fails at 2 AM, it doesn't just stop. It "Retries" automatically. If it still fails, it sends a "Critical Alert" to an engineer's phone. This ensures that even if there's a problem, it is fixed before the CEO wakes up at 8 AM.
-
-## Common Mistakes to Avoid
-- **Silent Failures**: The worst error is one you don't know about. If your script fails, it MUST shout (alert you).
-- **Infinite Retries**: Don't tell your script to "try forever." If the password is wrong, it will never work. Set a limit of 3 or 5 tries.`,
-      'scenario': `## Scenario: The Midnight Crash
-**The situation:** You wake up at 8 AM and find your dashboard is empty. You check the code and see it crashed at 3 AM because the "Sales" file was missing.
-
-**Your job:**
-1. Add a \`try / except\` block to catch the error.
-2. Inside the \`except\` block, add a function that sends you an alert.
-3. Add a "Retry" rule to try again in 10 minutes.
-
-**What the solution looks like:**
-You've moved from "Building things that work" to "Building things that recover." Next time the file is 5 minutes late, the "Retry" will catch it automatically, and the dashboard will be ready when you wake up.`,
-      'quizzes': [
-        {
-          'question': "What is the best way to handle a temporary network failure in a data pipeline?",
-          'options': ["A. Delete the script", "B. Implement an 'Automated Retry' logic that waits and tries again", "C. Call the internet provider", "D. Do nothing and hope it works tomorrow"],
-          'correct': 1,
-          'explanation': "Network issues are often temporary. Retrying a few times automatically solves most of these problems without any human effort."
-        }
-      ]
-    },
-    'Incremental vs Full Loads': {
-      'lesson': `## Why are we learning Load Strategies?
-Efficiency is everything. If you have 10 years of sales data (100 million rows) and you only want to add today's sales (1,000 rows), a "Full Load" is a massive waste of time and money.
-
-## Step-by-Step Tutorial: The Trade-off
-1. **Full Load (Beginner)**: Deleting the whole table and replacing it with everything from the source.
-   - **Pros**: Very easy to build.
-   - **Cons**: Extremely slow as your company grows.
-2. **Incremental Load (Pro)**: Only pulling and adding the rows that have been created *since the last time* the job ran.
-   - **Pros**: Lightning fast, uses very little cloud power.
-   - **Cons**: Harder to build (you need a "Watermark" or timestamp to know where you stopped).
-
-## Let's look at a Real Business Example
-**Uber** doesn't reload every ride since 2010 every time you finish a trip. They use **Incremental Loading**. As soon as your ride ends, that one row is "Extracted" and "Loaded" into their warehouse. This allows them to see global traffic patterns in near real-time.
-
-## Common Mistakes to Avoid
-- **Loading Duplicates**: If you run an incremental load twice for the same day, you might end up with double the sales. Always use a "Unique ID" check to prevent this.
-- **Forgetting the Watermark**: If you don't keep track of the "Last Date Loaded," your script won't know which rows are new.`,
-      'scenario': `## Scenario: The Growing Cloud Bill
-**The situation:** Your company's data is growing fast. Your "Full Load" job used to take 5 minutes and cost ₦1k/day. Now it takes 2 hours and costs ₦50k/day.
-
-**Your job:**
-1. Switch to **Incremental Loading**.
-2. Update your SQL to only pull rows where \`date = today\`.
-3. Watch the cost drop back down and the speed increase instantly.
-
-**What the solution looks like:**
-You've "Future-Proofed" the pipeline. It doesn't matter if the company grows to a billion rows; your daily job only ever processes the new ones, keeping the system fast and the costs low.`,
-      'quizzes': [
-        {
-          'question': "When should you choose an 'Incremental Load' over a 'Full Load'?",
-          'options': ["A. When the dataset is very small", "B. When you want to replace all old data", "C. When the dataset is large and you only need to add new records to save time and cost", "D. Never, full loads are always better"],
+          'question': "What does `pd.to_numeric(df['amount'], errors='coerce')` do to a value like '₦50,000'?",
+          'options': [
+            "A. Raises a ValueError",
+            "B. Converts it to 50000.0",
+            "C. Converts it to NaN because '₦50,000' cannot be parsed as a number directly",
+            "D. Converts it to the string '50000'"
+          ],
           'correct': 2,
-          'explanation': "Incremental loading is the key to 'Scaling'. It allows you to handle massive datasets by only working on the 'Change' rather than the 'Whole'."
+          'explanation': "errors='coerce' turns unparseable values into NaN instead of crashing. '₦50,000' has a symbol and comma that float() can't handle. You must clean the string first (remove ₦ and commas), then convert."
+        },
+        {
+          'question': "What is the difference between `dropna()` and `fillna()`?",
+          'options': [
+            "A. dropna removes rows with nulls; fillna replaces nulls with a specified value",
+            "B. They are the same operation",
+            "C. dropna is for columns; fillna is for rows",
+            "D. dropna works on strings; fillna works on numbers"
+          ],
+          'correct': 0,
+          'explanation': "Use dropna for fields where a missing value makes the entire row unusable (e.g., a transaction with no amount). Use fillna for optional fields where a default is valid (e.g., fill missing 'notes' with empty string)."
+        },
+        {
+          'question': "What does `df.drop_duplicates(subset=['transaction_id'], keep='first')` do?",
+          'options': [
+            "A. Removes all rows with duplicate transaction IDs",
+            "B. Keeps the first occurrence of each transaction ID and removes subsequent duplicates",
+            "C. Sorts the DataFrame by transaction ID",
+            "D. Raises an error if duplicates are found"
+          ],
+          'correct': 1,
+          'explanation': "subset=['transaction_id'] means 'only consider this column when identifying duplicates'. keep='first' means 'for each group of duplicates, keep the row that appears first in the DataFrame'."
+        },
+        {
+          'question': "Why should you save removed/excluded rows to an audit log rather than just deleting them?",
+          'options': [
+            "A. To save disk space",
+            "B. So you can verify your transformation logic is correct and defend it to auditors or management",
+            "C. It makes the pipeline run faster",
+            "D. Pandas requires it"
+          ],
+          'correct': 1,
+          'explanation': "In regulated industries (finance, healthcare), you must be able to prove why data was excluded. An audit log turns 'trust me, I cleaned the data' into 'here are the 2,600 rows that were duplicates and when they were created'."
+        },
+        {
+          'question': "What is wrong with this transformation logic?",
+          'code': "# Apply 15% fee to all transactions\ndf['fee'] = df['amount'] * 0.15",
+          'options': [
+            "A. The math is wrong",
+            "B. The fee should only apply to certain statuses — applying it to pending/failed transactions silently inflates fee totals",
+            "C. You cannot multiply a Series by a float",
+            "D. Nothing is wrong"
+          ],
+          'correct': 1,
+          'explanation': "Applying fees to all rows regardless of status is a business logic error. A pending transaction hasn't been settled — charging a fee on it produces incorrect financials. Transformation rules must encode the actual business definition, not just math."
         }
       ]
     },
-    'ETL vs ELT': {
-      'lesson': `## Why are we learning ELT?
-Traditional **ETL** cleans data *before* saving it. Modern **ELT** (Extract, Load, Transform) saves the raw data first and cleans it *inside* the warehouse. This is the #1 trend in modern data engineering.
 
-## Step-by-Step Tutorial: The Modern Shift
-1. **ETL (Old Way)**: Best for when you have very sensitive data (like credit card numbers) that you MUST hide before it reaches the cloud.
-2. **ELT (Modern Way)**: Best for speed and flexibility. You "dump" everything into a Data Lake (like S3) and use the power of the warehouse to clean it up with SQL.
-3. **The "T" (dbt)**: In ELT, the Transformation is usually done using a tool called **dbt**, which we will learn later.
+    'Loading into a Warehouse': {
+      'lesson': `## Loading into a Data Warehouse
 
-## Let's look at a Real Business Example
-**Paystack** uses ELT. They pipe every raw event (clicks, logins, payments) into a "Data Lake." Then, their analysts use SQL to build "Models" that show conversion rates. If the business rules change, they just update the SQL—they don't have to re-extract the data because the "Raw History" is already there.
+Loading is the final step, but it's not just "save the file." The loading strategy you choose affects query performance, storage cost, freshness of data, and whether your pipeline can recover from failures.
 
-## Common Mistakes to Avoid
-- **Losing the Raw Data**: In ETL, if you make a mistake in your cleaning logic, the raw data is gone. In ELT, you keep the raw data forever, so you can always fix your mistakes.
-- **Transforming too early**: Don't waste time cleaning data that nobody will ever use. ELT allows you to load everything and only clean what is actually needed for a report.`,
-      'scenario': `## Scenario: The "Oops, We Forgot a Column" Problem
-**The situation:** You used ETL to process sales data and deleted the "Customer IP" column. 6 months later, the CEO wants to see "Fraud by City." You can't do it because the IP data is gone.
+### Load strategies
 
-**Your job:**
-1. Propose a switch to ELT.
-2. Load the "Raw" data first.
-3. Use SQL to create a "View" that includes the IP column.
+\`\`\`python
+import pandas as pd
+import sqlite3
 
-**What the solution looks like:**
-By adopting ELT, you've created a "Time Machine." Since you have the raw data safely stored, you can answer any new question that comes up in the future, even if you didn't plan for it 6 months ago.`,
+# APPEND — add new rows to existing data
+def append_load(df: pd.DataFrame, table: str, conn):
+    df.to_sql(table, conn, if_exists="append", index=False)
+    print(f"Appended {len(df)} rows to {table}")
+
+# FULL REPLACE — delete all existing data and reload
+def full_replace_load(df: pd.DataFrame, table: str, conn):
+    df.to_sql(table, conn, if_exists="replace", index=False)
+    print(f"Replaced {table} with {len(df)} rows")
+
+# UPSERT — update if exists, insert if not (manual implementation for SQLite)
+def upsert_load(df: pd.DataFrame, table: str, key_col: str, conn):
+    cursor = conn.cursor()
+    for _, row in df.iterrows():
+        placeholders = ", ".join(["?"] * len(row))
+        cols = ", ".join(row.index)
+        cursor.execute(
+            f"INSERT OR REPLACE INTO {table} ({cols}) VALUES ({placeholders})",
+            tuple(row)
+        )
+    conn.commit()
+    print(f"Upserted {len(df)} rows into {table}")
+\`\`\`
+
+### When to use each strategy
+
+| Strategy | Use When | Risk |
+|---|---|---|
+| Append | Source only produces new records (event logs) | Duplicates if pipeline reruns |
+| Full Replace | Small reference tables (product catalog) | Downtime between delete and insert |
+| Upsert | Records can be updated (customer profiles, order status) | Slower than append |
+| Incremental Table | Partitioned warehouse tables (daily partitions) | Complex to implement |
+
+### Post-load validation
+
+\`\`\`python
+def validate_load(df_sent: pd.DataFrame, table: str, conn, date_col: str, date_val: str):
+    """Confirm what was sent matches what was received."""
+    query = f"SELECT COUNT(*) as n, SUM(amount) as total FROM {table} WHERE {date_col} = '{date_val}'"
+    result = pd.read_sql(query, conn).iloc[0]
+
+    expected_count = len(df_sent)
+    expected_total = df_sent["amount"].sum()
+
+    if result["n"] != expected_count:
+        raise ValueError(f"Row count mismatch: sent {expected_count}, got {result['n']}")
+
+    if abs(result["total"] - expected_total) > 0.01:
+        raise ValueError(f"Amount mismatch: sent {expected_total:.2f}, got {result['total']:.2f}")
+
+    print(f"Load validated: {expected_count} rows, ₦{expected_total:,.2f} total")
+\`\`\`
+
+### Separation of production from analytics
+
+\`\`\`python
+# Production database — serves the app
+PROD_DB = "postgresql://user:pass@prod-server/appdb"
+
+# Analytics warehouse — separate server, analysts only
+WAREHOUSE_DB = "postgresql://user:pass@warehouse-server/analytics"
+
+# ETL reads from production, writes to warehouse
+# Analysts ONLY query the warehouse — never the production DB
+def run_etl():
+    raw = pd.read_sql(EXTRACT_QUERY, create_engine(PROD_DB))
+    clean = transform(raw)
+    clean.to_sql("clean_transactions", create_engine(WAREHOUSE_DB),
+                 if_exists="append", index=False)
+\`\`\``,
+
+      'scenario': `## Scenario: The "App is Slow" Complaint
+
+**Context:** The development team has flagged that customer-facing API response times spiked from 120ms to 4,200ms every night between 10 PM and midnight. They traced it to your analytics queries running against the production database.
+
+**Your fix — separate the analytics load:**
+
+1. Set up a lightweight SQLite warehouse locally (or use a cloud warehouse in production)
+2. Update the pipeline to load clean data there instead of querying production
+3. Point all reporting scripts at the warehouse
+
+\`\`\`python
+import sqlite3
+import pandas as pd
+
+# Create warehouse schema (run once)
+warehouse = sqlite3.connect("analytics_warehouse.db")
+warehouse.execute("""
+    CREATE TABLE IF NOT EXISTS fact_transactions (
+        transaction_id TEXT PRIMARY KEY,
+        branch TEXT,
+        amount REAL,
+        fee REAL,
+        net_amount REAL,
+        status TEXT,
+        channel TEXT,
+        transaction_date TEXT,
+        loaded_at TEXT
+    )
+""")
+warehouse.commit()
+
+# Nightly load: reads from prod, writes to warehouse
+def nightly_etl():
+    prod = sqlite3.connect("production.db")
+    raw = pd.read_sql("SELECT * FROM transactions WHERE DATE(created_at) = DATE('now', '-1 day')", prod)
+    prod.close()
+
+    clean = transform(raw)
+    clean["loaded_at"] = pd.Timestamp.now().isoformat()
+
+    # Upsert to avoid duplicates on reruns
+    warehouse = sqlite3.connect("analytics_warehouse.db")
+    for _, row in clean.iterrows():
+        warehouse.execute(
+            "INSERT OR REPLACE INTO fact_transactions VALUES (?,?,?,?,?,?,?,?,?)",
+            tuple(row[["transaction_id","branch","amount","fee","net_amount","status","channel","transaction_date","loaded_at"]])
+        )
+    warehouse.commit()
+    warehouse.close()
+\`\`\``,
+
       'quizzes': [
         {
-          'question': "What is the main advantage of ELT over ETL?",
-          'options': ["A. It is cheaper to build", "B. It allows you to keep the raw data history so you can change your transformation logic later", "C. It uses less internet", "D. It only works with Excel"],
+          'question': "What does `if_exists='append'` do in `df.to_sql()`?",
+          'options': [
+            "A. Creates the table if it doesn't exist; fails if it does",
+            "B. Adds new rows to the existing table without deleting existing data",
+            "C. Replaces the entire table with the new data",
+            "D. Updates existing rows"
+          ],
           'correct': 1,
-          'explanation': "ELT is about 'Flexibility'. By saving the raw data first, you can re-run your transformations as many times as you want if the business rules change."
+          'explanation': "if_exists has three options: 'fail' (raise error if table exists), 'replace' (drop and recreate), 'append' (add rows to existing). For incremental daily loads, 'append' is correct."
+        },
+        {
+          'question': "Why do companies maintain a separate data warehouse instead of running analytics directly on the production database?",
+          'options': [
+            "A. Warehouses are more secure",
+            "B. Heavy analytical queries (full-table scans, complex joins) slow down production databases and impact real users — separation protects app performance",
+            "C. It is required by law",
+            "D. Production databases can't run SQL"
+          ],
+          'correct': 1,
+          'explanation': "An OLTP (Online Transaction Processing) database is optimized for fast writes and single-row reads. An OLAP (Online Analytical Processing) warehouse is optimized for aggregate queries. Mixing them on the same server creates contention."
+        },
+        {
+          'question': "What is the risk of using `if_exists='replace'` for a daily load?",
+          'options': [
+            "A. It's too slow",
+            "B. There's a window of time between dropping the old table and finishing the new insert where anyone querying the table gets no data",
+            "C. It duplicates all rows",
+            "D. It doesn't support large datasets"
+          ],
+          'correct': 1,
+          'explanation': "Full replace creates a 'dark window' — for however long the new data takes to load, the table is empty or partially populated. Use staging tables (write to a temp table, then swap) to avoid this."
         }
       ]
     },
+
+    'Handling Pipeline Failures': {
+      'lesson': `## Handling Pipeline Failures
+
+Production pipelines will fail. The question isn't whether, it's how often and how gracefully. A senior engineer is distinguished not by writing pipelines that never fail, but by writing pipelines that fail predictably, recover automatically, and communicate clearly.
+
+### The four types of pipeline failures
+
+1. **Transient failures** — network blip, API timeout, database briefly busy. Fix: retry with backoff.
+2. **Data quality failures** — unexpected nulls, wrong types, out-of-range values. Fix: validation + alerting.
+3. **Infrastructure failures** — disk full, memory exhausted, service down. Fix: monitoring + alerting.
+4. **Logic failures** — bug in your transform code. Fix: unit tests, audit logs, rollback.
+
+### Retry with exponential backoff
+
+\`\`\`python
+import time, logging
+
+logger = logging.getLogger(__name__)
+
+def retry(func, max_attempts=3, base_delay=10):
+    """Retry a function with exponential backoff."""
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return func()
+        except (ConnectionError, TimeoutError, OSError) as e:
+            if attempt == max_attempts:
+                logger.error(f"All {max_attempts} attempts failed: {e}")
+                raise
+            wait = base_delay * (2 ** (attempt - 1))   # 10s, 20s, 40s
+            logger.warning(f"Attempt {attempt} failed: {e}. Retrying in {wait}s")
+            time.sleep(wait)
+
+# Usage
+raw_data = retry(lambda: fetch_from_api(url))
+\`\`\`
+
+### Checkpointing: resume from where you stopped
+
+\`\`\`python
+import json
+from pathlib import Path
+
+CHECKPOINT = Path("checkpoint.json")
+
+def save_checkpoint(state: dict):
+    CHECKPOINT.write_text(json.dumps(state))
+
+def load_checkpoint() -> dict:
+    if CHECKPOINT.exists():
+        return json.loads(CHECKPOINT.read_text())
+    return {}
+
+def process_files(files: list):
+    checkpoint = load_checkpoint()
+    start_from = checkpoint.get("last_processed_index", 0)
+
+    for i, file in enumerate(files[start_from:], start=start_from):
+        logger.info(f"Processing {file.name} ({i+1}/{len(files)})")
+        process_single_file(file)
+        save_checkpoint({"last_processed_index": i + 1, "file": file.name})
+
+    CHECKPOINT.unlink(missing_ok=True)   # clean up on success
+    logger.info("All files processed")
+\`\`\`
+
+### Alerting when things go wrong
+
+\`\`\`python
+import requests as req
+
+def send_slack_alert(message: str, webhook_url: str):
+    try:
+        req.post(webhook_url, json={"text": message}, timeout=5)
+    except Exception:
+        pass   # Don't let alerting failure cascade into a bigger problem
+
+def run_pipeline_with_alerts():
+    webhook = os.environ["SLACK_WEBHOOK"]
+    try:
+        result = run_pipeline()
+        # Only alert on success if something unusual happened
+        if result["warnings"]:
+            send_slack_alert(f"⚠️ Pipeline completed with warnings: {result['warnings']}", webhook)
+    except Exception as e:
+        send_slack_alert(f"🚨 PIPELINE FAILED\\n{type(e).__name__}: {e}", webhook)
+        raise
+\`\`\``,
+
+      'scenario': `## Scenario: The Midnight Crash
+
+**Context:** Your pipeline failed at 3 AM. It was processing 365 daily files to build the annual summary. It successfully processed 280 files, then crashed on file 281 due to a corrupted date column. By 8 AM, nobody had a report and nobody knew why.
+
+**What you need to fix:**
+
+1. Add checkpoint logic so if it fails on file 281, restarting picks up from 281, not from 1
+2. Add per-file error handling — log the bad file and continue instead of stopping everything
+3. Send an alert when a file is skipped
+
+\`\`\`python
+errors = []
+
+for i, file in enumerate(files[start_from:], start=start_from):
+    try:
+        df = pd.read_csv(file, parse_dates=["date"])
+        transformed = transform(df)
+        results.append(transformed)
+        save_checkpoint({"last_processed": i})
+    except Exception as e:
+        msg = f"Skipped {file.name}: {type(e).__name__}: {e}"
+        logger.warning(msg)
+        errors.append(msg)
+
+if errors:
+    send_slack_alert(f"Pipeline completed with {len(errors)} skipped files:\\n" + "\\n".join(errors), webhook)
+else:
+    logger.info("All files processed cleanly")
+\`\`\`
+
+This approach is called "fault tolerance" — the pipeline keeps moving even when individual inputs are bad, and it reports exactly what it skipped and why.`,
+
+      'quizzes': [
+        {
+          'question': "What is exponential backoff and why is it better than retrying immediately?",
+          'options': [
+            "A. It retries faster each time",
+            "B. It waits increasingly longer between retries — giving overloaded systems time to recover instead of hammering them with repeated requests",
+            "C. It only retries once",
+            "D. It's a database term"
+          ],
+          'correct': 1,
+          'explanation': "If an API is overloaded and you immediately retry 3 times, you're adding to the problem. Exponential backoff (2s, 4s, 8s...) gives the system time to recover. It's the industry-standard approach for transient failures."
+        },
+        {
+          'question': "What is the purpose of a checkpoint in a long-running pipeline?",
+          'options': [
+            "A. To measure pipeline performance",
+            "B. To save progress so that if the pipeline fails mid-way, it can resume from where it stopped rather than starting over",
+            "C. To validate data quality",
+            "D. To compress the output files"
+          ],
+          'correct': 1,
+          'explanation': "Without checkpointing, a failure at step 280 of 365 means reprocessing all 280 from scratch. With checkpointing, you restart from step 280. On large pipelines, this is the difference between a 5-minute recovery and a 3-hour re-run."
+        },
+        {
+          'question': "Why should alerting failures (e.g., a failed Slack notification) not stop your pipeline?",
+          'options': [
+            "A. Alerts aren't important",
+            "B. The pipeline's job is to process data — if alerting fails, that's secondary. A broken alert should never cascade into a broken pipeline",
+            "C. Slack alerts always succeed",
+            "D. Alerting runs in a separate process"
+          ],
+          'correct': 1,
+          'explanation': "Wrapping your alert call in try/except and passing silently is intentional. You don't want a Slack API timeout to cause your financial reconciliation pipeline to fail."
+        }
+      ]
+    },
+
+    'Incremental vs Full Loads': {
+      'lesson': `## Incremental vs Full Loads
+
+This is a fundamental design decision that affects cost, speed, and complexity. Getting it wrong in either direction creates real problems.
+
+### Full load: simple but expensive at scale
+
+\`\`\`python
+def full_load(source_conn, dest_conn, table: str):
+    """Drop everything and reload. Simple. Only works for small tables."""
+    df = pd.read_sql(f"SELECT * FROM {table}", source_conn)
+    df.to_sql(table, dest_conn, if_exists="replace", index=False)
+    print(f"Full load: {len(df)} rows")
+\`\`\`
+
+**When full load makes sense:**
+- Small reference tables (currencies, countries, product categories)
+- Tables that change completely (daily snapshots)
+- Initial loads when setting up a new warehouse
+
+**When it breaks down:**
+- A 100M-row transactions table takes 4 hours to reload
+- Users get stale data during reload
+- Cloud costs scale with data volume — reloading 1TB daily is expensive
+
+### Incremental load: fast but requires discipline
+
+\`\`\`python
+from datetime import date, timedelta
+
+def incremental_load(source_conn, dest_conn, table: str, ts_col: str):
+    """Load only rows created/modified since last run."""
+    # Get the latest timestamp already in the warehouse
+    result = pd.read_sql(
+        f"SELECT MAX({ts_col}) as last_ts FROM {table}",
+        dest_conn
+    ).iloc[0]["last_ts"]
+
+    last_ts = result or "1970-01-01"
+
+    # Extract only new/changed rows from source
+    new_rows = pd.read_sql(
+        f"SELECT * FROM {table} WHERE {ts_col} > '{last_ts}'",
+        source_conn,
+        parse_dates=[ts_col]
+    )
+
+    if new_rows.empty:
+        print("No new rows")
+        return 0
+
+    new_rows.to_sql(table, dest_conn, if_exists="append", index=False)
+    print(f"Loaded {len(new_rows)} new rows (watermark: {last_ts} → {new_rows[ts_col].max()})")
+    return len(new_rows)
+\`\`\`
+
+### The duplicate problem with incremental loads
+
+\`\`\`python
+def idempotent_incremental_load(df: pd.DataFrame, table: str, key_col: str, conn):
+    """Upsert: update if key exists, insert if not. Safe to run multiple times."""
+    existing_keys = pd.read_sql(f"SELECT {key_col} FROM {table}", conn)[key_col].tolist()
+
+    new_rows = df[~df[key_col].isin(existing_keys)]
+    updated_rows = df[df[key_col].isin(existing_keys)]
+
+    if not new_rows.empty:
+        new_rows.to_sql(table, conn, if_exists="append", index=False)
+
+    # Update existing rows (simplified — real impl uses SQL UPDATE)
+    for _, row in updated_rows.iterrows():
+        cols = ", ".join([f"{c} = ?" for c in row.index if c != key_col])
+        values = [row[c] for c in row.index if c != key_col] + [row[key_col]]
+        conn.execute(f"UPDATE {table} SET {cols} WHERE {key_col} = ?", values)
+    conn.commit()
+\`\`\`
+
+### Choosing the right strategy
+
+\`\`\`
+Table size:    < 100K rows  → Full load is fine
+               > 1M rows    → Incremental required
+
+Data changes:  Append-only (events, logs) → Simple incremental append
+               Records updated (orders, customers) → Upsert incremental
+
+Freshness:     Near-real-time needed → Micro-batch (every 5 min)
+               Daily is fine → Nightly incremental
+               Weekly is fine → Weekend full reload
+\`\`\``,
+
+      'scenario': `## Scenario: The Growing Cloud Bill
+
+**Context:** Six months ago your ETL took 4 minutes and cost ₦800/day in cloud compute. Today it takes 3 hours and costs ₦45,000/day. The database grew from 2M rows to 180M rows. Nothing else changed — you're still doing a full reload every night.
+
+**The fix — switch to incremental:**
+
+\`\`\`python
+# Before (full reload — ₦45,000/day)
+df = pd.read_sql("SELECT * FROM transactions", prod_conn)   # 180M rows
+df.to_sql("transactions", warehouse_conn, if_exists="replace")
+
+# After (incremental — ~₦1,200/day)
+df = pd.read_sql(
+    "SELECT * FROM transactions WHERE updated_at > :last_ts",
+    prod_conn,
+    params={"last_ts": get_watermark()}
+)   # ~50,000 rows (yesterday's activity)
+df.to_sql("transactions", warehouse_conn, if_exists="append")
+save_watermark(df["updated_at"].max())
+\`\`\`
+
+**Expected results:**
+- Query time: 3 hours → 4 minutes
+- Cloud cost: ₦45,000/day → ₦1,200/day
+- Source database impact: near zero (indexed WHERE clause vs full scan)
+
+The financial impact alone justifies this change. In cloud billing, every GB processed costs money. Incremental loading is the single highest-ROI optimization in most ETL pipelines.`,
+
+      'quizzes': [
+        {
+          'question': "What is the main advantage of incremental loading over full loading?",
+          'options': [
+            "A. It's easier to implement",
+            "B. It only processes new or changed records, making it dramatically faster and cheaper for large tables",
+            "C. It never produces duplicates",
+            "D. It works without a database connection"
+          ],
+          'correct': 1,
+          'explanation': "A full load of 100M rows takes the same time and cost every day regardless of how much data actually changed. Incremental loading scales with the change volume — if only 10,000 rows changed, that's all you process."
+        },
+        {
+          'question': "Why is a watermark (timestamp or ID) essential for incremental loading?",
+          'options': [
+            "A. For security",
+            "B. It marks where the last extraction ended so the next run only fetches records created after that point",
+            "C. It validates data types",
+            "D. It's required by the database driver"
+          ],
+          'correct': 1,
+          'explanation': "Without a watermark, you can't know what's 'new'. You'd either reload everything (full load) or rely on fragile logic. The watermark is the bookmark that makes incremental loading precise and resumable."
+        },
+        {
+          'question': "What problem occurs if you use simple APPEND for a table where records can be updated?",
+          'options': [
+            "A. Nothing — append always works",
+            "B. You'll have multiple versions of the same record (old and new) in the warehouse, making aggregations wrong",
+            "C. The table will become too large",
+            "D. Append is not supported for updated records"
+          ],
+          'correct': 1,
+          'explanation': "If order ID 12345 status changes from 'pending' to 'settled', a simple append adds a second row with the new status. Now you have two rows for order 12345 — counting them both gives wrong totals. Use UPSERT for mutable records."
+        }
+      ]
+    },
+
+    'ETL vs ELT': {
+      'lesson': `## ETL vs ELT
+
+The shift from ETL to ELT isn't just a reordering of letters — it represents a fundamental change in where computation happens, and it was enabled by the rise of cheap, powerful cloud data warehouses.
+
+### ETL (Traditional): transform before loading
+
+\`\`\`
+Source DB → Python Transform → Clean Data → Warehouse
+\`\`\`
+
+\`\`\`python
+# ETL: data is cleaned in Python before it touches the warehouse
+def run_etl(source_conn, warehouse_conn):
+    # Extract
+    raw = pd.read_sql("SELECT * FROM orders", source_conn)
+
+    # Transform (in Python)
+    raw["amount"] = pd.to_numeric(raw["amount"], errors="coerce")
+    raw = raw.dropna(subset=["amount"])
+    raw["revenue_usd"] = raw["amount"] / exchange_rate
+
+    # Load clean data only
+    raw.to_sql("clean_orders", warehouse_conn, if_exists="append")
+\`\`\`
+
+**ETL is right when:**
+- Data contains PII (credit cards, SSNs) that must be masked before leaving the secure environment
+- The target warehouse is expensive per GB stored — don't load raw junk
+- Legacy systems with limited compute at the destination
+
+### ELT (Modern): load raw, transform inside the warehouse
+
+\`\`\`
+Source DB → Raw Data → Warehouse (raw layer) → SQL Transforms → Clean Views
+\`\`\`
+
+\`\`\`python
+# ELT Step 1: load raw data as-is — no transformation in Python
+def run_elt_extract_and_load(source_conn, warehouse_conn):
+    raw = pd.read_sql("SELECT * FROM orders", source_conn)
+    raw["_loaded_at"] = pd.Timestamp.now().isoformat()
+    raw["_source"] = "orders_table"
+    # Load raw — no cleaning
+    raw.to_sql("raw__orders", warehouse_conn, if_exists="append", index=False)
+    print(f"Loaded {len(raw)} raw rows")
+\`\`\`
+
+\`\`\`sql
+-- ELT Step 2: transform inside the warehouse using SQL (or dbt)
+CREATE VIEW clean_orders AS
+SELECT
+    id,
+    CAST(amount AS FLOAT) as amount,
+    LOWER(TRIM(status)) as status,
+    amount / (SELECT rate FROM exchange_rates WHERE currency = 'USD' ORDER BY date DESC LIMIT 1) as revenue_usd
+FROM raw__orders
+WHERE amount IS NOT NULL AND amount > 0;
+\`\`\`
+
+### Why ELT won
+
+| Factor | ETL | ELT |
+|---|---|---|
+| If transform logic changes | Re-extract from source | Re-run SQL on existing raw data |
+| Storage cost | Lower (only clean data stored) | Higher (raw + clean both stored) |
+| New question from business | May need re-extraction | Can answer from existing raw layer |
+| Compute for transforms | Python server you maintain | Warehouse handles it (Snowflake, BigQuery) |
+| Data history | Lost if you didn't plan for it | Always available |
+
+### The key insight: raw data is an asset
+
+\`\`\`python
+# Scenario: 6 months ago you extracted orders but dropped the 'ip_address' column
+# because you didn't think you'd need it. Now fraud team wants location analysis.
+# With ETL: you're stuck — re-extract 6 months of data
+# With ELT: ip_address is in the raw layer — just add it to the SQL transform
+
+# ELT SQL addition (no re-extraction needed):
+# SELECT ..., ip_address FROM raw__orders WHERE ...
+\`\`\``,
+
+      'scenario': `## Scenario: The "Oops, We Forgot a Column" Problem
+
+**Context:** Six months ago you built an ETL pipeline that drops the \`device_type\` column from mobile app transaction data because it seemed irrelevant. The product team now wants to know if mobile users have a higher average transaction value than desktop users. The raw data is gone.
+
+**What you'd do differently with ELT:**
+
+\`\`\`python
+# ELT raw layer: load EVERYTHING
+def elt_load_raw(df: pd.DataFrame, table_name: str, conn):
+    """Load raw data with zero transformation — just add metadata columns."""
+    df["_loaded_at"] = pd.Timestamp.now().isoformat()
+    df["_pipeline_version"] = "1.0"
+    df.to_sql(f"raw__{table_name}", conn, if_exists="append", index=False)
+
+# 6 months later, answer the new question from existing raw data:
+analysis = pd.read_sql("""
+    SELECT
+        device_type,
+        COUNT(*) as txn_count,
+        AVG(amount) as avg_amount,
+        SUM(amount) as total_revenue
+    FROM raw__transactions
+    WHERE device_type IS NOT NULL
+    GROUP BY device_type
+""", warehouse_conn)
+print(analysis)
+\`\`\`
+
+The ELT philosophy is: **you don't know what questions you'll be asked in 6 months, so keep the raw data and build answers with SQL.**`,
+
+      'quizzes': [
+        {
+          'question': "What is the main practical advantage of ELT over ETL?",
+          'options': [
+            "A. ELT is faster for all operations",
+            "B. Raw data is preserved — if business requirements change, you can re-transform without re-extracting",
+            "C. ELT requires less storage",
+            "D. ELT doesn't need Python"
+          ],
+          'correct': 1,
+          'explanation': "In ETL, if you drop a column during transformation and later need it, you must re-extract from the source (which may be unavailable or very slow). In ELT, the raw data is in the warehouse and you just update the SQL transform."
+        },
+        {
+          'question': "When should you choose ETL over ELT?",
+          'options': [
+            "A. Always — ETL is more professional",
+            "B. When data contains sensitive PII that must be masked or removed before it reaches the cloud warehouse",
+            "C. When you have large datasets",
+            "D. When using Python"
+          ],
+          'correct': 1,
+          'explanation': "Credit card numbers, national IDs, medical records — these should never land in a cloud warehouse in raw form. ETL allows you to encrypt or drop sensitive fields before the data ever leaves your secure environment."
+        },
+        {
+          'question': "In ELT, where does the transformation happen?",
+          'options': [
+            "A. In Python before loading",
+            "B. Inside the data warehouse using SQL (often with a tool like dbt)",
+            "C. In Excel after export",
+            "D. At the source system"
+          ],
+          'correct': 1,
+          'explanation': "ELT loads raw data first, then uses the warehouse's compute power (SQL) to run transformations. This is why modern cloud warehouses like BigQuery and Snowflake are so central to ELT — they're fast enough to run complex SQL transforms on billions of rows."
+        }
+      ]
+    },
+
     'ETL in a Real Nigerian Bank': {
       'lesson': `## ETL in a Real Nigerian Bank
-In a Nigerian bank, ETL is about **Consolidation**. Thousands of branches in different cities must merge their data into one "Single Version of Truth" for the CEO and the Central Bank of Nigeria (CBN).
 
-## Step-by-Step Tutorial: The Banking Flow
-1. **Core Banking System (CBS)**: The main source (like Flexcube or Finacle).
-2. **End of Day (EOD)**: A massive ETL job that runs every night to calculate interest, post charges, and balance the books.
-3. **Reconciliation**: Comparing internal logs with NIBSS/Interswitch to make sure every Naira is accounted for.
-4. **Regulatory Reporting**: Formatting data for the CBN's surveillance systems.
+Banking is the most data-intensive industry in Nigeria. Every transaction, every customer interaction, every regulatory report is a data pipeline problem. Understanding how these work gives you a real advantage when interviewing at or working for financial institutions.
 
-## Let's look at a Real Business Example
-**Access Bank** uses ETL to manage "KYC" (Know Your Customer) data. They extract photos and IDs from branch scanners, "Transform" them into digital files, and "Load" them into a central database. This allows a customer to open an account in Enugu and have it accessible in Lagos in seconds.
+### The banking data stack
 
-## Common Mistakes to Avoid
-- **No Audit Trail**: In banking, every change must be recorded. If you "Transform" a number, you must be able to prove *why* and *when* you did it.
-- **Ignore Exceptions**: If a ₦1M transaction doesn't match between two systems, you can't just ignore it. You must create an "Exception Report" immediately.`,
+\`\`\`
+ATMs / POS / Mobile App / Internet Banking
+            ↓
+    Core Banking System (CBS)
+    (Finacle, Flexcube, T24)
+            ↓
+    End-of-Day (EOD) ETL Process
+            ↓
+    Data Warehouse / Reporting Layer
+            ↓
+    Regulatory Reports (CBN) + Management Dashboards
+\`\`\`
+
+### End-of-Day (EOD) process: the most critical ETL in banking
+
+The EOD runs every night after the banking day closes (usually after 11 PM). It calculates interest, applies charges, posts standing orders, and balances every account. If it fails, the next morning's opening balances are wrong.
+
+\`\`\`python
+from datetime import date, timedelta
+
+def run_eod_pipeline(business_date: date):
+    """Simplified representation of a banking EOD pipeline."""
+    print(f"Starting EOD for {business_date}")
+
+    # 1. Extract all transactions for the day
+    transactions = extract_daily_transactions(business_date)
+    print(f"  Transactions: {len(transactions)}")
+
+    # 2. Calculate interest accruals
+    interest = calculate_interest_accruals(business_date)
+
+    # 3. Apply standing orders (scheduled payments)
+    standing_orders = process_standing_orders(business_date)
+
+    # 4. Post all journals to the general ledger
+    all_postings = pd.concat([transactions, interest, standing_orders])
+    post_to_ledger(all_postings)
+
+    # 5. Balance check — total debits must equal total credits
+    debits = all_postings[all_postings["entry_type"] == "DR"]["amount"].sum()
+    credits = all_postings[all_postings["entry_type"] == "CR"]["amount"].sum()
+
+    if abs(debits - credits) > 0.001:
+        raise ValueError(f"EOD FAILED: Out of balance by ₦{abs(debits-credits):,.2f}")
+
+    print(f"EOD complete: {len(all_postings)} postings, balanced ✓")
+\`\`\`
+
+### Reconciliation: the most important transform in banking
+
+Reconciliation compares two independent records of the same events and flags differences.
+
+\`\`\`python
+def reconcile_nibss(internal_df: pd.DataFrame, nibss_df: pd.DataFrame) -> dict:
+    """
+    Compare internal transaction records against NIBSS settlement records.
+    Every discrepancy represents money that is either missing or double-counted.
+    """
+    # Normalize both sides
+    internal = internal_df.set_index("reference_no")[["amount", "status"]]
+    nibss = nibss_df.set_index("reference_no")[["amount", "status"]]
+
+    # Find differences
+    merged = internal.join(nibss, lsuffix="_internal", rsuffix="_nibss", how="outer")
+    merged["amount_diff"] = (merged["amount_internal"] - merged["amount_nibss"]).abs()
+
+    # Categorize discrepancies
+    in_internal_only = merged[merged["amount_nibss"].isnull()]
+    in_nibss_only = merged[merged["amount_internal"].isnull()]
+    amount_mismatch = merged[merged["amount_diff"] > 0.01].dropna()
+
+    return {
+        "matched": len(merged) - len(in_internal_only) - len(in_nibss_only) - len(amount_mismatch),
+        "internal_only": in_internal_only,
+        "nibss_only": in_nibss_only,
+        "amount_mismatch": amount_mismatch,
+        "total_discrepancy": amount_mismatch["amount_diff"].sum()
+    }
+\`\`\`
+
+### KYC (Know Your Customer) data pipeline
+
+\`\`\`python
+def kyc_compliance_check(customers_df: pd.DataFrame) -> pd.DataFrame:
+    """Flag accounts that need KYC update per CBN regulations."""
+    today = pd.Timestamp.today()
+
+    customers_df["kyc_expiry"] = pd.to_datetime(customers_df["kyc_date"]) + pd.DateOffset(years=1)
+    customers_df["kyc_status"] = "valid"
+
+    # Expired KYC
+    expired_mask = customers_df["kyc_expiry"] < today
+    customers_df.loc[expired_mask, "kyc_status"] = "expired"
+
+    # Expiring within 30 days
+    expiring_mask = (customers_df["kyc_expiry"] >= today) & \
+                    (customers_df["kyc_expiry"] <= today + pd.DateOffset(days=30))
+    customers_df.loc[expiring_mask, "kyc_status"] = "expiring_soon"
+
+    # High-value accounts (Tier 3) with missing documents
+    missing_docs = customers_df["account_tier"] == 3) & customers_df["bvn"].isnull()
+    customers_df.loc[missing_docs, "kyc_status"] = "incomplete"
+
+    return customers_df
+\`\`\``,
+
       'scenario': `## Scenario: The Failed ATM Settlement
-**The situation:** On Monday morning, Zenith Bank's settlement team noticed that ₦20 Million is missing. The internal system says the money was given out, but Interswitch says it wasn't.
 
-**Your job:**
-1. Manually trigger the "Reconciliation Pipeline."
-2. Find the "Mismatched" rows.
-3. Generate a report for the "Refunds" team.
+**Context:** Monday morning, the settlement team at a major bank notices ₦23.7M is unaccounted for. Internal records say it was dispensed through ATMs. NIBSS (Nigeria Interbank Settlement System) records say it wasn't processed.
 
-**What the solution looks like:**
-You've turned a financial crisis into a 5-minute data task. By automating the reconciliation, you ensure that the bank's records are always accurate and that customers get their money back quickly.`,
+**Your investigation:**
+
+\`\`\`python
+import pandas as pd
+
+internal = pd.read_csv("atm_transactions_friday.csv")
+nibss = pd.read_csv("nibss_settlement_friday.csv")
+
+recon = reconcile_nibss(internal, nibss)
+
+print(f"Matched records: {recon['matched']}")
+print(f"In our system only: {len(recon['internal_only'])} (₦{recon['internal_only']['amount_internal'].sum():,.0f})")
+print(f"In NIBSS only: {len(recon['nibss_only'])}")
+print(f"Amount mismatches: {len(recon['amount_mismatch'])}")
+print(f"Total discrepancy: ₦{recon['total_discrepancy']:,.2f}")
+
+# Save the discrepancy report for the refunds team
+recon["internal_only"].to_csv("discrepancy_report.csv", index=False)
+\`\`\`
+
+**Finding:** 847 ATM transactions appear in the internal system but not in NIBSS. These are transactions where cash was dispensed but the network response timed out before NIBSS confirmed it. The ₦23.7M represents those transactions. They need to be re-submitted to NIBSS or manually reversed. Your pipeline identified them in 3 seconds.`,
+
       'quizzes': [
         {
-          'question': "What is 'Reconciliation' in banking ETL?",
-          'options': ["A. Deleting old accounts", "B. Proving that internal records match external partner records (like NIBSS/Interswitch) to ensure no money is missing", "C. Changing the bank's logo", "D. Printing ATM receipts"],
+          'question': "What is the purpose of reconciliation in banking ETL?",
+          'options': [
+            "A. To speed up transactions",
+            "B. To compare internal records against external partner records (NIBSS, Interswitch) to ensure every transaction is accounted for with no missing or duplicated money",
+            "C. To format data for reporting",
+            "D. To encrypt transaction data"
+          ],
           'correct': 1,
-          'explanation': "Reconciliation is the act of checking your 'Internal' truth against an 'External' truth to ensure accuracy."
+          'explanation': "Reconciliation is the financial integrity check. In banking, the rule is: total debits must equal total credits, and internal records must match what settlement networks report. Any discrepancy represents real money."
+        },
+        {
+          'question': "What happens if the EOD pipeline fails to balance (debits ≠ credits)?",
+          'options': [
+            "A. The difference is ignored",
+            "B. The pipeline should halt immediately — an out-of-balance condition means incorrect data would flow into the next business day's opening balances",
+            "C. The pipeline continues and fixes the balance automatically",
+            "D. The difference is posted to a suspense account automatically"
+          ],
+          'correct': 1,
+          'explanation': "An out-of-balance EOD is a critical failure. If allowed to pass, every subsequent calculation (interest, charges, regulatory reports) will be built on wrong numbers. The pipeline must stop and alert engineers immediately."
+        },
+        {
+          'question': "What does a 'KYC expiry' check in a data pipeline help the bank achieve?",
+          'options': [
+            "A. Faster transaction processing",
+            "B. CBN compliance — identifying accounts with expired customer identity verification before regulators flag them",
+            "C. Lower ATM fees",
+            "D. Better interest rates"
+          ],
+          'correct': 1,
+          'explanation': "The Central Bank of Nigeria requires banks to periodically refresh customer identity documents. An automated pipeline that flags expiring KYC records lets the bank proactively contact customers rather than reactively blocking accounts when regulators audit."
         }
       ]
     },
+
     'Milestone Project': {
-      'lesson': `## Milestone: The Fintech Reconciliation Engine
-In this project, you will build a complete ETL pipeline that handles the most critical task in banking: **Reconciliation**. You will move data from two sources and find the "Lost Money."
+      'lesson': `## Milestone: The Chinook Music Store ETL Pipeline
 
-## The Broad Business Problem
-Your grocery delivery startup, **"Instacart,"** is facing a data crisis. The analytics team is complaining about "ghost data"—orders with zero items or products linked to departments that don't exist. Investors are starting to doubt the revenue numbers. You must build a robust ETL pipeline that extracts the Orders, Products, and Departments tables, identifies these specific anomalies using Python, and loads a unified warehouse to restore trust in the company's reporting.
+You'll build a complete ETL pipeline on a real, publicly available relational database. This project demonstrates the full ETL lifecycle: multi-table extraction, business-rule transformation, warehouse loading, and reconciliation.
 
-## Your Project Tasks:
-0. **The Data**: Use the [Instacart Relational Database](https://www.kaggle.com/c/instacart-market-basket-analysis/data) (Orders, Products, and Departments tables).
-1. **EXTRACT**: Pull the raw data into Python using Pandas.
-2. **TRANSFORM**: 
-   - Join the tables together.
-   - Filter out "Ghost Orders" (orders with zero products).
-   - Standardize department names (Uppercase).
-3. **LOAD**: Save the cleaned dataset to a file called \`unified_warehouse.csv\`.
-4. **DASHBOARD**: Create a summary showing "Total Anomalies Removed" and "True Revenue."
-5. **DELIVERY**: Push your \`etl_pipeline.py\` and a screenshot of your terminal summary to GitHub.
+## The Business Problem
 
-## Presenting to Executives
-Tell the VP: "Instead of 5 accountants manually checking files, this pipeline identifies every discrepancy in 3 seconds. It protects our revenue and ensures that the board of directors is looking at accurate, trustworthy numbers."`,
-      'scenario': `## Scenario: The "Audit-Ready" Repository
-**The situation:** The external auditors are coming. They want to see the "Logic" you used to calculate the sales figures. They don't want a spreadsheet; they want to see the code.
+**"Chinook Digital Media"** has a music store with multiple data quality issues discovered during a financial audit: invoices linked to customers who don't exist in the system, tracks assigned to genres that were deleted, and revenue totals that don't match the sum of invoice line items. You must build an ETL pipeline that extracts from the relational source, identifies and handles these anomalies, loads a clean warehouse, and produces an auditable reconciliation report.
 
-**Your job:**
-1. Ensure your GitHub repo has a clear \`README.md\` explaining the ETL steps.
-2. Tag your code as \`v1.0-Audit-Ready\`.
-3. Show the auditors how every "Transformation" rule is documented in the code.
+## The Data Source
 
-**What the solution looks like:**
-You've proven that you are a professional. By using code instead of manual Excel, you've created a "Repeatable" and "Auditable" system that the bank can trust.`,
+**Chinook Database** — a real SQLite database modelling a digital media store:
+
+\`\`\`
+Download: https://github.com/lerocha/chinook-database/raw/master/ChinookDatabase/DataSources/Chinook_Sqlite.sqlite
+Tables: Customer, Invoice, InvoiceLine, Track, Album, Artist, Genre, Employee
+\`\`\`
+
+Foreign key relationships:
+- Invoice.CustomerId → Customer.CustomerId
+- InvoiceLine.InvoiceId → Invoice.InvoiceId
+- InvoiceLine.TrackId → Track.TrackId
+- Track.GenreId → Genre.GenreId
+- Track.AlbumId → Album.AlbumId
+- Album.ArtistId → Artist.ArtistId
+
+## Project Tasks
+
+**1. Extract all related tables:**
+\`\`\`python
+import sqlite3, pandas as pd
+
+conn = sqlite3.connect("Chinook_Sqlite.sqlite")
+tables = ["Customer","Invoice","InvoiceLine","Track","Album","Artist","Genre","Employee"]
+data = {t: pd.read_sql(f"SELECT * FROM {t}", conn) for t in tables}
+conn.close()
+\`\`\`
+
+**2. Transform — join and validate:**
+\`\`\`python
+# Build the main fact table
+fact = (data["InvoiceLine"]
+    .merge(data["Invoice"][["InvoiceId","CustomerId","InvoiceDate","Total"]], on="InvoiceId")
+    .merge(data["Customer"][["CustomerId","Country","FirstName","LastName"]], on="CustomerId")
+    .merge(data["Track"][["TrackId","Name","GenreId","AlbumId","UnitPrice"]], on="TrackId")
+    .merge(data["Genre"][["GenreId","Name"]].rename(columns={"Name":"Genre"}), on="GenreId", how="left")
+    .merge(data["Album"][["AlbumId","ArtistId","Title"]].rename(columns={"Title":"Album"}), on="AlbumId", how="left")
+    .merge(data["Artist"][["ArtistId","Name"]].rename(columns={"Name":"Artist"}), on="ArtistId", how="left")
+)
+fact["LineTotal"] = fact["Quantity"] * fact["UnitPrice"]
+\`\`\`
+
+**3. Data quality checks:**
+- Invoices with no matching customer (orphaned records)
+- Tracks with no genre (data gap)
+- Invoice totals that don't match sum of their line items (financial discrepancy)
+
+**4. Analytics to produce:**
+- Top 10 artists by revenue
+- Revenue by country
+- Monthly revenue trend
+- Most popular genre by units sold
+
+**5. Deliverables:**
+- \`etl_pipeline.py\` — the complete pipeline
+- \`warehouse.db\` — SQLite warehouse with clean data
+- \`reconciliation_report.csv\` — every discrepancy found
+- \`README.md\` — run instructions + key findings
+- GitHub repository with all files
+
+## Expected Output
+\`\`\`
+========================================
+  CHINOOK MEDIA — ETL PIPELINE REPORT
+========================================
+Extraction:    8 tables loaded
+Fact rows:     2,240 invoice lines
+
+DATA QUALITY:
+  Orphaned invoices:    0
+  Missing genres:       0
+  Amount mismatches:    0 ✓
+
+TOP ARTISTS BY REVENUE:
+  1. Iron Maiden         $138.60
+  2. U2                  $105.93
+  3. Metallica            $90.09
+
+PIPELINE STATUS: SUCCESS
+========================================
+\`\`\``,
+
+      'scenario': `## Scenario: The Audit-Ready Repository
+
+**The situation:** The external auditors want to see your ETL logic. They want to understand how you defined "revenue" and verify that no transactions were arbitrarily excluded.
+
+**What you need to produce:**
+
+1. A \`README.md\` explaining:
+   - What each table represents
+   - The join logic (which foreign keys connect which tables)
+   - Every filter applied and the business reason
+   - How to reproduce the results
+
+2. A \`decisions.md\` documenting:
+   - Why you used LEFT JOIN on Genre (tracks without genre are included but flagged)
+   - How you handle the InvoiceLine.UnitPrice vs Track.UnitPrice discrepancy (use InvoiceLine — it's the billed price)
+
+3. Git commit history showing the transformation logic evolved thoughtfully, not arbitrarily.
+
+The auditor's job is to verify that the numbers are real. Your job is to make that verification as easy as possible. Code-based ETL is far more auditable than Excel because every rule is explicit, timestamped, and version-controlled.`,
+
       'quizzes': [
         {
-          'question': "Why is code-based ETL better for a financial audit than manual Excel files?",
-          'options': ["A. It is more expensive", "B. It is transparent and repeatable-anyone can see the exact rules used to calculate the numbers and verify they haven't changed", "C. Auditors don't like Excel", "D. Code is faster to print"],
+          'question': "In the Chinook pipeline, you use `how='left'` when joining Track to Genre. Why?",
+          'options': [
+            "A. Left joins are faster",
+            "B. A left join keeps all Track rows even if they have no matching Genre — ensuring no revenue lines are dropped due to a missing genre reference",
+            "C. Right join would produce the same result",
+            "D. Inner join is not supported for this operation"
+          ],
           'correct': 1,
-          'explanation': "Auditability is the key. Code provides a 'Paper Trail' of every decision made during the data's journey."
+          'explanation': "An inner join would silently drop any InvoiceLine linked to a Track with no Genre. In financial reporting, dropping rows means underreporting revenue. A left join preserves them with NULL genre, which you can then flag and investigate separately."
+        },
+        {
+          'question': "The Chinook Invoice table has a 'Total' column. You also calculate a total by summing InvoiceLines. What should you do if these don't match?",
+          'options': [
+            "A. Use the Invoice.Total — it's authoritative",
+            "B. Use the sum of InvoiceLine amounts — it's calculated from actual line items",
+            "C. Flag the discrepancy in your reconciliation report but don't arbitrarily pick one — escalate to the data owner",
+            "D. Delete the invoice"
+          ],
+          'correct': 2,
+          'explanation': "In financial data, discrepancies between header totals and line item sums indicate a data integrity issue. A data engineer doesn't decide which is 'right' — that's a business/audit decision. Your job is to find and document the discrepancy."
+        },
+        {
+          'question': "What is the correct way to load the fact table to a SQLite warehouse so reruns don't create duplicates?",
+          'options': [
+            "A. if_exists='append' always",
+            "B. if_exists='replace' — drop and reload the entire fact table on each run",
+            "C. Use INSERT OR REPLACE with InvoiceLineId as the primary key",
+            "D. Never reload — pipelines only run once"
+          ],
+          'correct': 2,
+          'explanation': "Simple append creates duplicates if the pipeline reruns. Full replace works but causes a downtime window. Upsert with the primary key (InvoiceLineId) is idempotent — running it 10 times produces the same result as running it once."
         }
       ]
     }
   },
-
   'Apache Airflow': {
     'What is Airflow & Why it Exists': {
       'lesson': `## What is Apache Airflow?
