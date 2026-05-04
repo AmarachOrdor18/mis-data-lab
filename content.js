@@ -3,7 +3,7 @@ const STATIC_CONTENT = {
   'Python': {
     'Variables & Data Types': {
       'lesson': `## What is Variables & Data Types?
-Variables are like labeled containers where you store information. Data types are the "rules" for what kind of information fits in those containers—like numbers, text, or lists.
+Variables are like labeled containers where you store information. Data types are the "rules" for what kind of information fits in those containers-like numbers, text, or lists.
 
 ## Why should you care as an MIS student?
 In an ERP system or a banking app, every piece of data has a type. An account balance must be a number (float), while a customer's name must be text (string). If you try to add a name to a balance, the system crashes. Understanding this is the foundation of data integrity.
@@ -257,7 +257,7 @@ A logistics company like **GIG Logistics** might receive a manifest of 1,000 pac
 ## Remember these three things
 - The \`with\` keyword is best because it closes the file for you automatically.
 - CSV is the most common "Data Language" for business files.
-- Always be careful with 'w' mode—it will erase the old file before writing!`,
+- Always be careful with 'w' mode-it will erase the old file before writing!`,
       'scenario': `## Scenario: The Yearly Archive
 **The situation:** You have 365 daily sales files in a folder. Your boss wants one single file that contains every single sale from the entire year.
 
@@ -513,7 +513,7 @@ You would build a "Data Connector." Instead of relying on a human, your script t
     },
     'Writing Automation Scripts': {
       'lesson': `## What is Automation?
-Automation is writing a script that performs a repetitive task without any human intervention. It's the "Holy Grail" of MIS—making the computer do the boring work while you focus on strategy.
+Automation is writing a script that performs a repetitive task without any human intervention. It's the "Holy Grail" of MIS-making the computer do the boring work while you focus on strategy.
 
 ## Why should you care as an MIS student?
 Business is full of "Monkey Work." Downloading a file, renaming it, calculating a total, and emailing it to a boss. If you can automate this, you become 10x more productive than your peers. You don't "do" the work; you "build" the worker.
@@ -548,11 +548,11 @@ run_daily_report()
 \`\`\`
 
 ## Real life: How companies use this
-A bank like **Kuda** might have an automation script that runs at midnight. It looks for any customer who had a failed transfer, automatically retries the transfer, and sends a "Your transfer is now successful" notification to the customer's phone—all while the bank's employees are asleep.
+A bank like **Kuda** might have an automation script that runs at midnight. It looks for any customer who had a failed transfer, automatically retries the transfer, and sends a "Your transfer is now successful" notification to the customer's phone-all while the bank's employees are asleep.
 
 ## Remember these three things
 - Automation is about replacing "Human Effort" with "Computer Logic."
-- A good automation script is "Silent"—it only talks to you if it fails.
+- A good automation script is "Silent"-it only talks to you if it fails.
 - It turns a 2-hour daily task into a 0-second task.`,
       'scenario': `## Scenario: The Monday Morning Panic
 **The situation:** Every Monday, your boss spends 3 hours gathering Excel files from 5 different managers to create a "Weekly Summary." He hates it and is always late for the 11 AM meeting.
@@ -623,7 +623,7 @@ An ATM uses massive error handling.
 Without error handling, the ATM would just show a "Blue Screen of Death" or a computer code that customers wouldn't understand.
 
 ## Remember these three things
-- Never let your code "Fail Silently"—always log what happened.
+- Never let your code "Fail Silently"-always log what happened.
 - Error handling turns a "Crash" into a "Handled Situation."
 - It is the difference between a "Toy Script" and a "Professional Business Tool."`,
       'scenario': `## Scenario: The Silent Pipeline Failure
@@ -657,7 +657,16 @@ except requests.exceptions.RequestException as e:
 
 **What the solution looks like:**
 You would build a "Self-Healing" script. By adding error handling, your pipeline becomes smart enough to navigate common internet problems. If a critical failure happens, it "raises an alarm" properly so you can fix it, rather than leaving everyone in the dark.`,
-      'Milestone Project': {
+      'quizzes': [
+        {
+          'question': "What happens if an error occurs inside a 'try' block that has a matching 'except' block?",
+          'options': ["A. The program stops and shows a red error message", "B. The computer restarts", "C. The code in the 'except' block runs, and the program continues", "D. The error is ignored completely"],
+          'correct': 2,
+          'explanation': "The 'except' block catches the error, allowing you to handle it (like showing a friendly message) instead of letting the program crash."
+        }
+      ]
+    },
+    'Milestone Project': {
       'lesson': `## Milestone: The Corporate Sales Reporter
 This is your first major project. You are going to build an automated Python system that reads messy sales data, cleans it, and generates a formatted "Executive Dashboard" report.
 
@@ -790,7 +799,7 @@ You would build a pipeline that reads each file and applies "cleaning rules." It
     },
     'The Extract Phase': {
       'lesson': `## What is the Extract Phase?
-Extraction is the first step of ETL. It involves connecting to a source system—like a database, an API, or a folder of CSVs—and pulling the raw data out into your processing environment.
+Extraction is the first step of ETL. It involves connecting to a source system-like a database, an API, or a folder of CSVs-and pulling the raw data out into your processing environment.
 
 ## Why should you care as an MIS student?
 Data is often "locked" inside different systems that don't talk to each other. Your sales are in one app, and your expenses are in another. Extraction is how you "free" that data so you can combine it for business intelligence.
@@ -824,7 +833,7 @@ A fintech like **Kuda** extracts data from thousands of mobile phones every seco
 ## Remember these three things
 - Extraction should be as fast as possible to avoid slowing down the source system.
 - Don't try to "fix" the data during extraction; just get it out safely.
-- If extraction fails, the entire pipeline stops—it is the foundation of ETL.`,
+- If extraction fails, the entire pipeline stops-it is the foundation of ETL.`,
       'scenario': `## Scenario: The Locked Database
 **The situation:** Your company's main database is very old and slow. Every time you try to "Extract" data for your daily report, the database crashes, and the sales team can't use the app for 10 minutes.
 
@@ -933,7 +942,7 @@ By adding a "Deduplication Step" to your pipeline, you provide the business with
     },
     'Loading into a Warehouse': {
       'lesson': `## What is the Loading Phase?
-Loading is the final step of ETL. It is where the cleaned, transformed data is moved into its permanent home—usually a Data Warehouse like BigQuery, Snowflake, or a SQL database.
+Loading is the final step of ETL. It is where the cleaned, transformed data is moved into its permanent home-usually a Data Warehouse like BigQuery, Snowflake, or a SQL database.
 
 ## Why should you care as an MIS student?
 Extraction and Transformation happen "behind the scenes." The Load phase is what the business actually "sees." This is the data that powers the Power BI dashboards, the executive reports, and the machine learning models.
@@ -963,7 +972,7 @@ print("Data successfully loaded into the warehouse!")
 **MTN** loads billions of "Call Detail Records" into their data warehouse every night. They don't overwrite the whole database; they "Incrementally Load" today's calls at the bottom of the list. This allows them to look back at years of history without having to reload the whole thing every day.
 
 ## Remember these three things
-- Loading is the point of "No Return"—once it's in the warehouse, the business starts using it.
+- Loading is the point of "No Return"-once it's in the warehouse, the business starts using it.
 - Incremental loading is much faster and cheaper for large datasets.
 - Always check for "Data Loss" during the load step.`,
       'scenario': `## Scenario: The Missing Monday
@@ -1044,7 +1053,7 @@ else:
 ## Remember these three things
 - Failure is expected; the goal is "Recovery."
 - "Retries" solve temporary problems; "Alerts" solve permanent ones.
-- Never let a failure go unnoticed—visibility is the key to a reliable system.`,
+- Never let a failure go unnoticed-visibility is the key to a reliable system.`,
       'scenario': `## Scenario: The Midnight Crash
 **The situation:** You have an ETL pipeline that runs at midnight to update the "Daily P&L" (Profit and Loss) report. You wake up at 8 AM and find out the report is empty. The pipeline crashed at 12:05 AM because the source file was renamed.
 
@@ -1219,7 +1228,7 @@ By adopting ELT, you've created a "Time Machine." Since you have the raw data sa
 In a Nigerian bank (like GTBank or Access Bank), ETL is the "Heartbeat" of the organization. It's how thousands of separate branch transactions become a single "Consolidated Financial Statement" for the Central Bank of Nigeria (CBN).
 
 ## Why should you care as an MIS student?
-Banking is the biggest employer of MIS professionals in Nigeria. Understanding their specific ETL challenges—like unreliable internet in rural branches, power outages, and strict CBN regulations—makes you a top-tier candidate.
+Banking is the biggest employer of MIS professionals in Nigeria. Understanding their specific ETL challenges-like unreliable internet in rural branches, power outages, and strict CBN regulations-makes you a top-tier candidate.
 
 ## How it actually works
 1. **Core Banking System (CBS)**: The main source (e.g., Flexcube or Finacle).
@@ -1275,12 +1284,21 @@ A massive "Mismatched" list. Thousands of customers probably didn't get their ca
 
 **What the solution looks like:**
 By building a robust Reconciliation Pipeline, you ensure that "Digital Money" always matches "Physical Reality." You turn a ₦20 Million crisis into an automated 10-minute cleanup, protecting both the bank and its customers. This is the ultimate goal of MIS in the financial sector.`,
-      'Milestone Project': {
+      'quizzes': [
+        {
+          'question': "What is the primary purpose of 'Reconciliation' in banking ETL?",
+          'options': ["A. To make the dashboard look pretty", "B. To ensure that internal records match external partners (like Interswitch/NIBSS)", "C. To delete old bank accounts", "D. To increase the interest rates for customers"],
+          'correct': 1,
+          'explanation': "Reconciliation is the act of proving that two sets of records (ours and theirs) match perfectly. If they don't, ETL identifies the 'exceptions' so they can be fixed."
+        }
+      ]
+    },
+    'Milestone Project': {
       'lesson': `## Milestone: The Fintech Reconciliation Engine
 In this project, you will build a complete ETL pipeline that handles the most critical task in banking: **Reconciliation**. You will move data from two sources (Bank Internal Log vs Payment Gateway Log) and find the "Lost Money."
 
 ## The Business Case
-Your startup, **"NaijaPay,"** is seeing "ghost transactions"—where a user says they were debited, but the payment gateway says they didn't receive the money. You need to build a pipeline that finds these mismatches automatically for the Finance VP.
+Your startup, **"NaijaPay,"** is seeing "ghost transactions"-where a user says they were debited, but the payment gateway says they didn't receive the money. You need to build a pipeline that finds these mismatches automatically for the Finance VP.
 
 ## Your Project Tasks:
 1. **EXTRACT**: Create two CSV files (or lists) simulating "Our Database" and "Paystack Logs."
@@ -1402,7 +1420,7 @@ A senior engineer would set \`retries=3\` in the task definition. This tells Air
         }
       ]
     },
-    'DAGs — The Big Picture': {
+    'DAGs - The Big Picture': {
       'lesson': `## What is a DAG?
 DAG stands for **Directed Acyclic Graph**.
 - **Directed**: There is a clear "Flow" (Task A → Task B).
@@ -1553,7 +1571,7 @@ A smart engineer uses the "Built-in Tools." By using the right operator, you red
     },
     'Scheduling with Cron': {
       'lesson': `## What is Scheduling?
-Scheduling is telling Airflow exactly *when* and *how often* to run your DAG. We use **Cron Expressions**—a universal language for time.
+Scheduling is telling Airflow exactly *when* and *how often* to run your DAG. We use **Cron Expressions**-a universal language for time.
 
 ## Why should you care as an MIS student?
 Businesses don't want to click "Run" every morning. They want the "Payroll Report" to run at 6 AM every Monday, and the "Inventory Update" to run every 15 minutes. Mastering scheduling allows you to build systems that run themselves 24/7.
@@ -1699,7 +1717,7 @@ By setting a dependency, you've added "Safety" to your pipeline. Airflow now act
 XCom stands for "Cross-Communication." It is a way for one task in Airflow to "send" a small piece of information (like a filename or a row count) to another task.
 
 ## Why should you care as an MIS student?
-Tasks in Airflow are "Isolated"—they don't share variables. If Task 1 calculates the "Total Revenue," Task 2 doesn't know what that number is unless you use XCom to "Push" it into a shared space so Task 2 can "Pull" it.
+Tasks in Airflow are "Isolated"-they don't share variables. If Task 1 calculates the "Total Revenue," Task 2 doesn't know what that number is unless you use XCom to "Push" it into a shared space so Task 2 can "Pull" it.
 
 ## How it actually works
 1. **Push**: Task A saves a value to the Airflow database.
@@ -1879,7 +1897,7 @@ This pipeline literally saves lives by ensuring no warning is missed.
 ## Remember these three things
 - Pipelines connect different systems together.
 - Every task should do **one thing** and do it well.
-- A good pipeline is invisible—it just works.`,
+- A good pipeline is invisible-it just works.`,
       'scenario': `## Scenario: The "Jollof Express" Logistics Flow
 **The situation:** You are the lead analyst for a food delivery startup. You need to build a pipeline that calculates "Driver Bonuses" every Sunday at 11:59 PM.
 
@@ -1906,7 +1924,16 @@ Data is in two places: "Completed Orders" are in a SQL database, but "Driver Rat
 
 **What the solution looks like:**
 By building this pipeline, you've created a "Fair and Transparent" business process. The computer doesn't have favorites; it simply follows your DAG. This improves driver morale and ensures the company's money is spent on the best performers, all while requiring zero manual work from you.`,
-      'Milestone Project': {
+      'quizzes': [
+        {
+          'question': "What is the best way to handle a pipeline that requires data from BOTH a SQL database and a CSV file?",
+          'options': ["A. It's impossible", "B. Create two separate tasks to extract each, then a third task to merge them", "C. Copy-paste the CSV into the SQL database manually", "D. Use Excel"],
+          'correct': 1,
+          'explanation': "Airflow excels at this. You run parallel extraction tasks and then a third task (like a PythonOperator) to combine the data and perform logic."
+        }
+      ]
+    },
+    'Milestone Project': {
       'lesson': `## Milestone: The Autonomous Data Engineer
 In this milestone, you are going to orchestrate a multi-step business process using Apache Airflow. You will move from "writing scripts" to "building an autonomous system" that monitors itself.
 
@@ -2036,7 +2063,7 @@ You would update your code to match the exact labels the payment provider uses. 
         }
       ]
     },
-    'HTTP Methods — GET, POST, PUT, DELETE': {
+    'HTTP Methods - GET, POST, PUT, DELETE': {
       'lesson': `## What are HTTP Methods?
 HTTP methods are the "Verbs" of the internet. They tell the server exactly what action you want to take with a piece of data.
 - **GET**: "Give me this info." (Read)
@@ -2159,7 +2186,7 @@ new_json = json.dumps({"status": "success", "code": 200})
 
 **What you're seeing:**
 You sent: \`"address": Lagos, Nigeria\`. 
-The server failed because you forgot the quotes around the text. JSON is very strict—all text *must* be in double quotes.
+The server failed because you forgot the quotes around the text. JSON is very strict-all text *must* be in double quotes.
 
 **Your job:**
 1. Fix the formatting of the JSON object.
@@ -2425,7 +2452,7 @@ for i in range(5):
 - In MIS, how do "Resilient Systems" reduce the workload of IT staff?
 
 **What the solution looks like:**
-You've built a "Smart Agent." Instead of crashing, your code intelligently waits for the server to become available. This makes your automation truly "hands-off"—it handles the Friday rush without you ever having to look at it.`,
+You've built a "Smart Agent." Instead of crashing, your code intelligently waits for the server to become available. This makes your automation truly "hands-off"-it handles the Friday rush without you ever having to look at it.`,
       'quizzes': [
         {
           'question': "What is the purpose of the 'timeout' parameter in requests.get(url, timeout=5)?",
@@ -2435,7 +2462,7 @@ You've built a "Smart Agent." Instead of crashing, your code intelligently waits
         }
       ]
     },
-    'Pagination — Getting All the Data': {
+    'Pagination - Getting All the Data': {
       'lesson': `## What is Pagination?
 APIs rarely give you 1,000,000 rows in one go. Instead, they give you the data in "Pages" (e.g., 50 rows at a time), just like Google Search shows you 10 results and asks you to click "Next."
 
@@ -2575,7 +2602,16 @@ requests.post("https://api.bank.com/transfer", json=refund_data, headers=auth_he
 
 **What the solution looks like:**
 You've transformed the business. By replacing a manual portal login with an API call, "Instant" actually means instant. The business scales without hiring more accountants, and customers are happy because their money returns in seconds. This is the power of MIS in the digital economy.`,
-      'Milestone Project': {
+      'quizzes': [
+        {
+          'question': "What is a 'Webhook' in the context of fintech APIs?",
+          'options': ["A. A type of fishing net", "B. An API where the server 'pushes' data to you as soon as an event happens (instead of you asking)", "C. A very slow API", "D. A way to delete a bank account"],
+          'correct': 1,
+          'explanation': "Webhooks are 'Reverse APIs'. Instead of your script asking 'Did I get paid?', the bank calls your script and says 'Hey, you just got paid!'"
+        }
+      ]
+    },
+    'Milestone Project': {
       'lesson': `## Milestone: The Live Currency Tracker
 In this project, you will bridge the gap between "Internal Systems" and the "Global Market" by pulling live data from an external API and building a tracking dashboard.
 
@@ -2633,7 +2669,7 @@ Tell the Director: "This isn't just a script; it's a real-time financial monitor
   'Cloud Computing': {
     'Cloud Basics for MIS': {
       'lesson': `## What is Cloud Computing?
-Cloud computing is the delivery of computing services—including servers, storage, databases, networking, software—over the internet ("the cloud"). Instead of buying physical servers, you rent them from companies like Amazon (AWS) or Microsoft (Azure).
+Cloud computing is the delivery of computing services-including servers, storage, databases, networking, software-over the internet ("the cloud"). Instead of buying physical servers, you rent them from companies like Amazon (AWS) or Microsoft (Azure).
 
 ## Why should you care as an MIS student?
 Businesses no longer build "Server Rooms." They use the Cloud. Understanding the cloud is essential because it's where all modern business data lives. It allows a small startup in Yaba to have the same computing power as a global bank.
@@ -2774,7 +2810,7 @@ s3.download_file('my-bucket', 'data.csv', 'local_data.csv')
 
 ## Remember these three things
 - S3 is for "Unstructured Data" (files).
-- It is virtually "Unbreakable"—Amazon guarantees your data won't be lost.
+- It is virtually "Unbreakable"-Amazon guarantees your data won't be lost.
 - It is the foundation of the "Modern Data Lake."`,
       'scenario': `## Scenario: The "Leaky" Bucket
 **The situation:** You just uploaded the "Employee Salary List" to an S3 bucket. 1 hour later, you find a link to the file on a public forum. Anyone in the world can see what the CEO earns.
@@ -2855,7 +2891,16 @@ The server is "Idle" (doing nothing) for 58 minutes of every hour, but you are s
 
 **What the solution looks like:**
 By switching to Lambda, you've saved the company ₦240,000 a year. This is the kind of "Business Intelligence" that gets MIS professionals promoted. You've proven you understand both the **Code** and the **Cost**.`,
-      'Milestone Project': {
+      'quizzes': [
+        {
+          'question': "What is the main advantage of 'Serverless' computing like AWS Lambda?",
+          'options': ["A. It is faster than any other computer", "B. You don't have to manage servers and you only pay for the time the code is actually running", "C. It doesn't use the internet", "D. It is only for storing images"],
+          'correct': 1,
+          'explanation': "Serverless allows you to focus on the code while the cloud provider handles the scaling and infrastructure, saving both time and money."
+        }
+      ]
+    },
+    'Milestone Project': {
       'lesson': `## Milestone: The Disaster-Proof Backup System
 In this project, you will move your company's data security to the next level by building an automated, cloud-based backup system. You will ensure that even if the physical office is destroyed, the business continues.
 
@@ -2911,7 +2956,7 @@ Tell the CEO: "We are no longer vulnerable to local disasters. Our business inte
   'dbt & Modeling': {
     'Modern Data Modeling': {
       'lesson': `## What is dbt & Modeling?
-dbt (data build tool) is a framework that brings software engineering best practices—like testing and version control—to the world of SQL. It's used to turn raw data in your warehouse into "Clean" tables for the business.
+dbt (data build tool) is a framework that brings software engineering best practices-like testing and version control-to the world of SQL. It's used to turn raw data in your warehouse into "Clean" tables for the business.
 
 ## Why should you care as an MIS student?
 Raw data is "Messy." Columns have weird names like \`C_123_TX\`, and dates are in the wrong format. If you give this to a manager, they'll be confused. dbt allows you to "Model" the data into clean, easy-to-read tables like \`daily_revenue\`.
@@ -3129,7 +3174,7 @@ models:
 **The situation:** You are the only person who knows how the "Commission" is calculated. You are planning to go on a 2-week vacation to Obudu Cattle Ranch. The CFO is terrified that if something breaks while you're away, the whole company will stop.
 
 **What you're seeing:**
-Everyone depends on your "Secret Knowledge." This makes you important, but it also makes you "Stuck"—you can't even take a holiday without worry.
+Everyone depends on your "Secret Knowledge." This makes you important, but it also makes you "Stuck"-you can't even take a holiday without worry.
 
 **Your job:**
 1. Document every column of your dbt models.
@@ -3190,7 +3235,16 @@ The job description asks for "dbt experience," "SQL mastery," and "Data Modeling
 
 **What the solution looks like:**
 By focusing on this high-value career path, you've "upgraded" your future. You've realized that the world doesn't need more "Clickers"; it needs "Builders." You are now a professional who can walk into any boardroom, understand their problems, and go back to your desk to build the technical solution.`,
-      'Milestone Project': {
+      'quizzes': [
+        {
+          'question': "What defines the role of an 'Analytics Engineer'?",
+          'options': ["A. They only fix broken computers", "B. They use software engineering best practices (like dbt) to build clean, reliable data models for the business", "C. They only work in Excel", "D. They are in charge of office security"],
+          'correct': 1,
+          'explanation': "The Analytics Engineer is the bridge. They bring order to the chaos of raw data, making it useful for everyone else."
+        }
+      ]
+    },
+    'Milestone Project': {
       'lesson': `## Milestone: The Executive Decision Portal
 In this final milestone, you will use dbt to create a professional "Data Mart" that serves as the "Single Version of Truth" for your entire company. You will transform chaos into clarity.
 
