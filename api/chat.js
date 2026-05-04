@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': req.headers.origin || 'https://mis-datalab.vercel.app',
-        'X-Title': 'MIS DataLab Academy'
+        'X-Title': 'MIS Data Analytics Engineering Lab'
       },
       body: JSON.stringify(req.body)
     });

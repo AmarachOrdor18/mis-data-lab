@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MIS DataLab — Training Academy</title>
+<title>MIS Data Analytics Engineering Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -35,9 +35,65 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 /* ── LAYOUT ── */
 #app{display:flex;flex-direction:column;min-height:100vh;max-width:960px;margin:0 auto;padding:0 12px}
 
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:480px){
+  #app{padding:0 8px}
+  .hdr{flex-direction:column;align-items:flex-start;padding:10px 4px;gap:8px}
+  .nav{width:100%;justify-content:space-between}
+  .nb{flex:1;text-align:center;padding:8px 6px;font-size:9px}
+  .hdr-right{width:100%;justify-content:flex-start;gap:6px}
+  .pill{font-size:9px;padding:4px 8px}
+  .screen{padding:14px 2px 40px}
+  .terminal-card{padding:16px 14px}
+  .tc-title{font-size:15px}
+  .tc-sub{font-size:12px;line-height:1.7}
+  .tc-stats{gap:12px}
+  .tc-stat .sv{font-size:18px}
+  .tc-stat .sl{font-size:9px}
+  .path-grid{grid-template-columns:1fr !important;gap:8px}
+  .pc{padding:12px}
+  .pc h3{font-size:12px}
+  .how-grid{grid-template-columns:1fr !important;gap:8px}
+  .learn-wrap{grid-template-columns:1fr !important;gap:10px}
+  .sidebar{position:relative;top:0;display:flex;flex-wrap:wrap;gap:4px;padding:6px}
+  .sb-btn{width:auto;font-size:11px;padding:6px 10px}
+  .chip{font-size:9px;padding:4px 8px}
+  .btn-row{flex-direction:column}
+  .gen-btn,.scen-btn{width:100%;min-width:unset}
+  .lesson-panel{padding:14px;font-size:13px}
+  .lesson-panel pre{font-size:10px;padding:10px 12px}
+  .lesson-panel h2{font-size:12px}
+  .mode-grid{grid-template-columns:1fr !important;gap:8px}
+  .mc{padding:12px}
+  .tc-row{gap:4px}
+  .tc{font-size:9px;padding:4px 9px}
+  .q-card{padding:14px}
+  .q-text{font-size:12px}
+  .q-scen-box{font-size:11px;padding:10px 12px}
+  .q-code{font-size:10px;padding:10px 12px}
+  .opt{font-size:12px;padding:9px 11px}
+  .opt-key{width:18px;height:18px;min-width:18px;font-size:8px}
+  .res-wrap{padding:0 4px}
+  .res-score{font-size:40px}
+  .res-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .res-btns{flex-direction:column;gap:6px}
+  .rb{padding:10px}
+  .speak-row{flex-wrap:wrap;gap:6px}
+  .speak-btn{font-size:9px;padding:5px 10px}
+  .token-banner{font-size:11px;padding:8px 10px}
+  .voice-transcript{font-size:10px;padding:6px 10px}
+}
+@media(max-width:360px){
+  .hdr-right{flex-wrap:wrap}
+  .tc-stats{flex-direction:column;gap:8px}
+  .tc-title{font-size:14px}
+  .res-grid{grid-template-columns:repeat(2,1fr)}
+}
+
 /* ── HEADER ── */
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid var(--border);flex-shrink:0;gap:10px;flex-wrap:wrap}
 .logo{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.1em;white-space:nowrap}
+@media(max-width:480px){.logo{font-size:11px;letter-spacing:0.06em}}
 .logo em{color:var(--muted2);font-style:normal}
 .nav{display:flex;gap:2px;flex-shrink:0}
 .nb{font-family:var(--mono);font-size:10px;font-weight:600;padding:7px 14px;border:1px solid transparent;background:transparent;color:var(--muted2);cursor:pointer;letter-spacing:0.07em;transition:all 0.15s;border-radius:3px;white-space:nowrap}
@@ -232,7 +288,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
 <!-- HEADER -->
 <div class="hdr">
-  <div class="logo">// MIS<em>.DATALAB</em></div>
+  <div class="logo">// MIS<em>.DATA_ANALYTICS_LAB</em></div>
   <div class="nav">
     <button class="nb on" onclick="nav('home')">HOME</button>
     <button class="nb" onclick="nav('learn')">LEARN</button>
@@ -248,18 +304,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 <!-- HOME -->
 <div id="screen-home" class="screen on">
   <div class="token-banner" id="token-banner">
-    <strong>⚠ TOKEN LIMIT APPROACHING</strong> — You've used roughly <span id="banner-used"></span> of your estimated daily limit. 
+    <strong>⚠ TOKEN LIMIT APPROACHING</strong> You've used roughly <span id="banner-used"></span> of your estimated daily limit. 
     The free tier on OpenRouter resets every day at <strong>midnight UTC</strong>. 
     Slow down your lesson generation or come back tomorrow. Your progress is saved.
   </div>
 
   <div class="terminal-card">
     <div class="tc-dots"><div class="tcd"></div><div class="tcd"></div><div class="tcd"></div></div>
-    <div class="tc-title">MIS Data Engineering Lab_</div>
-    <div class="tc-sub">You already know Excel, SQL, Power BI, and data modeling — that's your edge. Now we go deeper into the engineering layer: Python, Airflow, APIs, ETL pipelines, cloud, and dbt. Every lesson connects back to systems you already understand.</div>
+    <div class="tc-title">MIS Data Analytics Engineering Lab_</div>
+    <div class="tc-sub">You already know Excel, SQL, Power BI, and data modeling. That's your edge. Now we go deeper into the engineering layer: Python, Airflow, APIs, ETL pipelines, cloud, and dbt. Every lesson connects back to systems you already understand.</div>
     <div class="tc-stats">
       <div class="tc-stat"><div class="sv" id="h-lessons">0</div><div class="sl">Lessons Done</div></div>
-      <div class="tc-stat"><div class="sv" id="h-acc">—</div><div class="sl">Quiz Accuracy</div></div>
+      <div class="tc-stat"><div class="sv" id="h-acc">-</div><div class="sl">Quiz Accuracy</div></div>
       <div class="tc-stat"><div class="sv" id="h-xp">0</div><div class="sl">XP Earned</div></div>
       <div class="tc-stat"><div class="sv" id="h-streak">0</div><div class="sl">Day Streak</div></div>
     </div>
@@ -288,13 +344,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     <div class="pc" onclick="goLearn('ETL Pipelines')">
       <span class="pc-tag tr">Engineering</span>
       <h3>ETL Pipelines</h3>
-      <p>Extract, Transform, Load — the foundation of moving data from source systems to reports.</p>
+      <p>Extract, Transform, Load: the foundation of moving data from source systems to reports.</p>
       <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-etl" style="width:0%"></div></div><span class="pc-pct" id="pct-etl">0%</span></div>
     </div>
     <div class="pc" onclick="goLearn('Cloud Computing')">
       <span class="pc-tag tb">Infrastructure</span>
       <h3>Cloud Computing</h3>
-      <p>Where data actually lives. Storage, compute, access control — the basics every engineer needs.</p>
+      <p>Where data actually lives. Storage, compute, access control. The basics every engineer needs.</p>
       <div class="pc-foot"><div class="pc-bar"><div class="pc-fill" id="pp-cloud" style="width:0%"></div></div><span class="pc-pct" id="pct-cloud">0%</span></div>
     </div>
     <div class="pc" onclick="goLearn('dbt & Modeling')">
@@ -307,9 +363,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
   <div class="sec-lbl">How it works</div>
   <div class="how-grid">
-    <div class="hg-card"><div class="hg-num" style="color:var(--accent)">01 — LEARN</div><p>Pick a module and subtopic. The AI generates a full lesson in plain English with real code and a business story you'll relate to.</p></div>
-    <div class="hg-card"><div class="hg-num" style="color:var(--yellow)">02 — SCENARIO DRILLS</div><p>Get dropped into a real work situation — a bank's pipeline breaks at 3am, a report goes missing — and figure out what you'd do.</p></div>
-    <div class="hg-card"><div class="hg-num" style="color:var(--blue)">03 — QUIZ</div><p>Test what you know with scenario questions, get instant feedback with explanations, and build your XP streak.</p></div>
+    <div class="hg-card"><div class="hg-num" style="color:var(--accent)">01 // LEARN</div><p>Pick a module and subtopic. The AI generates a full lesson in plain English with real code and a business story you'll relate to.</p></div>
+    <div class="hg-card"><div class="hg-num" style="color:var(--yellow)">02 // SCENARIO DRILLS</div><p>Get dropped into a real work situation. A bank's pipeline breaks at 3am, a report goes missing, and you figure out what to do.</p></div>
+    <div class="hg-card"><div class="hg-num" style="color:var(--blue)">03 // QUIZ</div><p>Test what you know with scenario questions, get instant feedback with explanations, and build your XP streak.</p></div>
   </div>
 </div>
 
@@ -621,7 +677,7 @@ async function generateLesson() {
 
   const prompt = `You're teaching "${sub}" in "${S.topic}" to a Nigerian university student studying Management Information Systems (MIS). She already knows Excel, SQL, Power BI, and basic data modeling.
 
-Write a lesson that sounds like a smart friend explaining this over coffee — casual, clear, zero fluff, zero jargon without explanation.
+Write a lesson that sounds like a smart friend explaining this over coffee. Casual, clear, zero fluff, zero jargon without explanation.
 
 Use this exact structure:
 
@@ -635,13 +691,13 @@ Connect this directly to systems she already knows: ERP systems, BI dashboards, 
 Walk through the concept step by step. Be concrete. If there's a process, describe it clearly.
 
 ## Show me the code
-A practical, well-commented code example (Python or SQL). Keep it under 18 lines but make it real — not toy examples.
+A practical, well-commented code example (Python or SQL). Keep it under 18 lines but make it real, not toy examples.
 
 ## Real life: How companies use this
-Tell a short story (4-6 sentences) about a real company type — Nigerian bank, telecom like MTN, retail like Shoprite, insurance company. Name the actual problem they had and show exactly how this concept solved it. Make her think "oh THAT'S how they do that."
+Tell a short story (4-6 sentences) about a real company type: Nigerian bank, telecom like MTN, retail like Shoprite, insurance company. Name the actual problem they had and show exactly how this concept solved it. Make her think "oh THAT'S how they do that."
 
 ## Remember these three things
-Three crisp bullet points — the most important takeaways.
+Three crisp bullet points. The most important takeaways.
 
 Write in warm, encouraging, conversational English. No stiff academic tone.`;
 
@@ -665,13 +721,13 @@ async function generateScenario() {
   const sub = S.sub || TOPICS[S.topic][0];
   setLoading(true);
 
-  const prompt = `You're a senior data engineer mentoring a Nigerian MIS student. Drop her into a real work scenario involving "${sub}" from "${S.topic}". Write like you're talking to a smart junior colleague — warm but direct.
+  const prompt = `You're a senior data engineer mentoring a Nigerian MIS student. Drop her into a real work scenario involving "${sub}" from "${S.topic}". Write like you're talking to a smart junior colleague, warm but direct.
 
 Use this structure:
 
 ## Scenario: [Give it a punchy real title like "The Missing Morning Report" or "3am Pipeline Crash at GT Bank"]
 
-**The situation:** Set the scene. A real company in Nigeria or Africa (a bank, telecom, FMCG company, fintech). Describe the business context, the stakeholders waiting, and what just went wrong. 4-5 sentences. Be specific — what data, what system, who's affected.
+**The situation:** Set the scene. A real company in Nigeria or Africa (a bank, telecom, FMCG company, fintech). Describe the business context, the stakeholders waiting, and what just went wrong. 4-5 sentences. Be specific: what data, what system, who's affected.
 
 **What you're seeing:** Describe exactly what the junior engineer (her) finds when she logs in. Error messages, empty dashboards, angry Slack messages. Make it vivid.
 
@@ -681,10 +737,10 @@ Use this structure:
 Provide a code snippet with a bug or gap she needs to spot and think about.
 
 **Think through these:**
-Three questions she should answer. Connect at least one to MIS principles — data integrity, system reliability, stakeholder trust.
+Three questions she should answer. Connect at least one to MIS principles: data integrity, system reliability, stakeholder trust.
 
 **What the solution looks like:**
-Walk through the right approach clearly. Tell her what a senior engineer would do. 4-5 sentences. This is where the learning happens — make it satisfying to read.
+Walk through the right approach clearly. Tell her what a senior engineer would do. 4-5 sentences. This is where the learning happens, make it satisfying to read.
 
 Write warmly. Make it feel real, not like a textbook exercise.`;
 
@@ -712,7 +768,7 @@ async function answerVoiceQuestion(question) {
   
 She just asked (by voice): "${question}"
 
-Answer her question directly and conversationally — like a smart friend, not a textbook. Keep it under 200 words. Use plain English. If her question mentions something technical, explain the concept first then answer. End with one practical tip she can remember.`;
+Answer her question directly and conversationally, like a smart friend, not a textbook. Keep it under 200 words. Use plain English. If her question mentions something technical, explain the concept first then answer. End with one practical tip she can remember.`;
 
   try {
     const text = await callAI(prompt, 500);
@@ -950,11 +1006,11 @@ async function loadQ() {
   const useScenario = S.quizMode === 'scenario' || (S.quizMode === 'practice' && Math.random() > 0.45);
 
   const prompt = useScenario ?
-`Write a scenario-based multiple choice question for an MIS student learning data engineering.
+`Write a scenario-based multiple choice question for an MIS student learning data analytics engineering.
 
-Topic: "${topic}" — Subtopic: "${sub}" — Difficulty: ${diff}
+Topic: "${topic}" | Subtopic: "${sub}" | Difficulty: ${diff}
 
-The question MUST start with a realistic business scenario (Nigerian/African company context preferred — bank, telecom, fintech, FMCG). Then ask what the student should do, or what went wrong. Make the options meaningful — no obviously wrong answers.
+The question MUST start with a realistic business scenario (Nigerian/African company context preferred: bank, telecom, fintech, FMCG). Then ask what the student should do, or what went wrong. Make the options meaningful, no obviously wrong answers.
 
 Return ONLY valid JSON (no markdown):
 {
@@ -963,17 +1019,17 @@ Return ONLY valid JSON (no markdown):
   "scenario": "Kuda Bank's data team notices their daily transaction summary report is empty every Monday morning. The ETL pipeline runs at 11:59pm Sunday and shows 'completed' in green. The data warehouse shows 0 rows for Sunday. The finance team is already pinging on Slack.",
   "question": "What is the most likely cause, and what should the engineer check first?",
   "code": "",
-  "options": ["A. The pipeline is configured to skip weekends in the cron schedule", "B. The source database does a maintenance window on Sundays that locks tables during the ETL run — causing the pipeline to 'complete' with no data", "C. The data warehouse ran out of storage on Sunday", "D. The Slack notifications are misconfigured"],
+  "options": ["A. The pipeline is configured to skip weekends in the cron schedule", "B. The source database does a maintenance window on Sundays that locks tables during the ETL run, causing the pipeline to 'complete' with no data", "C. The data warehouse ran out of storage on Sunday", "D. The Slack notifications are misconfigured"],
   "correct": 1,
-  "explanation": "Silent failures — where a pipeline finishes 'successfully' but writes zero rows — happen when the source is unavailable during the run. Many databases do maintenance at low-traffic times like Sunday midnight. The fix is to add row-count validation after the load step: if rows_loaded == 0, raise an alert.",
-  "mis_link": "In MIS, data reliability is as important as the data itself. A report that says 'no data' and a report that fails to run look identical to the business — both destroy trust in the system."
+  "explanation": "Silent failures, where a pipeline finishes 'successfully' but writes zero rows, happen when the source is unavailable during the run. Many databases do maintenance at low-traffic times like Sunday midnight. The fix is to add row-count validation after the load step: if rows_loaded == 0, raise an alert.",
+  "mis_link": "In MIS, data reliability is as important as the data itself. A report that says 'no data' and a report that fails to run look identical to the business. Both destroy trust in the system."
 }`
 :
-`Write a practical multiple choice question for an MIS student learning data engineering.
+`Write a practical multiple choice question for an MIS student learning data analytics engineering.
 
-Topic: "${topic}" — Subtopic: "${sub}" — Difficulty: ${diff}
+Topic: "${topic}" | Subtopic: "${sub}" | Difficulty: ${diff}
 
-Make it practical — test understanding, not memorisation. Include a short code snippet if it makes the question better.
+Make it practical. Test understanding, not memorisation. Include a short code snippet if it makes the question better.
 
 Return ONLY valid JSON (no markdown):
 {
@@ -984,8 +1040,8 @@ Return ONLY valid JSON (no markdown):
   "code": "import pandas as pd\\ndf = pd.read_csv('sales.csv')\\ndf_clean = df.dropna()\\nprint(df_clean.shape)",
   "options": ["A. Removes columns that have any null values", "B. Removes rows that contain at least one null/missing value", "C. Fills null values with zero", "D. Removes duplicate rows"],
   "correct": 1,
-  "explanation": "dropna() removes any row that has at least one missing (NaN) value by default. This matters in data engineering because null rows often cause downstream errors — dashboards show wrong totals, aggregations break, joins produce unexpected results.",
-  "mis_link": "Data quality is a core MIS concern. When a report shows wrong numbers, it's often because nulls slipped through — data engineers are the last line of defence."
+  "explanation": "dropna() removes any row that has at least one missing (NaN) value by default. This matters in data engineering because null rows often cause downstream errors. Dashboards show wrong totals, aggregations break, joins produce unexpected results.",
+  "mis_link": "Data quality is a core MIS concern. When a report shows wrong numbers, it's often because nulls slipped through. Data engineers are the last line of defence."
 }`;
 
   try {
@@ -1087,7 +1143,7 @@ function showResults() {
   document.getElementById('res-score').textContent = pct + '%';
   const xpE = S.qC * 10 + (pct >= 80 ? 50 : pct >= 60 ? 25 : 0);
   document.getElementById('xp-earned').textContent = '⚡ +' + xpE + ' XP earned';
-  const grades = [[90,'A — Excellent 🏆','You think like a data engineer. Keep going.'],[70,'B — Good Work 🎯','Solid foundation. Target those gaps.'],[50,'C — Passing 📚','Head to the Learn tab and do a scenario drill.'],[0,'D — Keep Studying 💪','Do a few more lessons then come back.']];
+  const grades = [[90,'A // Excellent 🏆','You think like a data engineer. Keep going.'],[70,'B // Good Work 🎯','Solid foundation. Target those gaps.'],[50,'C // Passing 📚','Head to the Learn tab and do a scenario drill.'],[0,'D // Keep Studying 💪','Do a few more lessons then come back.']];
   const [,g,m] = grades.find(([t]) => pct >= t);
   document.getElementById('res-grade').textContent = g;
   document.getElementById('res-msg').textContent = m;
