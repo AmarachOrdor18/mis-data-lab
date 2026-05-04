@@ -719,634 +719,326 @@ When you present this, don't show the code. Show the **Dashboard**. Explain how 
   },
   'ETL Pipelines': {
     'What is ETL? (Plain English)': {
-      'lesson': `## What is ETL?
-ETL stands for **Extract, Transform, and Load**. It is the process of moving data from one place (like a sales app), cleaning it up, and putting it into another place (like a dashboard).
+      'lesson': `## Why are we learning ETL?
+Data engineering is mostly about moving data from where it is created (like a cash register) to where it is analyzed (like a dashboard). **ETL** stands for **Extract, Transform, Load**. It is the "Pipeline" that makes this journey happen.
 
-## Why should you care as an MIS student?
-Business data is messy. Your sales might be in an Oracle database, your marketing data in a CSV, and your website hits in an API. ETL is the "bridge" that brings them all together into one clean report so management can make decisions.
+## Step-by-Step Tutorial: The 3 Pillars
+1. **Extract**: Grabbing raw data from its source (Excel, a SQL database, or an API).
+2. **Transform**: The "Kitchen" phase. You clean the data, fix typos, calculate totals, and remove private information.
+3. **Load**: Delivering the clean data to its final destination (a Data Warehouse or a CSV for a boss).
 
-## How it actually works
-1. **Extract**: Grabbing the raw data from the source.
-2. **Transform**: The "cooking" phase. Fixing typos, changing date formats, or calculating totals.
-3. **Load**: Saving the finished, clean data into its final home (a Data Warehouse).
+## Let's look at a Real Business Example
+Imagine **Shoprite**. Every time a customer buys a soda, that data is created at the cash register.
+- **Extract**: At 11 PM, a script pulls all sales from every branch.
+- **Transform**: The script calculates the total VAT and changes "soda" to "Beverage."
+- **Load**: The clean data is saved into a central database. Now, the CEO can see exactly how much profit was made across all of Nigeria.
 
-## Show me the code
-\`\`\`python
-# A very simple ETL process
-# 1. EXTRACT
-raw_data = "John Doe, 5000, 2023-01-01"
-
-# 2. TRANSFORM
-name, amount, date = raw_data.split(", ")
-clean_amount = float(amount)
-clean_date = date.replace("-", "/")
-
-# 3. LOAD
-print(f"Loading to Warehouse: {name} | ₦{clean_amount} | {clean_date}")
-\`\`\`
-
-## Real life: How companies use this
-**Zenith Bank** uses ETL to generate your monthly statement.
-1. **Extract**: They pull every transaction you made from their core banking system.
-2. **Transform**: They sort them by date, calculate your final balance, and add your name.
-3. **Load**: They generate the PDF you see in your email.
-Without ETL, your statement would just be a list of raw computer codes.
-
-## Remember these three things
-- Extract = Get; Transform = Clean; Load = Save.
-- ETL is how "raw data" becomes "business information."
-- Most of an engineer's time is spent in the Transform phase fixing errors.`,
-      'scenario': `## Scenario: The Multi-Branch Revenue Mess
-**The situation:** You are the MIS lead for a retail chain with branches in Lagos, Abuja, and Port Harcourt. Every evening, each branch sends a CSV of their sales.
-
-**What you're seeing:**
-- Lagos uses \`DD-MM-YYYY\` for dates.
-- Abuja uses \`YYYY/MM/DD\`.
-- Port Harcourt sends their sales in US Dollars ($) while the others use Naira (₦).
+## Common Mistakes to Avoid
+- **Dirty Loading**: Loading data without cleaning it first. If you load ₦5,000 as "5000NGN", your dashboard won't be able to do math on it.
+- **Manual Extract**: Trying to copy-paste data yourself. A real ETL pipeline must be automated.`,
+      'scenario': `## Scenario: The "Where is the Money?" Crisis
+**The situation:** Your manager says the company made ₦10M today, but your dashboard only shows ₦8M.
 
 **Your job:**
-1. Extract the data from all three files.
-2. Transform: Standardize the dates and convert the Dollars to Naira using a fixed rate.
-3. Load: Combine them into one "Master Sales" table for the CEO.
-
-**Code to look at:**
-\`\`\`python
-# Abuja Date: "2023/12/01"
-# Lagos Date: "01-12-2023"
-# How do we make them look the same?
-\`\`\`
-
-**Think through these:**
-- Why can't the CEO just look at the three separate files?
-- What happens if the conversion rate from USD to Naira changes?
-- How does ETL protect the "integrity" of the final report?
+1. Check the **Extract** step: Did the data from the Abuja branch actually arrive?
+2. Check the **Transform** step: Is the math accidentally excluding "Online Payments"?
+3. Check the **Load** step: Is the final database rejecting some rows because they are too large?
 
 **What the solution looks like:**
-You would build a pipeline that reads each file and applies "cleaning rules." It would re-format every date to a single standard and multiply the USD values by the current exchange rate. The CEO then sees one clean, accurate number instead of a confusing mess.`,
+By understanding the ETL flow, you can troubleshoot exactly where the "missing ₦2M" is. You realize the Abuja branch internet was down during the Extract phase. You re-run the script, and the dashboard is fixed.`,
       'quizzes': [
         {
-          'question': "In ETL, what happens during the 'Transform' phase?",
-          'options': ["A. Data is deleted", "B. Data is cleaned, formatted, or calculated", "C. Data is sent to the printer", "D. The database is turned off"],
+          'question': "What happens in the 'Transform' phase of ETL?",
+          'options': ["A. Data is deleted", "B. Data is cleaned, calculated, and formatted for the business", "C. Data is moved to a new folder", "D. The computer is turned off"],
           'correct': 1,
-          'explanation': "Transform is where you fix errors, change formats, and prepare the data for the final report."
-        },
-        {
-          'question': "Which of these is an example of the 'Extract' phase?",
-          'options': ["A. Saving a file to a folder", "B. Downloading sales data from a website API", "C. Calculating a 10% tax", "D. Changing a font color"],
-          'correct': 1,
-          'explanation': "Extracting is the act of pulling data out of a source system so it can be processed."
+          'explanation': "Transformation is where the 'magic' happens. Messy raw data becomes clean, useful business information."
         }
       ]
     },
     'The Extract Phase': {
-      'lesson': `## What is the Extract Phase?
-Extraction is the first step of ETL. It involves connecting to a source system-like a database, an API, or a folder of CSVs-and pulling the raw data out into your processing environment.
+      'lesson': `## Why are we learning Extraction?
+Extraction is the "First Mile" of data engineering. If you can't get the data out of the source, you can't analyze it. Professionals use Python to "Reach into" systems and pull data automatically.
 
-## Why should you care as an MIS student?
-Data is often "locked" inside different systems that don't talk to each other. Your sales are in one app, and your expenses are in another. Extraction is how you "free" that data so you can combine it for business intelligence.
+## Step-by-Step Tutorial: Pulling Data
+1. **Source Identification**: Where does the data live? (CSV, SQL, or API).
+2. **Connection**: Using a "Driver" or "Library" (like \`pandas\` or \`requests\`) to talk to that system.
+3. **The Snapshot**: Pulling the data and saving it in a temporary "Staging Area."
 
-## How it actually works
-1. **Source Identification**: Finding where the data lives.
-2. **Connection**: Using a "driver" or a "key" to access the system.
-3. **Data Pull**: Copying the data without changing it (we save the "cooking" for the Transform phase).
-4. **Staging**: Putting the raw data into a temporary "waiting room" (Staging Area).
+## Let's look at a Real Business Example
+**GTBank** extracts thousands of records from their ATM network every hour. Instead of a human checking each ATM, a Python script visits each machine's IP address, "Extracts" the transaction log, and saves it. This allows the bank to detect a broken ATM in seconds.
 
-## Show me the code
-\`\`\`python
-import pandas as pd
-
-# Extracting from a CSV file
-df_csv = pd.read_csv('branch_a_sales.csv')
-
-# Extracting from a JSON API
-import requests
-response = requests.get('https://api.branch-b.com/orders')
-df_json = pd.DataFrame(response.json())
-
-# Combining them in the staging area
-staging_area = pd.concat([df_csv, df_json])
-print(f"Extracted {len(staging_area)} rows total.")
-\`\`\`
-
-## Real life: How companies use this
-A fintech like **Kuda** extracts data from thousands of mobile phones every second. They don't process it on the phone; they "Extract" the transaction details and send it to their central servers. This keeps the phone app fast while allowing the bank to run complex fraud checks on their own big computers.
-
-## Remember these three things
-- Extraction should be as fast as possible to avoid slowing down the source system.
-- Don't try to "fix" the data during extraction; just get it out safely.
-- If extraction fails, the entire pipeline stops-it is the foundation of ETL.`,
+## Common Mistakes to Avoid
+- **Hard-coding credentials**: Never put a database password directly in your Extract script.
+- **Overloading the source**: If you extract 1 million rows at 2 PM, the database might slow down and prevent customers from buying things. Always extract during "Off-Peak" hours (like midnight).`,
       'scenario': `## Scenario: The Locked Database
-**The situation:** Your company's main database is very old and slow. Every time you try to "Extract" data for your daily report, the database crashes, and the sales team can't use the app for 10 minutes.
-
-**What you're seeing:**
-Angry emails from the sales team. Your extraction script is "locking" the tables, preventing anyone else from reading or writing data while you are pulling it.
+**The situation:** You are trying to extract sales data at 10 AM, but the IT team says you are slowing down the system and customers can't check out.
 
 **Your job:**
-1. Figure out how to extract "incrementally" (only getting new rows since yesterday).
-2. Schedule the extraction for 2 AM when nobody is using the system.
-3. Use a "Read-Only" connection to reduce the load on the database.
-
-**Code to look at:**
-\`\`\`python
-# Instead of: select * from sales
-# Use: select * from sales where transaction_date = '2023-12-01'
-\`\`\`
-
-**Think through these:**
-- Why is "Impact on Source" a major concern for an MIS manager?
-- How does moving extraction to "Off-Peak Hours" improve business operations?
-- What happens if you need "Real-Time" data? How does that change your extraction strategy?
+1. Schedule your extraction script to run at 2 AM instead of 10 AM.
+2. Use "Incremental Extraction" (only pull today's rows) instead of pulling the whole history.
 
 **What the solution looks like:**
-A professional engineer would implement "Incremental Extraction." By only pulling the 500 new rows from today instead of all 10 million rows from history, the process finishes in seconds, uses very little power, and doesn't crash the company's main system.`,
+You've balanced the needs of the "Business" (speed for customers) with the needs of "Analytics" (data for you). This is the mark of a professional MIS analyst.`,
       'quizzes': [
         {
-          'question': "Which of these best describes the goal of the 'Extract' phase?",
-          'options': ["A. To calculate the final profit of the company", "B. To pull raw data from a source system into a processing area", "C. To delete old customer records", "D. To design a new user interface"],
-          'correct': 1,
-          'explanation': "Extract is solely about getting the raw, unchanged data out of the source system so it can be used later."
+          'question': "When is the best time to perform a large data extraction from a production database?",
+          'options': ["A. During peak business hours", "B. Monday morning at 9 AM", "C. During off-peak hours (like midnight) when the system is not busy", "D. Never, just use Excel"],
+          'correct': 2,
+          'explanation': "Extraction can be 'heavy'. Doing it at night ensures you don't slow down the system for paying customers."
         }
       ]
     },
     'Cleaning & Transforming Data': {
-      'lesson': `## What is Cleaning & Transforming?
-Transformation is the "T" in ETL. It is where raw, messy data is turned into clean, useful information. This includes fixing typos, removing duplicates, converting currencies, and joining tables together.
+      'lesson': `## Why are we learning Transformation?
+Transformation is where you add **Value**. Raw data is just a pile of bricks; transformation is the process of building a house.
 
-## Why should you care as an MIS student?
-"Garbage In, Garbage Out." If your raw data says a customer's age is "-5" or their name is "Null", your final report will be wrong. Transformation is the "Filter" that ensures only high-quality data reaches the CEO's dashboard.
+## Step-by-Step Tutorial: The "Cleaning" Checklist
+1. **Standardization**: Change all dates to the same format (\`YYYY-MM-DD\`).
+2. **Currency Conversion**: Convert all prices (USD, GBP) into Naira using a live exchange rate.
+3. **De-duplication**: If a customer is listed twice by mistake, delete the duplicate.
+4. **Calculations**: Create new columns like "Profit Margin" (Revenue - Cost).
 
-## How it actually works
-1. **Standardization**: Making sure all dates look the same (e.g., YYYY-MM-DD).
-2. **Deduplication**: Removing the same sale that was accidentally recorded twice.
-3. **Enrichment**: Adding extra info (like adding a "Region" column based on a "City").
-4. **Validation**: Checking if the data makes sense (e.g., "Is the price greater than zero?").
+## Let's look at a Real Business Example
+**Paystack** receives payment data from thousands of websites. Some write "lagos", some write "LAGOS", and some write "Lagos State." Paystack uses a transformation script to change all of these to just "Lagos" so their "Sales by City" chart is accurate.
 
-## Show me the code
-\`\`\`python
-import pandas as pd
-df = pd.read_csv('raw_data.csv')
-
-# 1. Fix missing values (Fill with 'Unknown')
-df['customer_name'] = df['customer_name'].fillna('Unknown')
-
-# 2. Remove duplicates
-df = df.drop_duplicates()
-
-# 3. Data Type conversion
-df['sale_date'] = pd.to_datetime(df['sale_date'])
-
-# 4. Calculation (Adding a 5% Tax column)
-df['tax_amount'] = df['price'] * 0.05
-
-print("Transformation Complete!")
-\`\`\`
-
-## Real life: How companies use this
-An e-commerce giant like **Jumia** receives thousands of reviews. Their "Transformation" pipeline might automatically remove "spam" reviews, correct common spelling mistakes in product names, and convert all prices into a single currency (Naira) before showing the data to the marketing team.
-
-## Remember these three things
-- Transformation is where the "Business Rules" are applied to the data.
-- It is often the most complex and time-consuming part of data engineering.
-- Good transformation prevents "Wrong Numbers" from ruining business decisions.`,
-      'scenario': `## Scenario: The Duplicate Disaster
-**The situation:** Your marketing report says you have 10,000 "New Leads" this month. However, when the sales team calls them, they find out it's actually the same 2,000 people who signed up 5 times each to get a discount code.
-
-**What you're seeing:**
-Inflated numbers. The CEO is happy, but the sales team is frustrated and wasting time. The "Data Quality" is low because of duplicates.
+## Common Mistakes to Avoid
+- **Losing the Raw Data**: Never delete your original messy data. If your transformation script has a bug, you'll need the raw data to try again.
+- **Formatting in Excel**: Don't manually fix data in a spreadsheet. Use a script so the cleaning happens automatically every time new data arrives.`,
+      'scenario': `## Scenario: The Duplicate Customer Disaster
+**The situation:** Your company ran a promo, and 500 customers signed up twice with different emails. Your "Total Customers" report is now wrong.
 
 **Your job:**
-1. Identify unique customers using their Email or Phone Number.
-2. Remove the duplicates during the Transform phase.
-3. Report the *true* number of unique leads.
-
-**Code to look at:**
-\`\`\`python
-# Use Pandas to keep only the FIRST time an email appears
-df_clean = df.drop_duplicates(subset=['email'], keep='first')
-\`\`\`
-
-**Think through these:**
-- Why did the users sign up 5 times? (Business problem)
-- What is the cost to the company of the sales team calling the same person 5 times?
-- How does "Data Deduplication" improve the company's "Return on Investment" (ROI)?
+1. Write a Python script to find customers with the same "Phone Number."
+2. Delete the duplicate rows, keeping only the most recent one.
 
 **What the solution looks like:**
-By adding a "Deduplication Step" to your pipeline, you provide the business with the truth. Marketing now knows their actual reach, and the sales team is 5x more efficient because they aren't repeating work. In MIS, "Accuracy" is always more valuable than "Big Numbers."`,
+You've restored "Data Integrity." The CEO now has the real number of customers, which helps him plan the budget for next year correctly.`,
       'quizzes': [
         {
-          'question': "What is 'Garbage In, Garbage Out' (GIGO) in the context of ETL?",
-          'options': ["A. If you have a slow computer, your data will be slow", "B. If your raw data is poor quality, your final reports will be wrong/useless", "C. You should throw away your old databases", "D. Data should be deleted after it is processed"],
+          'question': "What is 'De-duplication' in data transformation?",
+          'options': ["A. Adding more data", "B. Removing identical records that were accidentally saved twice", "C. Changing the data type", "D. Sending an email"],
           'correct': 1,
-          'explanation': "GIGO is a core principle: the quality of your output is strictly limited by the quality of your input. This is why the 'Transform' phase is so critical."
+          'explanation': "Duplicates lead to 'double counting', which makes your reports lie. De-duplication ensures each event is only counted once."
         }
       ]
     },
     'Loading into a Warehouse': {
-      'lesson': `## What is the Loading Phase?
-Loading is the final step of ETL. It is where the cleaned, transformed data is moved into its permanent home-usually a Data Warehouse like BigQuery, Snowflake, or a SQL database.
+      'lesson': `## Why are we learning Loading?
+Loading is the final step. You've extracted the data and cleaned it; now you must "Park" it in a secure, high-performance home called a **Data Warehouse** (like Google BigQuery or Snowflake) so people can use it.
 
-## Why should you care as an MIS student?
-Extraction and Transformation happen "behind the scenes." The Load phase is what the business actually "sees." This is the data that powers the Power BI dashboards, the executive reports, and the machine learning models.
+## Step-by-Step Tutorial: The Delivery
+1. **Destination Schema**: Creating a table that has exactly the right columns to fit your clean data.
+2. **Upsert vs. Append**: 
+   - **Append**: Just add the new rows to the end.
+   - **Upsert**: If the row already exists, update it; if not, add it.
+3. **Verification**: Checking that 100 rows were sent and 100 rows arrived.
 
-## How it actually works
-1. **Full Load**: Deleting the old data and replacing it entirely with the new data.
-2. **Incremental Load**: Only adding the *new* rows that happened since the last load.
-3. **Upsert**: A mix. If the record is new, add it. If it already exists, update the information.
-4. **Verification**: Checking that the number of rows you "Transformed" matches the number of rows you "Loaded."
+## Let's look at a Real Business Example
+A bank like **Kuda** loads their "Clean Transactions" into a warehouse every 30 minutes. This warehouse is separate from their "Banking App." Why? So that analysts can run heavy reports all day without slowing down the app for customers.
 
-## Show me the code
-\`\`\`python
-import pandas as pd
-from sqlalchemy import create_engine
-
-# 1. Create a connection to the Warehouse (Database)
-engine = create_engine('postgresql://user:password@warehouse_host:5432/mis_db')
-
-# 2. Load the cleaned DataFrame into a table called 'fact_sales'
-# 'if_exists=append' means we are adding to the table, not replacing it.
-df_clean.to_sql('fact_sales', engine, if_exists='append', index=False)
-
-print("Data successfully loaded into the warehouse!")
-\`\`\`
-
-## Real life: How companies use this
-**MTN** loads billions of "Call Detail Records" into their data warehouse every night. They don't overwrite the whole database; they "Incrementally Load" today's calls at the bottom of the list. This allows them to look back at years of history without having to reload the whole thing every day.
-
-## Remember these three things
-- Loading is the point of "No Return"-once it's in the warehouse, the business starts using it.
-- Incremental loading is much faster and cheaper for large datasets.
-- Always check for "Data Loss" during the load step.`,
-      'scenario': `## Scenario: The Missing Monday
-**The situation:** You loaded the weekly sales data into the dashboard. On Tuesday morning, the CEO calls you: "Why are our sales for Monday showing as ₦0?"
-
-**What you're seeing:**
-You check the "Staging Area" (Transform phase) and the data for Monday is there. But in the "Data Warehouse" (Load phase), Monday is missing. The "Load" step failed halfway through, and nobody noticed.
+## Common Mistakes to Avoid
+- **Loading into Production**: Never load your analytics data back into the main database that runs the app. Use a separate Warehouse.
+- **No Error Checks**: If the loading fails and you don't know, your dashboard will be empty. Always check the "Load Status."`,
+      'scenario': `## Scenario: The "App is Slow" Complaint
+**The situation:** You are running your analytics reports directly on the main database. Every time you run a "Top Customers" query, the mobile app becomes slow for everyone.
 
 **Your job:**
-1. Figure out why the load stopped (Was the database full? Did the internet cut out?).
-2. Re-load the missing data for Monday.
-3. Add a "Row Count Check" to your script so it alerts you if the numbers don't match next time.
-
-**Code to look at:**
-\`\`\`python
-# Check if counts match
-rows_transformed = 1000
-rows_in_warehouse = check_warehouse_count()
-
-if rows_transformed != rows_in_warehouse:
-    send_alert("ERROR: Data Load Incomplete!")
-\`\`\`
-
-**Think through these:**
-- Why is a "Silent Failure" more dangerous than a "Loud Crash"?
-- How does a missing day of data affect "Year-on-Year" growth reports?
-- In MIS, how do we build "Trust" in our systems?
+1. Create a separate **Data Warehouse**.
+2. Update your ETL pipeline to "Load" the data into this Warehouse once a night.
+3. Tell the analysts to run their reports only on the Warehouse.
 
 **What the solution looks like:**
-A professional analyst would implement "Audit Checks." By comparing the source count to the target count, you ensure that every single row made the journey safely. If even one row is missing, the system sends an alert, ensuring the CEO never sees a wrong number again.`,
+You've improved the "System Architecture." The app stays fast for customers, and the analysts can run as many reports as they want without any risk.`,
       'quizzes': [
         {
-          'question': "What is an 'Incremental Load' in a data warehouse?",
-          'options': ["A. Deleting the whole database and starting over", "B. Adding only the new data that was created since the last update", "C. Changing the font of the dashboard", "D. Moving data from the cloud to a physical hard drive"],
+          'question': "Why do companies use a separate 'Data Warehouse' for analytics instead of the main app database?",
+          'options': ["A. To waste money", "B. To ensure that heavy analytics reports don't slow down the main app for customers", "C. Because warehouses are bigger than databases", "D. To hide data from hackers"],
           'correct': 1,
-          'explanation': "Incremental loading saves time and resources by only processing the 'new' records, rather than re-processing everything."
+          'explanation': "Separating 'Production' (the app) from 'Analytics' (the reports) is a fundamental rule of MIS and Data Engineering."
         }
       ]
     },
     'Handling Pipeline Failures': {
-      'lesson': `## What is Handling Pipeline Failures?
-In data engineering, things *will* break. A source database might go offline, a column name might change, or the internet might cut out. Handling failures is the practice of building systems that can recover gracefully without losing data.
+      'lesson': `## Why are we learning Failure Handling?
+In the real world, things break. The internet cuts out, a password changes, or a file is missing. If your ETL pipeline crashes and stays dead, the business stops getting its reports. Handling failures is what separates a "Student" from a "Senior Engineer."
 
-## Why should you care as an MIS student?
-Reliability is a core MIS concern. If a pipeline fails and isn't fixed, business dashboards stay "stale" (outdated). Managers make decisions based on old data, which is just as dangerous as wrong data.
+## Step-by-Step Tutorial: Building Resilient Systems
+1. **Retries**: If a connection fails, don't give up! Tell the computer to wait 5 minutes and try again. 90% of errors are temporary.
+2. **Alerting**: If the script fails 3 times, send an immediate Slack/Email to you. "Hey! The pipeline is broken. Check the Abuja branch connection."
+3. **Idempotency**: Ensuring that if you run a failed job again, it doesn't create duplicate rows. (e.g., using \`id\` to check if a row already exists).
 
-## How it actually works
-1. **Retries**: If a task fails, wait 5 minutes and try again (often solves network issues).
-2. **Alerting**: Sending an email or Slack message immediately so an engineer can look.
-3. **Idempotency**: Ensuring that if you run a failed job again, it doesn't create duplicate data.
-4. **Logging**: Recording exactly *where* and *why* the failure happened.
+## Let's look at a Real Business Example
+**Flutterwave** processes millions of transactions. If their reconciliation pipeline fails at 2 AM, it doesn't just stop. It "Retries" automatically. If it still fails, it sends a "Critical Alert" to an engineer's phone. This ensures that even if there's a problem, it is fixed before the CEO wakes up at 8 AM.
 
-## Show me the code
-\`\`\`python
-import time
-
-def load_data():
-    # Simulate a flakey connection
-    raise Exception("Database Connection Timeout")
-
-# Simple Retry Logic
-max_retries = 3
-for i in range(max_retries):
-    try:
-        load_data()
-        print("Success!")
-        break
-    except Exception as e:
-        print(f"Attempt {i+1} failed. Retrying in 10s...")
-        time.sleep(10)
-else:
-    print("FAILED after 3 attempts. Sending Alert to Slack...")
-\`\`\`
-
-## Real life: How companies use this
-**Flutterwave** processes payments 24/7. Their pipelines use "Dead Letter Queues." If a transaction record fails to process, it isn't deleted; it is moved to a special "Error Table." Every morning, engineers look at that table, fix the issues, and "Re-run" only those specific failed rows.
-
-## Remember these three things
-- Failure is expected; the goal is "Recovery."
-- "Retries" solve temporary problems; "Alerts" solve permanent ones.
-- Never let a failure go unnoticed-visibility is the key to a reliable system.`,
+## Common Mistakes to Avoid
+- **Silent Failures**: The worst error is one you don't know about. If your script fails, it MUST shout (alert you).
+- **Infinite Retries**: Don't tell your script to "try forever." If the password is wrong, it will never work. Set a limit of 3 or 5 tries.`,
       'scenario': `## Scenario: The Midnight Crash
-**The situation:** You have an ETL pipeline that runs at midnight to update the "Daily P&L" (Profit and Loss) report. You wake up at 8 AM and find out the report is empty. The pipeline crashed at 12:05 AM because the source file was renamed.
-
-**What you're seeing:**
-An error message: \`FileNotFoundError: sales_final.csv not found\`. The manager who sends the file renamed it to \`sales_final_v2.csv\` without telling you.
+**The situation:** You wake up at 8 AM and find your dashboard is empty. You check the code and see it crashed at 3 AM because the "Sales" file was missing.
 
 **Your job:**
-1. Fix the script to look for the new filename.
-2. Add a "File Check" step at the beginning that sends a Slack message *immediately* if the file is missing.
-3. Re-run the job manually to get the data for today.
-
-**Code to look at:**
-\`\`\`python
-import os
-if not os.path.exists('sales_final.csv'):
-    send_alert("CRITICAL: Source file is missing! Pipeline stopped.")
-    # Stop the script here so it doesn't crash later
-    exit()
-\`\`\`
-
-**Think through these:**
-- Why is it important to "Fail Fast" (stop at the beginning) rather than "Fail Late"?
-- How does "Communication" between departments affect data engineering?
-- In MIS, what is the impact of a missing financial report on a Monday morning?
+1. Add a \`try / except\` block to catch the error.
+2. Inside the \`except\` block, add a function that sends you an alert.
+3. Add a "Retry" rule to try again in 10 minutes.
 
 **What the solution looks like:**
-You would implement "Pre-Flight Checks." By verifying that all "dependencies" (files, connections, permissions) exist *before* starting the heavy work, you prevent 90% of pipeline crashes. If something is wrong, you know at 12:01 AM instead of 8:00 AM.`,
+You've moved from "Building things that work" to "Building things that recover." Next time the file is 5 minutes late, the "Retry" will catch it automatically, and the dashboard will be ready when you wake up.`,
       'quizzes': [
         {
-          'question': "What is 'Idempotency' in a data pipeline?",
-          'options': ["A. The ability to run the same job multiple times and get the same result without creating duplicates", "B. The speed at which data moves", "C. The cost of running a cloud server", "D. The process of deleting data after use"],
-          'correct': 0,
-          'explanation': "Idempotency is critical. If a job fails halfway, you should be able to run it again safely without doubling the data that was already loaded."
+          'question': "What is the best way to handle a temporary network failure in a data pipeline?",
+          'options': ["A. Delete the script", "B. Implement an 'Automated Retry' logic that waits and tries again", "C. Call the internet provider", "D. Do nothing and hope it works tomorrow"],
+          'correct': 1,
+          'explanation': "Network issues are often temporary. Retrying a few times automatically solves most of these problems without any human effort."
         }
       ]
     },
     'Incremental vs Full Loads': {
-      'lesson': `## What is Incremental vs Full Loads?
-A **Full Load** deletes everything in the destination table and replaces it with all the data from the source. An **Incremental Load** only pulls and adds the records that have changed or been created since the last time the job ran.
+      'lesson': `## Why are we learning Load Strategies?
+Efficiency is everything. If you have 10 years of sales data (100 million rows) and you only want to add today's sales (1,000 rows), a "Full Load" is a massive waste of time and money.
 
-## Why should you care as an MIS student?
-Efficiency is everything. If you have 10 years of sales data (100 million rows) and you only want to add today's sales (1,000 rows), a Full Load would be a massive waste of time, money, and computing power. Incremental loading is how big companies keep their data fresh.
+## Step-by-Step Tutorial: The Trade-off
+1. **Full Load (Beginner)**: Deleting the whole table and replacing it with everything from the source.
+   - **Pros**: Very easy to build.
+   - **Cons**: Extremely slow as your company grows.
+2. **Incremental Load (Pro)**: Only pulling and adding the rows that have been created *since the last time* the job ran.
+   - **Pros**: Lightning fast, uses very little cloud power.
+   - **Cons**: Harder to build (you need a "Watermark" or timestamp to know where you stopped).
 
-## How it actually works
-1. **Full Load**: Simple to build, but slow and expensive. Best for small tables (like "List of Branch Cities").
-2. **Incremental Load**: Complex to build, but fast and cheap. Requires a "Watermark" (like a \`last_updated\` timestamp) to know where to start.
-3. **The Trade-off**: Incremental loads can sometimes miss data if rows are deleted, so engineers often do a "Full Refresh" once a week just to be safe.
+## Let's look at a Real Business Example
+**Uber** doesn't reload every ride since 2010 every time you finish a trip. They use **Incremental Loading**. As soon as your ride ends, that one row is "Extracted" and "Loaded" into their warehouse. This allows them to see global traffic patterns in near real-time.
 
-## Show me the code
-\`\`\`python
-# 1. Get the last time we loaded data
-last_load_time = get_last_timestamp_from_warehouse()
-
-# 2. Extract only NEW data
-query = f"SELECT * FROM sales WHERE updated_at > '{last_load_time}'"
-new_rows = pd.read_sql(query, source_db)
-
-# 3. Load only those new rows
-new_rows.to_sql('fact_sales', warehouse_engine, if_exists='append')
-\`\`\`
-
-## Real life: How companies use this
-**Uber** doesn't reload every ride since 2010 every time you finish a trip. They use "Incremental Loading." As soon as your ride ends, that one row is "Extracted" and "Loaded" into their analytics warehouse. This allows them to see city-wide traffic patterns in near real-time.
-
-## Remember these three things
-- Full Load = Replace everything; Incremental Load = Add only new.
-- Incremental loads require a "Watermark" (usually a date/time column).
-- Use Incremental for "Transaction" tables and Full for "Dimension" (lookup) tables.`,
-      'scenario': `## Scenario: The Growing Bill
-**The situation:** You work for a fintech that is growing fast. You are currently doing a "Full Load" of every transaction every night. Last month, your cloud bill was ₦50,000. This month, it jumped to ₦250,000 because you have 5x more data.
-
-**What you're seeing:**
-The job used to take 5 minutes. Now it takes 1 hour. Most of that time is spent re-reading data from 2 years ago that hasn't changed.
+## Common Mistakes to Avoid
+- **Loading Duplicates**: If you run an incremental load twice for the same day, you might end up with double the sales. Always use a "Unique ID" check to prevent this.
+- **Forgetting the Watermark**: If you don't keep track of the "Last Date Loaded," your script won't know which rows are new.`,
+      'scenario': `## Scenario: The Growing Cloud Bill
+**The situation:** Your company's data is growing fast. Your "Full Load" job used to take 5 minutes and cost ₦1k/day. Now it takes 2 hours and costs ₦50k/day.
 
 **Your job:**
-1. Identify a "Watermark" column (like \`created_at\`).
-2. Update your script to only pull rows where \`created_at\` is "Yesterday".
-3. Change the load mode to \`append\` instead of \`replace\`.
-
-**Code to look at:**
-\`\`\`python
-# Before (Full Load):
-# df = read_all()
-# df.to_sql('sales', mode='replace')
-
-# After (Incremental):
-# df = read_since('2023-12-01')
-# df.to_sql('sales', mode='append')
-\`\`\`
-
-**Think through these:**
-- Why is "Scalability" a key MIS concept?
-- How does "Cost Optimization" affect your value as an engineer?
-- What happens if a record from 2 weeks ago is updated? Does your incremental load catch it?
+1. Switch to **Incremental Loading**.
+2. Update your SQL to only pull rows where \`date = today\`.
+3. Watch the cost drop back down and the speed increase instantly.
 
 **What the solution looks like:**
-By switching to Incremental Loading, you've "Future-Proofed" the pipeline. It doesn't matter if the company has 1 million or 1 billion rows; your daily job only ever processes the 1,000 new ones. The bill goes back down, and the reports are ready much earlier.`,
+You've "Future-Proofed" the pipeline. It doesn't matter if the company grows to a billion rows; your daily job only ever processes the new ones, keeping the system fast and the costs low.`,
       'quizzes': [
         {
-          'question': "What is the primary requirement for an 'Incremental Load' to work correctly?",
-          'options': ["A. A very fast internet connection", "B. A 'Watermark' column (like a timestamp or ID) to track progress", "C. A high-resolution monitor", "D. Deleting the source data after reading"],
-          'correct': 1,
-          'explanation': "Without a watermark, the system doesn't know where the last load ended and where the new one should begin."
+          'question': "When should you choose an 'Incremental Load' over a 'Full Load'?",
+          'options': ["A. When the dataset is very small", "B. When you want to replace all old data", "C. When the dataset is large and you only need to add new records to save time and cost", "D. Never, full loads are always better"],
+          'correct': 2,
+          'explanation': "Incremental loading is the key to 'Scaling'. It allows you to handle massive datasets by only working on the 'Change' rather than the 'Whole'."
         }
       ]
     },
     'ETL vs ELT': {
-      'lesson': `## What is ETL vs ELT?
-**ETL** (Extract, Transform, Load) cleans the data *before* it reaches the warehouse. **ELT** (Extract, Load, Transform) moves the raw data into the warehouse first and uses the power of the warehouse itself (like BigQuery or Snowflake) to do the cleaning later using SQL.
+      'lesson': `## Why are we learning ELT?
+Traditional **ETL** cleans data *before* saving it. Modern **ELT** (Extract, Load, Transform) saves the raw data first and cleans it *inside* the warehouse. This is the #1 trend in modern data engineering.
 
-## Why should you care as an MIS student?
-The "Modern Data Stack" is moving toward **ELT**. Why? Because modern cloud warehouses are incredibly fast at processing data. It is often faster and cheaper to just "dump" everything into the warehouse and then clean it up using SQL tools like **dbt**.
+## Step-by-Step Tutorial: The Modern Shift
+1. **ETL (Old Way)**: Best for when you have very sensitive data (like credit card numbers) that you MUST hide before it reaches the cloud.
+2. **ELT (Modern Way)**: Best for speed and flexibility. You "dump" everything into a Data Lake (like S3) and use the power of the warehouse to clean it up with SQL.
+3. **The "T" (dbt)**: In ELT, the Transformation is usually done using a tool called **dbt**, which we will learn later.
 
-## How it actually works
-1. **ETL**: Good for sensitive data (you can "mask" or hide credit card numbers before they are ever saved).
-2. **ELT**: Good for massive scale. You don't have to worry about your Python script crashing on 10 million rows; the warehouse handles it.
-3. **The Logic**: In ELT, the "Transformation" happens *at the destination*.
+## Let's look at a Real Business Example
+**Paystack** uses ELT. They pipe every raw event (clicks, logins, payments) into a "Data Lake." Then, their analysts use SQL to build "Models" that show conversion rates. If the business rules change, they just update the SQL—they don't have to re-extract the data because the "Raw History" is already there.
 
-## Show me the code
-\`\`\`sql
--- In ELT, you load the raw data first, then run this in the warehouse:
-CREATE TABLE clean_sales AS
-SELECT 
-    id,
-    UPPER(customer_name) as name,
-    price * 1.075 as total_with_vat
-FROM raw_sales_table;
-\`\`\`
-
-## Real life: How companies use this
-A startup like **Paystack** might use ELT. They pipe every raw event (clicks, logins, payments) into a "Data Lake" (Load). Then, their analysts use SQL to build "Models" (Transform) that show conversion rates and revenue. This allows them to change their "cleaning rules" without having to re-fetch the raw data.
-
-## Remember these three things
-- ETL = Clean then Save; ELT = Save then Clean.
-- ELT is the standard for modern Cloud Data Warehouses.
-- ELT allows you to keep your "Raw History" in case you need to re-process it later.`,
+## Common Mistakes to Avoid
+- **Losing the Raw Data**: In ETL, if you make a mistake in your cleaning logic, the raw data is gone. In ELT, you keep the raw data forever, so you can always fix your mistakes.
+- **Transforming too early**: Don't waste time cleaning data that nobody will ever use. ELT allows you to load everything and only clean what is actually needed for a report.`,
       'scenario': `## Scenario: The "Oops, We Forgot a Column" Problem
-**The situation:** You used **ETL** to process sales data. During the "Transform" phase, you deleted the "Customer IP Address" column because you thought nobody needed it. 6 months later, the CEO wants a report on "Which city has the most fraud?", but you don't have the IP addresses to find the cities.
-
-**What you're seeing:**
-Because you cleaned the data *before* loading it, the "Raw" information is gone forever. You'd have to re-extract 6 months of data from the source, which might be impossible.
+**The situation:** You used ETL to process sales data and deleted the "Customer IP" column. 6 months later, the CEO wants to see "Fraud by City." You can't do it because the IP data is gone.
 
 **Your job:**
-1. Propose a switch to **ELT**.
-2. Load the "Raw" JSON/CSV data directly into the warehouse first.
-3. Use SQL to create "Clean Views" while keeping the raw data safe in a separate table.
-
-**Code to look at:**
-\`\`\`sql
--- Keep this safe: raw_transactions (everything)
--- Create this for users: view_clean_transactions (filtered)
-\`\`\`
-
-**Think through these:**
-- Why is "Data Preservation" important in MIS?
-- How does ELT give you more "Flexibility" for future business questions?
-- Why is ELT becoming more popular as Cloud storage becomes cheaper?
+1. Propose a switch to ELT.
+2. Load the "Raw" data first.
+3. Use SQL to create a "View" that includes the IP column.
 
 **What the solution looks like:**
-By adopting ELT, you've created a "Time Machine." Since you have the raw data safely stored in the warehouse, you can change your "Transformation Logic" at any time. If the CEO asks for a new report next year, you just write a new SQL query against the raw data you already have.`,
+By adopting ELT, you've created a "Time Machine." Since you have the raw data safely stored, you can answer any new question that comes up in the future, even if you didn't plan for it 6 months ago.`,
       'quizzes': [
         {
-          'question': "What is the main difference between ETL and ELT?",
-          'options': ["A. ETL is faster, ELT is slower", "B. The order and location of where the data is 'Transformed'", "C. ETL uses Python, ELT only uses Excel", "D. ETL is for the cloud, ELT is for physical servers"],
+          'question': "What is the main advantage of ELT over ETL?",
+          'options': ["A. It is cheaper to build", "B. It allows you to keep the raw data history so you can change your transformation logic later", "C. It uses less internet", "D. It only works with Excel"],
           'correct': 1,
-          'explanation': "The key is where the 'T' happens. In ETL, it happens in a processing engine (like Python) before the warehouse. In ELT, it happens inside the warehouse itself."
+          'explanation': "ELT is about 'Flexibility'. By saving the raw data first, you can re-run your transformations as many times as you want if the business rules change."
         }
       ]
     },
     'ETL in a Real Nigerian Bank': {
       'lesson': `## ETL in a Real Nigerian Bank
-In a Nigerian bank (like GTBank or Access Bank), ETL is the "Heartbeat" of the organization. It's how thousands of separate branch transactions become a single "Consolidated Financial Statement" for the Central Bank of Nigeria (CBN).
+In a Nigerian bank, ETL is about **Consolidation**. Thousands of branches in different cities must merge their data into one "Single Version of Truth" for the CEO and the Central Bank of Nigeria (CBN).
 
-## Why should you care as an MIS student?
-Banking is the biggest employer of MIS professionals in Nigeria. Understanding their specific ETL challenges-like unreliable internet in rural branches, power outages, and strict CBN regulations-makes you a top-tier candidate.
+## Step-by-Step Tutorial: The Banking Flow
+1. **Core Banking System (CBS)**: The main source (like Flexcube or Finacle).
+2. **End of Day (EOD)**: A massive ETL job that runs every night to calculate interest, post charges, and balance the books.
+3. **Reconciliation**: Comparing internal logs with NIBSS/Interswitch to make sure every Naira is accounted for.
+4. **Regulatory Reporting**: Formatting data for the CBN's surveillance systems.
 
-## How it actually works
-1. **Core Banking System (CBS)**: The main source (e.g., Flexcube or Finacle).
-2. **EOD (End of Day)**: A massive ETL process that runs every night at 10 PM.
-3. **Reconciliation**: Comparing internal logs with NIBSS or Interswitch data to make sure no money is "missing."
-4. **Regulatory Reporting**: Automatically formatting data for the CBN "Electronic Financial Analysis and Surveillance System" (e-FASS).
+## Let's look at a Real Business Example
+**Access Bank** uses ETL to manage "KYC" (Know Your Customer) data. They extract photos and IDs from branch scanners, "Transform" them into digital files, and "Load" them into a central database. This allows a customer to open an account in Enugu and have it accessible in Lagos in seconds.
 
-## Show me the code
-\`\`\`python
-# Simple Bank Recon logic
-def reconcile_transactions(internal_list, interswitch_list):
-    """Finds transactions that are in our bank but missing from Interswitch"""
-    mismatches = []
-    for tx in internal_list:
-        if tx['id'] not in [itx['id'] for itx in interswitch_list]:
-            mismatches.append(tx)
-    return mismatches
-
-# Loading mismatches to an 'Exception Report' for the Audit team
-\`\`\`
-
-## Real life: How companies use this
-**First Bank** uses ETL to manage "Know Your Customer" (KYC) data. They extract photos and IDs from branch scanners, "Transform" them into compressed digital files, and "Load" them into a central database. This allows you to walk into a branch in Kano and have them see the account you opened in Lagos instantly.
-
-## Remember these three things
-- In banking, ETL is primarily about **Accuracy** and **Audit Trails**.
-- "Reconciliation" is the most critical ETL task in fintech/banking.
-- Regulatory compliance (CBN) is the biggest driver of data engineering projects in Nigeria.`,
+## Common Mistakes to Avoid
+- **No Audit Trail**: In banking, every change must be recorded. If you "Transform" a number, you must be able to prove *why* and *when* you did it.
+- **Ignore Exceptions**: If a ₦1M transaction doesn't match between two systems, you can't just ignore it. You must create an "Exception Report" immediately.`,
       'scenario': `## Scenario: The Failed ATM Settlement
-**The situation:** It's Monday morning at **Zenith Bank**. The "Settlement Team" noticed that ₦20 Million is missing from the weekend's ATM reports. The internal database says the money was given out, but the Interswitch report says those transactions failed.
-
-**What you're seeing:**
-A massive "Mismatched" list. Thousands of customers probably didn't get their cash, but their accounts were still debited. The ETL process that "Reconciles" these two systems failed to run on Sunday night.
+**The situation:** On Monday morning, Zenith Bank's settlement team noticed that ₦20 Million is missing. The internal system says the money was given out, but Interswitch says it wasn't.
 
 **Your job:**
 1. Manually trigger the "Reconciliation Pipeline."
-2. Generate an "Exception Report" showing every customer who needs a refund.
-3. Automate the "Reversal Request" so the money goes back to the customers' accounts without a human doing it one by one.
-
-**Code to look at:**
-\`\`\`python
-# Steps:
-# 1. Extract GTB_Internal_Log.csv
-# 2. Extract Interswitch_Log.csv
-# 3. Transform: Find rows where (GTB == SUCCESS) AND (Interswitch == FAIL)
-# 4. Load: To Refund_Queue table
-\`\`\`
-
-**Think through these:**
-- What happens to the bank's "Reputation" if these refunds aren't processed automatically?
-- Why is "Data Integrity" a matter of national financial security?
-- How does ETL help a bank pass an audit from the CBN?
+2. Find the "Mismatched" rows.
+3. Generate a report for the "Refunds" team.
 
 **What the solution looks like:**
-By building a robust Reconciliation Pipeline, you ensure that "Digital Money" always matches "Physical Reality." You turn a ₦20 Million crisis into an automated 10-minute cleanup, protecting both the bank and its customers. This is the ultimate goal of MIS in the financial sector.`,
+You've turned a financial crisis into a 5-minute data task. By automating the reconciliation, you ensure that the bank's records are always accurate and that customers get their money back quickly.`,
       'quizzes': [
         {
-          'question': "What is the primary purpose of 'Reconciliation' in banking ETL?",
-          'options': ["A. To make the dashboard look pretty", "B. To ensure that internal records match external partners (like Interswitch/NIBSS)", "C. To delete old bank accounts", "D. To increase the interest rates for customers"],
+          'question': "What is 'Reconciliation' in banking ETL?",
+          'options': ["A. Deleting old accounts", "B. Proving that internal records match external partner records (like NIBSS/Interswitch) to ensure no money is missing", "C. Changing the bank's logo", "D. Printing ATM receipts"],
           'correct': 1,
-          'explanation': "Reconciliation is the act of proving that two sets of records (ours and theirs) match perfectly. If they don't, ETL identifies the 'exceptions' so they can be fixed."
+          'explanation': "Reconciliation is the act of checking your 'Internal' truth against an 'External' truth to ensure accuracy."
         }
       ]
     },
     'Milestone Project': {
       'lesson': `## Milestone: The Fintech Reconciliation Engine
-In this project, you will build a complete ETL pipeline that handles the most critical task in banking: **Reconciliation**. You will move data from two sources (Bank Internal Log vs Payment Gateway Log) and find the "Lost Money."
+In this project, you will build a complete ETL pipeline that handles the most critical task in banking: **Reconciliation**. You will move data from two sources and find the "Lost Money."
 
 ## The Broad Business Problem
-Your grocery delivery startup, **"Instacart,"** is facing a massive data quality crisis. The analytics team is complaining about "ghost data"—orders with zero items, or products linked to departments that don't exist. The core issue is that the raw SQL databases are completely dirty. You need to build a robust ETL pipeline that extracts the Orders, Products, and Departments tables, uses Python to find and clean these specific anomalies, and loads a unified warehouse to restore trust in the data.
+Your grocery delivery startup, **"Instacart,"** is facing a data crisis. The analytics team is complaining about "ghost data"—orders with zero items or products linked to departments that don't exist. Investors are starting to doubt the revenue numbers. You must build a robust ETL pipeline that extracts the Orders, Products, and Departments tables, identifies these specific anomalies using Python, and loads a unified warehouse to restore trust in the company's reporting.
 
 ## Your Project Tasks:
-0. **The Data**: Use the [Instacart Relational Database on Kaggle](https://www.kaggle.com/c/instacart-market-basket-analysis/data) (specifically the Orders, Products, and Departments tables).
-1. **EXTRACT**: Pull the raw data from the separate tables into your Python environment.
-2. **TRANSFORM**: Use Pandas to \`JOIN\` the tables and identify "Data Anomalies" (e.g., products missing a department_id, or orders with zero items).
-3. **LOAD**: Save this cleaned, joined dataset into a final \`unified_warehouse.csv\` table.
-4. **THE DASHBOARD**: Create a simple summary showing:
-   - Total Clean Orders Processed.
-   - Total Anomalies Removed.
-   - A list of the Top 5 Departments.
-5. **THE DELIVERY**: Push your \`etl_pipeline.py\` and a sample \`dashboard_screenshot.md\` to GitHub.
-
-## Show me the code (ETL Logic)
-\`\`\`python
-# Example logic for your Transform step:
-def find_lost_money(internal, gateway):
-    internal_ids = {tx['id'] for tx in internal}
-    gateway_ids = {tx['id'] for tx in gateway}
-    
-    # IDs we have that the gateway DOES NOT have
-    lost_ids = internal_ids - gateway_ids
-    return [tx for tx in internal if tx['id'] in lost_ids]
-\`\`\`
+0. **The Data**: Use the [Instacart Relational Database](https://www.kaggle.com/c/instacart-market-basket-analysis/data) (Orders, Products, and Departments tables).
+1. **EXTRACT**: Pull the raw data into Python using Pandas.
+2. **TRANSFORM**: 
+   - Join the tables together.
+   - Filter out "Ghost Orders" (orders with zero products).
+   - Standardize department names (Uppercase).
+3. **LOAD**: Save the cleaned dataset to a file called \`unified_warehouse.csv\`.
+4. **DASHBOARD**: Create a summary showing "Total Anomalies Removed" and "True Revenue."
+5. **DELIVERY**: Push your \`etl_pipeline.py\` and a screenshot of your terminal summary to GitHub.
 
 ## Presenting to Executives
-Tell the VP: "Instead of having 5 accountants manually check Excel files all day, this pipeline identifies every single discrepancy in 3 seconds. It protects our ₦20M daily revenue and ensures customer trust."`,
+Tell the VP: "Instead of 5 accountants manually checking files, this pipeline identifies every discrepancy in 3 seconds. It protects our revenue and ensures that the board of directors is looking at accurate, trustworthy numbers."`,
       'scenario': `## Scenario: The "Audit-Ready" Repository
-**The situation:** The external auditors are coming. They want to see the "Logic" you used to calculate the refunds. They don't want a PowerPoint; they want to see the code and the version history.
+**The situation:** The external auditors are coming. They want to see the "Logic" you used to calculate the sales figures. They don't want a spreadsheet; they want to see the code.
 
 **Your job:**
-1. Ensure your GitHub repo has a \`/docs\` folder explaining the ETL logic.
-2. Tag your current code as \`v1.0-Audit-Ready\`.
-3. Provide the auditors with the GitHub link.
+1. Ensure your GitHub repo has a clear \`README.md\` explaining the ETL steps.
+2. Tag your code as \`v1.0-Audit-Ready\`.
+3. Show the auditors how every "Transformation" rule is documented in the code.
 
-**Think through these:**
-- Why is "Transparency" in code important for financial audits?
-- How does GitHub's "Commit History" prove that you didn't just "fake the numbers" this morning?`,
+**What the solution looks like:**
+You've proven that you are a professional. By using code instead of manual Excel, you've created a "Repeatable" and "Auditable" system that the bank can trust.`,
       'quizzes': [
         {
-          'question': "In your ETL Milestone project, what is the 'Business Value' of the Load phase?",
-          'options': ["A. It makes the code look complex", "B. It saves the results in a permanent place (CSV/Database) so other systems can use it to issue refunds", "C. It deletes the raw data", "D. It sends an email to everyone in the company"],
+          'question': "Why is code-based ETL better for a financial audit than manual Excel files?",
+          'options': ["A. It is more expensive", "B. It is transparent and repeatable-anyone can see the exact rules used to calculate the numbers and verify they haven't changed", "C. Auditors don't like Excel", "D. Code is faster to print"],
           'correct': 1,
-          'explanation': "The Load phase is where the 'Clean Data' is delivered. Without it, your transformation work is lost as soon as the script finishes."
+          'explanation': "Auditability is the key. Code provides a 'Paper Trail' of every decision made during the data's journey."
         }
       ]
     }
   },
+
   'Apache Airflow': {
     'What is Airflow & Why it Exists': {
       'lesson': `## What is Apache Airflow?
@@ -1989,912 +1681,343 @@ Say: "This system is now autonomous. It checks for data, processes it, and updat
     }
   },
   'APIs & REST': {
-    'What is an API? (Really)': {
-      'lesson': `## What is an API?
-An API (Application Programming Interface) is a "messenger" that takes a request from one system and brings back a response from another. Think of it as a waiter in a restaurant taking your order to the kitchen.
+    'The "Why" of APIs': {
+      'lesson': `## Why are we learning APIs?
+In modern business, no app is an island. Your website needs to talk to **Paystack** for payments, **SMS Live247** for notifications, and **Google Maps** for deliveries. 
 
-## Why should you care as an MIS student?
-Modern business is built on APIs. When you pay with "Paystack," your website talks to Paystack via an API. When you see a "Google Map" on a real estate app, it's an API. Mastering APIs allows you to connect any business system to another.
+An **API** (Application Programming Interface) is the "Messenger" that allows these different systems to talk to each other. Mastering APIs allows you to build a "Connected Business" instead of a bunch of isolated spreadsheets.
 
-## How it actually works
-1. **Endpoint**: The "address" of the API (like a URL).
-2. **Method**: What you want to do (GET = Read, POST = Create).
-3. **JSON**: The format of the data (simple text that looks like a list).
-4. **Auth**: The "key" that proves you have permission to access the data.
+## Step-by-Step Tutorial: The Connector
+1. **Endpoint**: The "URL" or address of the system you want to talk to.
+2. **JSON**: The universal language of APIs. It looks like a Python dictionary.
+3. **Authentication**: The "API Key" or password that proves you have permission to access the data.
 
-## Show me the code
-\`\`\`python
-import requests
+## Let's look at a Real Business Example
+**Kuda Bank** doesn't build its own SMS system. When you receive an alert, Kuda's server sends an API request to a provider like **Twilio**. 
+- Kuda sends: "Hey Twilio, send 'Your balance is ₦5,000' to 08012345678."
+- Twilio sends back: "Got it! SMS sent. That will cost you ₦2."
+This happens in milliseconds using APIs.
 
-# Getting the current price of Bitcoin
-url = "https://api.coindesk.com/v1/bpi/currentprice.json"
-response = requests.get(url)
-
-if response.status_code == 200:
-    data = response.json()
-    price = data['bpi']['USD']['rate']
-    print(f"Current Bitcoin Price: \${price}")
-\`\`\`
-
-## Real life: How companies use this
-**Kuda Bank** doesn't own every mast or payment network. They use APIs to talk to NIBSS (for transfers), to Telcos (for airtime), and to AWS (for cloud storage). APIs allow them to act like a giant bank while keeping their internal team small and focused on code.
-
-## Remember these three things
-- APIs allow different apps to "talk" to each other.
-- JSON is the universal language of API data.
-- 404 means 'Not Found', 200 means 'Success', 401 means 'No Permission'.`,
-      'scenario': `## Scenario: The Broken Payment Webhook
-**The situation:** You are the MIS analyst for an e-commerce site. Customers are complaining that they pay for items, but the website still says "Pending Payment."
-
-**What you're seeing:**
-The payment provider (like Flutterwave) is sending an API "POST" request to your server after every success, but your server is returning a "500 Internal Server Error."
+## Common Mistakes to Avoid
+- **Hard-coding Keys**: Never put your API secret key directly in your code. If you upload it to GitHub, hackers can steal your money or data in minutes.
+- **Ignoring Status Codes**: If an API fails, it sends a "Code" (like 404 or 500). If you don't check these codes, your app will crash silently.`,
+      'scenario': `## Scenario: The Silent Payment Failure
+**The situation:** Customers are paying on your website, but their accounts aren't being upgraded. You check the database and realize the "Payment Success" data isn't arriving.
 
 **Your job:**
-1. Check if your API endpoint is actually "listening" for requests.
-2. Verify if the JSON data being sent matches what your code expects.
-3. Fix the code so it saves the "Paid" status to your database correctly.
-
-**Code to look at:**
-\`\`\`python
-# We expect 'status': 'success'
-# But the provider sends 'transaction_status': 'successful'
-incoming_data = {"transaction_status": "successful"}
-
-if incoming_data.get('status') == 'success':
-    print("Marking as paid!")
-else:
-    print("Still pending...")
-\`\`\`
-
-**Think through these:**
-- Why did a simple name change (status vs transaction_status) break the business?
-- Why is it important to "log" every incoming API request?
-- How do APIs help businesses scale without hiring more manual data entry staff?
+1. Use Python to test the **Paystack API**.
+2. Check the "Webhook" (the API message Paystack sends to you).
+3. Realize that Paystack is sending the transaction ID as \`reference\`, but your code is looking for \`id\`.
 
 **What the solution looks like:**
-You would update your code to match the exact labels the payment provider uses. You'd also add "error handling" so that if the data looks weird, the system sends an alert instead of just silently failing.`,
+You've identified a "Data Mapping" error. By updating your API logic to match the provider's labels, you restore the flow of revenue. This is the #1 job of a modern MIS analyst.`,
       'quizzes': [
         {
-          'question': "Which HTTP method is used to 'Read' or 'Fetch' data from an API?",
-          'options': ["A. POST", "B. DELETE", "C. GET", "D. PUT"],
+          'question': "What is the universal data format used by almost all modern APIs?",
+          'options': ["A. PDF", "B. Excel (.xlsx)", "C. JSON", "D. Word (.docx)"],
           'correct': 2,
-          'explanation': "GET is used to retrieve data. POST is used to create new data, PUT is used to update, and DELETE is for removing data."
+          'explanation': "JSON (JavaScript Object Notation) is lightweight and can be read by any programming language, making it the standard for APIs."
         }
       ]
     },
-    'HTTP Methods - GET, POST, PUT, DELETE': {
-      'lesson': `## What are HTTP Methods?
-HTTP methods are the "Verbs" of the internet. They tell the server exactly what action you want to take with a piece of data.
-- **GET**: "Give me this info." (Read)
-- **POST**: "Create this new record." (Create)
-- **PUT**: "Update this existing record." (Update)
-- **DELETE**: "Remove this record." (Delete)
+    'Methods: GET vs POST': {
+      'lesson': `## Why are we learning HTTP Methods?
+When you talk to an API, you must use the right "Verb" (Method). 
+- **GET**: Used to "Read" or "Fetch" data (e.g., Get today's exchange rate).
+- **POST**: Used to "Send" or "Create" data (e.g., Send a new order to the warehouse).
 
-## Why should you care as an MIS student?
-Every business action maps to one of these verbs. 
-- Opening a bank statement = **GET**.
-- Sending money to a friend = **POST** (Creating a transaction).
-- Changing your profile picture = **PUT**.
-- Canceling a subscription = **DELETE**.
-Knowing which one to use is the difference between a working app and a broken one.
+## Step-by-Step Tutorial: The Request
+1. **GET Request**: Use the \`requests.get()\` function. It's like looking at a menu.
+2. **POST Request**: Use the \`requests.post()\` function. It's like placing an order.
+3. **Payload**: In a POST request, the "Payload" is the JSON data you are sending to the server.
 
-## How it actually works
-1. **Request**: You send the Method + URL + Headers (and a "Body" for POST/PUT).
-2. **Response**: The server sends back a Status Code (200, 201, 404, etc.) and the data.
+## Let's look at a Real Business Example
+**Flutterwave** uses these methods:
+- **GET**: To show a merchant their total sales for the month.
+- **POST**: When a customer enters their card details to pay for a pizza.
+Using the wrong method (trying to POST to a GET endpoint) will result in a **405 Method Not Allowed** error.
 
-## Show me the code
-\`\`\`python
-import requests
-
-# 1. GET (Read)
-res_get = requests.get("https://api.shop.com/products/1")
-
-# 2. POST (Create)
-res_post = requests.post("https://api.shop.com/orders", json={"item": "Phone", "price": 50000})
-
-# 3. DELETE (Remove)
-res_del = requests.delete("https://api.shop.com/orders/99")
-
-print(f"Status of Create: {res_post.status_code}") # Should be 201 (Created)
-\`\`\`
-
-## Real life: How companies use this
-**Twitter (X)** uses these methods for everything.
-- **GET** /tweets: To show your timeline.
-- **POST** /tweets: When you click "Post" to send a new tweet.
-- **DELETE** /tweets/123: When you delete a tweet.
-By using these standard verbs, Twitter allows developers all over the world to build "Third-party apps" that work perfectly with their system.
-
-## Remember these three things
-- GET is the only method that doesn't "change" anything on the server.
-- POST, PUT, and DELETE are "Dangerous" and usually require an API Key.
-- Use GET for dashboards and POST for transaction processing.`,
-      'scenario': `## Scenario: The Duplicate Order Bug
-**The situation:** Your e-commerce app is accidentally creating two orders every time a customer clicks "Buy" once.
-
-**What you're seeing:**
-The "Buy" button is using a **GET** request instead of a **POST** request. Because it's a GET, the customer's browser is "Pre-loading" the page, which triggers the order creation before they even click!
+## Common Mistakes to Avoid
+- **Sensitive Data in GET**: Never put passwords or credit card numbers in a GET request (they appear in the URL!). Always use POST for sensitive data.
+- **No Error Handling**: If the internet is down, your \`requests.get()\` will crash. Always use a \`try/except\` block.`,
+      'scenario': `## Scenario: The Duplicate Order
+**The situation:** A customer clicked "Buy" once, but was charged twice. You realize the "Buy" button was sending a GET request, and the customer's browser "Refreshed" the page, triggering the charge again.
 
 **Your job:**
-1. Switch the button logic from GET to **POST**.
-2. Ensure that the server only creates an order when it receives a proper POST request with a "Body."
-3. Add a "Unique ID" to the POST request so that even if they click twice, the second one is ignored.
-
-**Code to look at:**
-\`\`\`python
-# WRONG: Creating an order on a 'GET' link
-# https://shop.com/buy?item=123 (Browser might visit this automatically!)
-
-# RIGHT: Requiring a 'POST' with a secret token
-# requests.post(url, json={"item": 123, "token": "abc"})
-\`\`\`
-
-**Think through these:**
-- Why is it dangerous to change data (like creating an order) using a GET request?
-- How does the "Verb" (GET vs POST) protect the business from accidental orders?
-- In MIS, why is "Standardized Communication" key to system security?
+1. Switch the API call from GET to **POST**.
+2. Ensure the server checks for a unique "Transaction Token" to prevent duplicates.
 
 **What the solution looks like:**
-By following the rules of HTTP, you protect the business. You ensure that "Destructive" or "Creative" actions only happen when the user explicitly intends them. This reduces customer complaints and keeps your database clean.`,
+You've implemented **Idempotency**. By using the correct API method and a security token, you ensure that even if a customer clicks "Buy" ten times, they are only charged once.`,
       'quizzes': [
         {
-          'question': "Which HTTP method should you use if you want to change a customer's phone number in the database?",
-          'options': ["A. GET", "B. DELETE", "C. PUT (or PATCH)", "D. POST"],
-          'correct': 2,
-          'explanation': "PUT is the standard method for updating existing data. POST is for creating new data, and GET is only for reading."
+          'question': "Which HTTP method should you use to fetch a list of products from a supplier's API?",
+          'options': ["A. POST", "B. GET", "C. DELETE", "D. PUT"],
+          'correct': 1,
+          'explanation': "GET is for retrieving data. Since you are 'fetching' a list, GET is the correct verb."
         }
       ]
     },
-    'JSON: The Language of APIs': {
-      'lesson': `## What is JSON?
-JSON (JavaScript Object Notation) is a lightweight format for storing and transporting data. It looks like a Python dictionary, using \`{"key": "value"}\` pairs.
+    'Authentication & Security': {
+      'lesson': `## Why are we learning API Auth?
+Business data is private. You don't want the world to see your bank balance. APIs use **API Keys** and **Bearer Tokens** as "Digital Passports."
 
-## Why should you care as an MIS student?
-JSON is the "International Language" of the internet. It doesn't matter if one system is written in Java and another in Python; they both speak JSON. If you want to move data between a mobile app and a bank server, you use JSON.
+## Step-by-Step Tutorial: Securing the Pipe
+1. **API Key**: A long string of random characters (e.g., \`sk_live_abc123\`).
+2. **Headers**: This is where you hide the key. You don't put it in the URL; you put it in the "Envelope" of the request.
+3. **Environment Variables**: Storing keys in a hidden file (\`.env\`) so they aren't visible in your code.
 
-## How it actually works
-1. **Objects**: Wrapped in \`{ }\`.
-2. **Arrays (Lists)**: Wrapped in \`[ ]\`.
-3. **Types**: Supports Strings, Numbers, Booleans, and Null.
-4. **Nesting**: You can put a list inside an object, or an object inside a list.
+## Let's look at a Real Business Example
+**Google Maps** charges for every "Map View." They give you an API Key to track your usage. If you leak your key and a stranger uses it, *you* get the bill. 
+Companies like **Interswitch** use "Secret Keys" and "Public Keys" to ensure that even if someone sees your website code, they can't perform an unauthorized transfer.
 
-## Show me the code
-\`\`\`python
-import json
-
-# A JSON string (what an API sends you)
-raw_json = '{"name": "Ikeja Mall", "open": true, "stores": 45}'
-
-# Converting JSON to a Python Dictionary
-data = json.loads(raw_json)
-print(data['name']) # Prints: Ikeja Mall
-
-# Converting Dictionary back to JSON (to send to an API)
-new_json = json.dumps({"status": "success", "code": 200})
-\`\`\`
-
-## Real life: How companies use this
-**Netflix** uses JSON to tell your TV which movies to show. When you open the app, your TV sends a request and receives a giant JSON file containing the titles, images, and descriptions of 50 movies. Your TV then "Parses" (reads) that JSON to draw the screen you see.
-
-## Remember these three things
-- JSON is easy for humans to read and easy for computers to parse.
-- It is the most common format for API data.
-- In Python, \`json.loads()\` turns text into a dictionary.`,
-      'scenario': `## Scenario: The Corrupted Customer Profile
-**The situation:** You are trying to update a customer's address via an API. You sent the data, but the server returned a "400 Bad Request" error.
-
-**What you're seeing:**
-You sent: \`"address": Lagos, Nigeria\`. 
-The server failed because you forgot the quotes around the text. JSON is very strict-all text *must* be in double quotes.
+## Common Mistakes to Avoid
+- **Leaking Keys on GitHub**: If you push a file with an API key to GitHub, it will be stolen within seconds by automated bots.
+- **Using 'Root' Keys**: If an API allows it, create "Limited" keys that can only do one thing (e.g., a key that can read data but not delete it).`,
+      'scenario': `## Scenario: The ₦1 Million Surprise
+**The situation:** You wake up to find your company's SMS account balance is zero. Someone stole your API key and used it to send spam messages to millions of people.
 
 **Your job:**
-1. Fix the formatting of the JSON object.
-2. Ensure the "Boolean" values are lowercase (\`true\` not \`True\`).
-3. Re-send the request and verify it returns a 200 OK.
+1. Revoke the stolen key immediately in the provider dashboard.
+2. Generate a new key.
+3. Move the key to an **Environment Variable**.
+4. Add \`.env\` to your \`.gitignore\` file.
 
-**Code to look at:**
+**What the solution looks like:**
+You've "Hardened" your security. By moving the secrets out of the code and into the environment, you ensure that even if someone steals your computer, they don't have the keys to the company's money.`,
+      'quizzes': [
+        {
+          'question': "Where is the safest place to store an API Secret Key?",
+          'options': ["A. In a comment at the top of the script", "B. In a separate .env file that is hidden from GitHub", "C. In the URL of the API request", "D. On a public Trello board"],
+          'correct': 1,
+          'explanation': "Environment variables (.env) keep secrets out of your source code, preventing accidental leaks."
+        }
+      ]
+    },
+    'JSON: The Language of Business': {
+      'lesson': `## Why are we learning JSON?
+JSON (JavaScript Object Notation) is how computers exchange data. It's clean, fast, and easy for both humans and machines to read.
+
+## Step-by-Step Tutorial: Parsing JSON
+1. **The Object**: Starts and ends with \`{ }\`.
+2. **The Key-Value Pair**: \`"name": "Chidi"\`.
+3. **The List**: Starts and ends with \`[ ]\`.
+4. **The Parse**: Using \`response.json()\` in Python to turn a string of text into a usable dictionary.
+
+## Let's look at a Real Business Example
+When you check your "Order History" on **Jumia**, the server doesn't send a pretty webpage. It sends a **JSON** file like this:
 \`\`\`json
-// WRONG:
 {
-    name: Amarachi,
-    age: 25,
-    active: True
-}
-
-// RIGHT:
-{
-    "name": "Amarachi",
-    "age": 25,
-    "active": true
+  "orders": [
+    {"id": 101, "item": "iPhone 13", "status": "Delivered"},
+    {"id": 102, "item": "Powerbank", "status": "Shipped"}
+  ]
 }
 \`\`\`
+Your phone app reads this JSON and draws the list you see on the screen.
 
-**Think through these:**
-- Why is JSON so "Strict" about quotes and commas?
-- How does a "Format Error" prevent two systems from talking to each other?
-- In MIS, why is "Syntax" just as important as "Logic"?
-
-**What the solution looks like:**
-By mastering JSON syntax, you ensure that your "Data Packages" are always accepted by other systems. You become a bridge-builder, allowing your company's software to connect smoothly to external partners like banks, shippers, and maps.`,
-      'quizzes': [
-        {
-          'question': "Which of these is a valid JSON object?",
-          'options': ["A. {name: 'Chidi'}", "B. {'name': 'Chidi'}", "C. {\"name\": \"Chidi\"}", "D. [name = Chidi]"],
-          'correct': 2,
-          'explanation': "In valid JSON, keys and string values MUST be wrapped in double quotes (\"). Single quotes or no quotes will cause an error."
-        }
-      ]
-    },
-    'API Keys & Authentication': {
-      'lesson': `## What is API Authentication?
-API Authentication is the "Identity Card" for your code. It proves to the server that you are who you say you are and that you have permission to access the data. The most common method is the **API Key** or **Bearer Token**.
-
-## Why should you care as an MIS student?
-Business data is private. You don't want just anyone to be able to "GET" your company's bank balance or "DELETE" your customer list. Authentication is the lock on the door. If you lose your API Key, your data is at risk. If you forget to include it, your code won't work.
-
-## How it actually works
-1. **Headers**: You usually send the key in the "Secret" part of the request (the Header), not in the URL.
-2. **API Key**: A long string of random letters (e.g., \`sk_live_12345...\`).
-3. **Bearer Token**: A temporary key that expires after a few hours for extra security.
-
-## Show me the code
-\`\`\`python
-import requests
-
-# Sending a request with a Secret Key in the Header
-url = "https://api.paystack.co/transaction/verify/T123"
-headers = {
-    "Authorization": "Bearer sk_test_your_secret_key_here",
-    "Content-Type": "application/json"
-}
-
-response = requests.get(url, headers=headers)
-
-if response.status_code == 401:
-    print("Error: Your API Key is wrong or missing!")
-\`\`\`
-
-## Real life: How companies use this
-**Google Maps** gives every developer an API Key. Every time a developer's app shows a map, Google checks the Key. If the developer hasn't paid their bill, Google "Revokes" (turns off) the Key, and the maps stop working. This is how they control who uses their data and how they get paid.
-
-## Remember these three things
-- **NEVER** share your API keys in public (like on GitHub).
-- If an API returns a 401 or 403 error, check your authentication.
-- Headers are the standard place to put "Secret" information.`,
-      'scenario': `## Scenario: The Leaked Secret
-**The situation:** You just finished a Python script that connects to the company's SMS provider. You uploaded the code to GitHub so your team can see it. 10 minutes later, the company has a ₦100,000 bill for "Spam SMS" sent from your account.
-
-**What you're seeing:**
-You hard-coded your \`API_KEY = "sk_12345..."\` inside the script. A "Bot" on the internet scanned your GitHub, found the key, and used it to send thousands of spam messages.
+## Common Mistakes to Avoid
+- **Incorrect Quotes**: JSON requires **Double Quotes** (\`"\`). Single quotes (\`'\`) will cause the API to crash.
+- **Trailing Commas**: Putting a comma after the last item in a list will break many JSON parsers.`,
+      'scenario': `## Scenario: The "Empty Dashboard" Mystery
+**The situation:** Your dashboard says "Total Sales: ₦0", but the sales team says they sold millions today. You check the API response and it looks like this: \`{"sales_data": []}\`.
 
 **Your job:**
-1. Immediately "Rotate" (change) the API Key in the provider's dashboard.
-2. Delete the key from the code.
-3. Use an "Environment Variable" (.env file) to hide the key so it's never uploaded to the internet.
-
-**Code to look at:**
-\`\`\`python
-# WRONG: Hardcoded
-# key = "secret_123"
-
-# RIGHT: Load from a hidden file
-import os
-key = os.getenv("MY_API_KEY")
-\`\`\`
-
-**Think through these:**
-- Why is a "Hardcoded Key" a massive security risk?
-- How do "Environment Variables" help keep secrets safe?
-- In MIS, what is the cost of a "Security Breach" caused by a developer's mistake?
+1. Use \`print(response.json())\` to see the raw data.
+2. Realize the API changed the label from \`sales_data\` to \`daily_sales\`.
+3. Update your code to look for the new label.
 
 **What the solution looks like:**
-You've learned a critical lesson in "Cybersecurity." By using environment variables, you separate your *Logic* from your *Secrets*. This allows you to share your code with the world while keeping the company's keys (and money) safe behind a locked door.`,
+By "Inspecting the Payload," you found the disconnect. Labels in JSON are case-sensitive and exact. One tiny spelling change can break an entire business system.`,
       'quizzes': [
         {
-          'question': "If an API returns a '401 Unauthorized' error, what is the most likely cause?",
-          'options': ["A. The server is offline", "B. The URL is spelled wrong", "C. Your API Key is missing, invalid, or expired", "D. Your internet is too slow"],
-          'correct': 2,
-          'explanation': "401 specifically means 'I don't know who you are.' It's an authentication error."
-        }
-      ]
-    },
-    'Pulling Data into Python': {
-      'lesson': `## What is Pulling Data into Python?
-This is the "Bread and Butter" of data engineering. It's the act of using the \`requests\` library to fetch data from an API and then using \`pandas\` to turn that JSON data into a clean table for analysis.
-
-## Why should you care as an MIS student?
-Static files (CSVs) are old news. Modern data lives in APIs. If you want to build a "Live Dashboard" for a business, you need to pull data directly from their sales app, their ad accounts, and their bank. This is how you build a "Real-Time" MIS.
-
-## How it actually works
-1. **Request**: Fetch the JSON.
-2. **Convert**: Turn the JSON text into a Python List.
-3. **DataFrame**: Pass that list to \`pd.DataFrame()\`.
-4. **Export**: Save it as a CSV or Excel for the business team.
-
-## Show me the code
-\`\`\`python
-import requests
-import pandas as pd
-
-# 1. Get the data
-url = "https://api.coinbase.com/v2/prices/spot?currency=USD"
-data = requests.get(url).json()
-
-# 2. Extract the specific piece of data
-price_info = [data['data']] # Putting it in a list for Pandas
-
-# 3. Create a table
-df = pd.DataFrame(price_info)
-df['pulled_at'] = pd.Timestamp.now()
-
-# 4. Save
-df.to_csv('crypto_prices.csv', index=False)
-\`\`\`
-
-## Real life: How companies use this
-A marketing agency might pull "Ad Spend" from the **Facebook API** and "Sales" from their **Shopify API**. They use Python to pull both, merge them together, and calculate the "Return on Ad Spend" (ROAS) every single morning. This replaces 5 hours of manual report-building.
-
-## Remember these three things
-- APIs provide the "Raw Material"; Python is the "Factory."
-- \`requests.get().json()\` is the most common starting line.
-- Turning JSON into a DataFrame is the first step of the "Transform" phase.`,
-      'scenario': `## Scenario: The Manual Reconciler
-**The situation:** An accountant at your firm spends every morning downloading a "Bank Statement" from a website, then downloading a "Sales Report" from another website, and manually comparing them in Excel.
-
-**What you're seeing:**
-The accountant is tired and prone to making mistakes. It takes them 2 hours to do what code can do in 2 seconds.
-
-**Your job:**
-1. Write a script that uses APIs to pull the "Bank Data" and the "Sales Data" directly.
-2. Use Pandas to "Join" the two tables based on a transaction ID.
-3. Highlight any rows that are in the Sales report but NOT in the Bank (Missing Money!).
-
-**Code to look at:**
-\`\`\`python
-# Fetch both
-sales = requests.get(sales_api).json()
-bank = requests.get(bank_api).json()
-
-# Compare with Pandas
-df_sales = pd.DataFrame(sales)
-df_bank = pd.DataFrame(bank)
-
-# Find missing transactions
-missing = df_sales[~df_sales['id'].isin(df_bank['id'])]
-\`\`\`
-
-**Think through these:**
-- How does "Direct API Integration" reduce human error?
-- Why is it better to have the computer find the "Missing Rows" than a human?
-- In MIS, what is the value of "Reclaiming Time" for high-level employees?
-
-**What the solution looks like:**
-You've automated a critical financial process. Instead of 2 hours of "Drudgery," the accountant now has a "Live Reconciliation Dashboard" that refreshes instantly. You've moved the company from "Manual Work" to "Automated Oversight."`,
-      'quizzes': [
-        {
-          'question': "What is the best library to use for fetching data from a URL in Python?",
-          'options': ["A. pandas", "B. requests", "C. math", "D. random"],
+          'question': "Which of these is a valid JSON entry?",
+          'options': ["A. name: 'Aisha'", "B. \"name\": \"Aisha\"", "C. name = Aisha", "D. {name -> Aisha}"],
           'correct': 1,
-          'explanation': "The 'requests' library is the standard tool for making HTTP requests (GET, POST, etc.) to APIs."
+          'explanation': "JSON requires double quotes for both the key and the string value."
         }
       ]
     },
-    'Handling Errors & Timeouts': {
-      'lesson': `## What are API Errors & Timeouts?
-The internet is unreliable. An API might be slow (**Timeout**), the server might be overloaded (**500 Error**), or you might be sending too many requests too fast (**Rate Limiting / 429 Error**). Good code expects these problems and handles them.
+    'Pulling API Data into Pandas': {
+      'lesson': `## Why are we learning API to Pandas?
+APIs give you raw JSON. Business analysts need **Tables**. Turning an API response into a Pandas DataFrame allows you to perform math, create charts, and join it with other data sources.
 
-## Why should you care as an MIS student?
-If your "Daily Report" script crashes because the internet flickered for 1 second, the whole company misses its data. Handling errors makes your systems "Production Grade." It means they can survive a messy, real-world environment.
+## Step-by-Step Tutorial: The Data Pipeline
+1. **Fetch**: Use \`requests.get()\` to get the data.
+2. **Convert**: Use \`response.json()\` to get the list of objects.
+3. **Load**: Use \`pd.DataFrame(data)\` to turn it into a table.
+4. **Clean**: Fix columns, handle missing values, and calculate totals.
 
-## How it actually works
-1. **Timeout**: Setting a limit (e.g., "If the server doesn't answer in 10 seconds, give up").
-2. **Raise for Status**: Automatically checking if the status code is an error.
-3. **Try / Except**: Catching the error so the script doesn't crash.
-4. **Retries**: Waiting a moment and trying again.
+## Let's look at a Real Business Example
+A marketing manager at **PiggyVest** wants to see a chart of "Signups per Hour." The signups live in an API. 
+The analyst writes a script that pulls the last 24 hours of signups from the API, loads them into Pandas, and uses \`.groupby('hour').count()\` to create the report in seconds.
 
-## Show me the code
-\`\`\`python
-import requests
-from requests.exceptions import Timeout, HTTPError
-
-try:
-    # 1. Set a timeout (5 seconds)
-    response = requests.get("https://api.slow-bank.com/data", timeout=5)
-    
-    # 2. Check if the server sent an error code (like 404 or 500)
-    response.raise_for_status()
-    
-    data = response.json()
-except Timeout:
-    print("Error: The server took too long to answer.")
-except HTTPError as e:
-    print(f"Error: The server returned an error: {e}")
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
-\`\`\`
-
-## Real life: How companies use this
-**Amazon** has "Circuit Breakers" in their code. If an API that shows "Product Recommendations" is slow, Amazon doesn't let the whole page hang. Their code "Times Out" after 0.5 seconds and simply hides the recommendations. It's better to show a partial page than to make the customer wait 10 seconds for a broken one.
-
-## Remember these three things
-- Always set a \`timeout\` in your \`requests.get()\` calls.
-- Use \`response.raise_for_status()\` to catch hidden errors.
-- Good error handling is what separates a "School Project" from a "Business System."`,
-      'scenario': `## Scenario: The "Busy" API
-**The situation:** You are pulling data from a popular government API. Every Friday at 10 AM, their server gets overwhelmed and returns a "503 Service Unavailable" error. Your script currently crashes every Friday.
-
-**What you're seeing:**
-Your terminal shows a "503 Error." You have to manually restart the script 5 or 6 times until it finally works. This is a waste of your time.
+## Common Mistakes to Avoid
+- **Overloading the API**: Don't call the API 1,000 times in a loop. Try to get all the data in one call if possible.
+- **Nesting Issues**: If the JSON is "Nested" (objects inside objects), a simple \`pd.DataFrame()\` might look messy. You might need \`pd.json_normalize()\` to flatten it.`,
+      'scenario': `## Scenario: The "Excel is too Small" Problem
+**The situation:** Your boss wants a report on 500,000 transactions. Excel keeps crashing when you try to import the JSON file.
 
 **Your job:**
-1. Add a loop that "Retries" the request up to 5 times.
-2. Use "Exponential Backoff" (Wait 1 second, then 2, then 4, then 8) to give the server time to breathe.
-3. Only give up if all 5 retries fail.
-
-**Code to look at:**
-\`\`\`python
-import time
-
-for i in range(5):
-    try:
-        res = requests.get(url)
-        res.raise_for_status()
-        return res.json()
-    except:
-        print(f"Server busy. Retrying in {2**i} seconds...")
-        time.sleep(2**i)
-\`\`\`
-
-**Think through these:**
-- Why is it better to "Wait and Retry" than to just give up immediately?
-- How does "Exponential Backoff" help an overloaded server?
-- In MIS, how do "Resilient Systems" reduce the workload of IT staff?
+1. Skip Excel entirely.
+2. Use Python and Pandas to read the API data directly.
+3. Filter the data down to just the "Summary" the boss needs.
+4. Export the summary (only 10 rows) to Excel.
 
 **What the solution looks like:**
-You've built a "Smart Agent." Instead of crashing, your code intelligently waits for the server to become available. This makes your automation truly "hands-off"-it handles the Friday rush without you ever having to look at it.`,
+You've used Python as a "Power Tool." By processing the heavy data in memory and only giving the boss the final result, you saved hours of time and avoided the frustration of crashing computers.`,
       'quizzes': [
         {
-          'question': "What is the purpose of the 'timeout' parameter in requests.get(url, timeout=5)?",
-          'options': ["A. It makes the internet faster", "B. It tells the script to wait a maximum of 5 seconds for a response before giving up", "C. It schedules the request for 5 PM", "D. It deletes the request after 5 seconds"],
+          'question': "Which Pandas function is used to turn a list of JSON objects into a table?",
+          'options': ["A. pd.read_csv()", "B. pd.DataFrame()", "C. pd.to_excel()", "D. pd.merge()"],
           'correct': 1,
-          'explanation': "Without a timeout, your script might 'hang' or wait forever if a server is unresponsive, blocking all other tasks."
-        }
-      ]
-    },
-    'Pagination - Getting All the Data': {
-      'lesson': `## What is Pagination?
-APIs rarely give you 1,000,000 rows in one go. Instead, they give you the data in "Pages" (e.g., 50 rows at a time), just like Google Search shows you 10 results and asks you to click "Next."
-
-## Why should you care as an MIS student?
-If you only pull the first request, you are only seeing a tiny fraction of the data. To get the "Full Picture" (e.g., every sale this month), you must write a loop that "turns the pages" until there are no more left.
-
-## How it actually works
-1. **Request**: Get Page 1.
-2. **Check**: Does the JSON say there is a \`next_page\`?
-3. **Loop**: If yes, update the URL and get the next page.
-4. **Append**: Add the new data to your master list.
-
-## Show me the code
-\`\`\`python
-import requests
-
-results = []
-page = 1
-while True:
-    url = f"https://api.shop.com/orders?page={page}"
-    data = requests.get(url).json()
-    
-    # Add this page's items to our list
-    results.extend(data['items'])
-    
-    # Is there a next page?
-    if not data['has_more']:
-        break # Exit the loop
-        
-    page += 1
-
-print(f"Total items gathered: {len(results)}")
-\`\`\`
-
-## Real life: How companies use this
-A social media manager pulling "Comments" from an **Instagram post** with 5,000 comments. The API will only give 20 at a time. Their Python script loops 250 times, following the "next" link each time, until every single comment is gathered for analysis.
-
-## Remember these three things
-- Never assume an API gave you "all" the data on the first try.
-- Check the documentation for words like "limit", "offset", or "page".
-- A \`while\` loop is the best tool for handling unknown page counts.`,
-      'scenario': `## Scenario: The Incomplete Audit
-**The situation:** You are auditing a company's expenses. The API says there are 2,500 transactions. You ran your script, and it only saved 100 transactions. The auditor is asking where the other 2,400 are.
-
-**What you're seeing:**
-You only made one request. The API's default "Page Size" is 100. Because you didn't "Paginate," you missed 96% of the data!
-
-**Your job:**
-1. Identify the "Pagination Key" in the response (it might be called \`next_url\` or \`page_count\`).
-2. Wrap your request in a \`while\` loop.
-3. Automatically "Turn the pages" until you have all 2,500 transactions.
-
-**Code to look at:**
-\`\`\`python
-# Look for something like this in the JSON:
-# "pagination": {"next_page_number": 2, "total_pages": 25}
-\`\`\`
-
-**Think through these:**
-- Why do APIs use pagination instead of sending everything at once? (Hint: Speed and Memory)
-- What is the business risk of an "Incomplete Audit"?
-- How does a "While Loop" ensure you never miss a page, even if the number of pages changes?
-
-**What the solution looks like:**
-You've moved from "Sampling" data to "Consolidating" data. By mastering pagination, you ensure that your reports are 100% complete. You can now confidently tell the auditor: "I have every single record," because your code didn't stop until the API told it to.`,
-      'quizzes': [
-        {
-          'question': "Why do most professional APIs use 'Pagination'?",
-          'options': ["A. To make it harder for developers to use", "B. To save server memory and make responses faster by sending small chunks at a time", "C. To save electricity", "D. Because they don't know how many rows they have"],
-          'correct': 1,
-          'explanation': "Sending 1 million rows in one JSON file would likely crash the browser or the script. Pagination keeps things fast and manageable."
-        }
-      ]
-    },
-    'APIs in Banking & Fintech': {
-      'lesson': `## APIs in Banking & Fintech
-In Nigeria, the "Fintech Revolution" (companies like Paystack, Flutterwave, Moniepoint, and Kuda) is built entirely on APIs. These companies don't wait for banks to send them files; they talk to each other in real-time using APIs.
-
-## Why should you care as an MIS student?
-Fintech is the most lucrative sector for MIS graduates in Africa. Understanding "Open Banking" and "API Standards" (like NIBSS) makes you a highly valuable "Technical Business Analyst."
-
-## How it actually works
-1. **Core Banking API**: How a bank allows other apps to check a balance.
-2. **Webhooks**: A special API where the Bank "Calls You" as soon as a payment happens.
-3. **Virtual Accounts**: APIs that allow you to generate a unique bank account for every customer.
-4. **BVN / KYC APIs**: Using an API to verify a customer's identity with the government database.
-
-## Show me the code
-\`\`\`python
-# Simple Webhook Receiver (Simplified)
-# This is an API YOU build that the Bank calls!
-
-def receive_payment_notification(payload):
-    if payload['status'] == 'success':
-        customer_id = payload['customer_id']
-        amount = payload['amount']
-        update_customer_balance(customer_id, amount)
-        return "OK", 200
-
-# The bank calls this URL: https://api.your-shop.com/webhooks/payments
-\`\`\`
-
-## Real life: How companies use this
-**PiggyVest** uses APIs to "Pull" money from your bank account when you save. They talk to a "Payment Gateway" (like Paystack) via an API. Paystack then talks to your Bank's API. The money moves in seconds because the computers are "talking" to each other directly.
-
-## Remember these three things
-- In Fintech, APIs = Money.
-- A "Webhook" is the fastest way to know a transaction happened.
-- Security (Encryption and Keys) is 10x more important in Banking APIs.`,
-      'scenario': `## Scenario: The "Instant" Refund Problem
-**The situation:** Your startup promises "Instant Refunds." Currently, when a customer asks for a refund, an employee has to log into the bank portal, type the details, and click "Send." This takes 2 days.
-
-**What you're seeing:**
-Angry customers on Twitter. The "Manual Process" is too slow for a modern business.
-
-**Your job:**
-1. Connect to your bank's "Transfer API."
-2. Write a script that triggers as soon as a refund is approved in your system.
-3. Automatically send the "POST" request to the bank to move the money.
-
-**Code to look at:**
-\`\`\`python
-# The POST request to the bank:
-refund_data = {
-    "account_number": "0123456789",
-    "bank_code": "058", # GTBank
-    "amount": 5000,
-    "remark": "Automated Refund"
-}
-requests.post("https://api.bank.com/transfer", json=refund_data, headers=auth_headers)
-\`\`\`
-
-**Think through these:**
-- How does an "API-First" approach improve the "Customer Experience"?
-- What security checks should you add to a script that can move real money?
-- Why is an "API Audit Log" more reliable than a human's memory?
-
-**What the solution looks like:**
-You've transformed the business. By replacing a manual portal login with an API call, "Instant" actually means instant. The business scales without hiring more accountants, and customers are happy because their money returns in seconds. This is the power of MIS in the digital economy.`,
-      'quizzes': [
-        {
-          'question': "What is a 'Webhook' in the context of fintech APIs?",
-          'options': ["A. A type of fishing net", "B. An API where the server 'pushes' data to you as soon as an event happens (instead of you asking)", "C. A very slow API", "D. A way to delete a bank account"],
-          'correct': 1,
-          'explanation': "Webhooks are 'Reverse APIs'. Instead of your script asking 'Did I get paid?', the bank calls your script and says 'Hey, you just got paid!'"
+          'explanation': "pd.DataFrame() takes a list of dictionaries (JSON) and turns it into a rows-and-columns table."
         }
       ]
     },
     'Milestone Project': {
-      'lesson': `## Milestone: The Relational API Dashboard
-In this project, you will pull relational data (Users and Posts) from two separate API endpoints, join them together in memory, and generate an executive report.
+      'lesson': `## Milestone: The Currency Arbitrage Bot
+In this milestone, you will build a professional tool that connects to a live Financial API to solve a real-world Nigerian business problem: **Exchange Rate Transparency.**
 
 ## The Broad Business Problem
-Your company has acquired a new social network platform (**JSONPlaceholder**), but the marketing team has a strategic blind spot: they have no idea who the top content creators are. The user profiles and the posts live in completely separate API endpoints. The database team is too backlogged to help. You must solve this strategic blind spot by building a Python script that pulls data directly from the live \`/users\` and \`/posts\` APIs, joins the systems in memory, and immediately identifies the top talent.
+**"Enugu Import-Export Ltd"** buys goods from China in USD but sells them in Nigeria in Naira. Because the exchange rate changes every hour, they are accidentally selling items for less than they cost to buy. They need an automated system that checks the live API rate every morning and updates their "Price List" automatically to protect their profit margins.
 
 ## Your Project Tasks:
-0. **The Data**: We will use the [JSONPlaceholder Relational API](https://jsonplaceholder.typicode.com/) to simulate linked business systems.
-1. **The Request**: Write a Python script to call the \`/users\` endpoint and the \`/posts\` endpoint.
-2. **The Extraction & Join**: Parse the JSON responses and link the data together (matching the \`userId\` in a Post to the \`id\` in the Users list).
-3. **The Analytics**: Calculate the total number of posts made by each specific user.
-4. **The Dashboard**: Create a formatted text output showing:
+1. **The Request**: Connect to the [Free Currency API](https://freecurrencyapi.com/) or similar.
+2. **The Extraction**: Pull the live exchange rate for **USD to NGN**.
+3. **The Logic**: Multiply the "Cost in USD" by the "API Rate" to find the "Break-even Price" in Naira.
+4. **The Dashboard**: Print a summary showing:
    - Today's Date.
-   - Top 3 Most Active Users.
-   - Any users who have 0 posts (System Alert).
-5. **The Delivery**: Push your \`api_join_bot.py\` and a \`README.md\` with a screenshot of your dashboard to GitHub.
-
-## Show me the code (API Logic)
-\`\`\`python
-# Example of joining API data:
-import requests
-
-users = requests.get("https://jsonplaceholder.typicode.com/users").json()
-posts = requests.get("https://jsonplaceholder.typicode.com/posts").json()
-
-# Match the foreign key!
-user_dict = {user['id']: user['name'] for user in users}
-for post in posts[:3]:
-    author = user_dict.get(post['userId'])
-    print(f"Author: {author} | Title: {post['title']}")
-\`\`\`
+   - Live Exchange Rate.
+   - Recommended Selling Price (with a 20% profit margin).
+5. **The Delivery**: Push your \`exchange_bot.py\` and a screenshot of your terminal output to GitHub.
 
 ## Presenting to Executives
-Tell the Director: "By joining these API endpoints in memory, we bypassed the database bottleneck completely. We now have a real-time, automated report of our top content creators."`,
-      'scenario': `## Scenario: The "API Key" Leak
-**The situation:** You just pushed your code to GitHub. 5 minutes later, you get an automated email from the API provider saying your "Secret Key" has been compromised and your account is suspended.
+Tell the CEO: "We no longer guess our prices. This bot checks the global markets every hour and ensures that every item we sell is profitable, regardless of how the Naira fluctuates. It's an automated insurance policy for our revenue."`,
+      'scenario': `## Scenario: The "Audit-Ready" Keys
+**The situation:** An external auditor asks: "How do you ensure that only authorized people are accessing the financial API?"
 
 **Your job:**
-1. Identify how the key got leaked (Did you hardcode it in the script?).
-2. Use an \`.env\` file or "Environment Variables" to hide your keys.
-3. Add a \`.gitignore\` file to your repository so the \`.env\` file is never pushed to GitHub again.
-4. Rotate your API key (generate a new one).
+1. Show them your \`.env\` file (but don't open it!).
+2. Explain how the API key is kept separate from the code.
+3. Show the "Secret Rotation" log in the API provider's dashboard.
 
-**Think through these:**
-- Why is it dangerous to have API keys visible on a public GitHub repository?
-- How does a \`.gitignore\` file protect a company's sensitive credentials?`,
+**What the solution looks like:**
+You've proven that you are a professional. You understand that "Data Engineering" isn't just about moving numbers; it's about doing it **Securely** and **Accountably**.`,
       'quizzes': [
         {
-          'question': "When you upload your API project to GitHub, which file should you use to ensure your secret keys are NOT shared with the public?",
-          'options': ["A. README.md", "B. .gitignore", "C. main.py", "D. config.txt"],
+          'question': "In your Currency Bot project, why is it better to use an API than to just Google the rate manually?",
+          'options': ["A. It is not better", "B. The API allows for 'Automation'—the computer can check the rate and update prices 24/7 without a human doing any work", "C. APIs are always more accurate than Google", "D. APIs use less battery"],
           'correct': 1,
-          'explanation': "The .gitignore file tells Git which files to ignore. By putting your secret keys in a separate file (like .env) and adding that file to .gitignore, you keep your credentials safe while sharing your code."
+          'explanation': "Automation is the goal of MIS. An API turns a manual task into a 'System'."
         }
       ]
     }
   },
   'Cloud Computing': {
     'Cloud Basics for MIS': {
-      'lesson': `## What is Cloud Computing?
-Cloud computing is the delivery of computing services-including servers, storage, databases, networking, software-over the internet ("the cloud"). Instead of buying physical servers, you rent them from companies like Amazon (AWS) or Microsoft (Azure).
+      'lesson': `## Why are we learning Cloud Computing?
+In the old days, companies had "Server Rooms" with expensive computers and air conditioning. Today, businesses rent these computers over the internet from companies like **Amazon (AWS)** or **Microsoft (Azure)**. 
 
-## Why should you care as an MIS student?
-Businesses no longer build "Server Rooms." They use the Cloud. Understanding the cloud is essential because it's where all modern business data lives. It allows a small startup in Yaba to have the same computing power as a global bank.
+This is **Cloud Computing**. It allows a small business in Nigeria to have the same power as a global bank without buying any hardware.
 
-## How it actually works
-1. **IaaS**: Infrastructure as a Service. Renting the "virtual computer" (like AWS EC2).
-2. **PaaS**: Platform as a Service. Tools to build apps without managing servers (like Google App Engine).
-3. **SaaS**: Software as a Service. Using apps like Gmail, Zoom, or Salesforce.
-4. **Storage**: Like a giant hard drive in the sky (AWS S3).
+## Step-by-Step Tutorial: The 3 Models
+1. **IaaS (Infrastructure)**: Renting the "Virtual Computer" (e.g., AWS EC2). You manage the operating system.
+2. **PaaS (Platform)**: Renting a tool to build apps without worrying about the server (e.g., Google App Engine).
+3. **SaaS (Software)**: Using software over the web (e.g., Gmail, Salesforce, Slack).
 
-## Show me the code
-\`\`\`python
-import boto3
+## Let's look at a Real Business Example
+**Paystack** doesn't have a server room in their office. All their code runs on **AWS**. This means if their office loses power, the payment system stays online for millions of customers. This "Reliability" is the main reason businesses switch to the cloud.
 
-# Uploading a file to AWS S3 (Cloud Storage)
-s3 = boto3.client('s3')
-filename = 'daily_sales.csv'
-bucket_name = 'mis-datalab-backups'
-
-s3.upload_file(filename, bucket_name, filename)
-print(f"File {filename} backed up to the cloud!")
-\`\`\`
-
-## Real life: How companies use this
-**Netflix** doesn't own any servers. They run everything on AWS. When millions of people in Nigeria start watching a new show at 8 PM, Netflix's "Cloud" automatically adds more servers to handle the traffic. When people go to sleep, the servers "turn off" to save money.
-
-## Remember these three things
-- The Cloud is just "someone else's computer" that you rent.
-- It is cheaper and more reliable than buying physical hardware.
-- Security and "Pay-as-you-go" are the two biggest reasons businesses switch.`,
-      'scenario': `## Scenario: The Server Room Flood
-**The situation:** You are the IT manager for a local manufacturing company. A pipe burst in the office, and the server room is flooded. All your physical servers are destroyed. The CEO is asking when the payroll system will be back up.
-
-**What you're seeing:**
-The physical hardware is dead. If your data was only on those servers, it's gone. If you had a "Cloud Backup," you could be back online in minutes.
+## Common Mistakes to Avoid
+- **Leaving Servers On**: In the cloud, you pay for every minute. If you leave a powerful server running all weekend while you aren't using it, you are wasting the company's money.
+- **No Backups**: Just because it's in the "Cloud" doesn't mean it's magic. You still need to schedule backups to prevent accidental deletion.`,
+      'scenario': `## Scenario: The "Office Flood"
+**The situation:** A pipe burst in your office and the server room is destroyed. The company's payroll data was on those servers. The CEO is in a panic.
 
 **Your job:**
-1. Identify which services could have been moved to the cloud (Email, ERP, File Storage).
-2. Calculate the "Downtime Cost" of having physical servers vs Cloud.
-3. Propose a migration to AWS or Azure to prevent this from ever happening again.
-
-**Code to look at:**
-\`\`\`python
-# Check if cloud backup exists
-backup_status = check_cloud_storage("payroll_backup_v1")
-if backup_status == "OK":
-    print("Restore initiated. We will be back in 15 mins.")
-else:
-    print("Data lost. This is a disaster.")
-\`\`\`
-
-**Think through these:**
-- Why is "Physical Security" (like floods or theft) a bigger risk for on-premise servers?
-- How does the cloud help with "Disaster Recovery"?
-- Why is it easier to "Scale" a cloud server when your business grows?
+1. Explain how a **Cloud Backup** strategy would have saved the day.
+2. Propose a plan to move the company's data to **AWS S3** (Cloud Storage).
+3. Show the CEO how we can recover the data in minutes from any laptop, anywhere in the world.
 
 **What the solution looks like:**
-A smart MIS student would have already pushed daily backups to an "Object Store" like AWS S3. Even if the office burns down, the business data is safe and can be restored to a new virtual server in any part of the world in under an hour.`,
+You've introduced **Business Continuity**. By moving to the cloud, the business is no longer vulnerable to "Local Disasters" (fire, flood, theft). The data is now globally distributed and indestructible.`,
       'quizzes': [
         {
-          'question': "What is the main benefit of 'Pay-as-you-go' pricing in Cloud Computing?",
-          'options': ["A. You pay a large upfront fee", "B. You only pay for the resources you actually use", "C. You get free hardware", "D. It is more expensive than buying servers"],
+          'question': "What is the main financial benefit of Cloud Computing for a new startup?",
+          'options': ["A. You pay a large upfront cost", "B. You only pay for what you use (Pay-as-you-go), saving money on expensive hardware", "C. It is always free", "D. You don't have to pay for internet"],
           'correct': 1,
-          'explanation': "Pay-as-you-go allows businesses to start small and only pay for what they use, which is much cheaper than buying expensive hardware upfront."
+          'explanation': "Cloud computing turns 'Capital Expenditure' (buying hardware) into 'Operating Expenditure' (renting resources), which is much easier for businesses to manage."
         }
       ]
     },
-    'AWS, Azure, & Google Cloud': {
-      'lesson': `## The Three Giants
-The cloud market is dominated by three main providers:
-- **AWS (Amazon Web Services)**: The leader. Has the most tools and features.
-- **Microsoft Azure**: Popular with big corporations that already use Windows and Office 365.
-- **Google Cloud (GCP)**: The expert in Big Data and Artificial Intelligence.
+    'AWS S3 - The Digital Vault': {
+      'lesson': `## Why are we learning S3?
+S3 stands for **Simple Storage Service**. It is an "Object Store"—a giant, infinite hard drive in the sky. It is where 90% of the world's data is stored before it gets analyzed.
 
-## Why should you care as an MIS student?
-Different companies choose different clouds. Knowing the names and strengths of each helps you in job interviews. If you work at a bank, they likely use **Azure**. If you work at a fast-moving startup, they likely use **AWS**.
+## Step-by-Step Tutorial: The Bucket
+1. **Bucket**: A "Folder" in the cloud. It must have a unique name in the entire world.
+2. **Object**: Any file you upload (CSV, Image, PDF).
+3. **IAM (Identity & Access Management)**: Rules that define who can "Read" or "Write" to the bucket.
+4. **Permissions**: Keeping your bucket **Private** to prevent data leaks.
 
-## How it actually works
-1. **Regions**: Physical locations (like "London" or "South Africa") where the servers are kept.
-2. **Availability Zones**: Multiple buildings in one region so that if one building loses power, the other stays on.
-3. **Console**: The website where you log in to manage your servers.
+## Let's look at a Real Business Example
+**Instagram** uses S3 to store every photo you upload. When you scroll your feed, the app asks S3 for the image. S3 is designed to be "11 Nines" reliable—meaning it is virtually impossible for your data to ever be lost.
 
-## Real life: How companies use this
-**MTN Nigeria** might use **Azure** because they have a deep relationship with Microsoft for their internal emails and documents. **Paystack** might use **AWS** because of its advanced security tools for handling millions of credit card transactions per day.
-
-## Remember these three things
-- AWS is the oldest and biggest.
-- Azure is the best for "Enterprise" (big corporate) integration.
-- GCP is the king of "Data Analytics."`,
-      'scenario': `## Scenario: Choosing the Right Home
-**The situation:** You are the CTO of a new logistics startup. You need to pick a cloud provider. Your team already knows how to use Google's data tools (like BigQuery), but the investors are pushing for AWS because "everyone uses it."
-
-**What you're seeing:**
-If you go with AWS, your team will have to spend 2 months learning new tools. If you go with Google Cloud, you can launch in 2 weeks.
+## Common Mistakes to Avoid
+- **Public Buckets**: This is the #1 cause of data breaches. Never click "Make Public" unless you want the entire world to see your files.
+- **Messy Folders**: Use a clear naming convention (e.g., \`2023/Sales/Lagos_Jan.csv\`) so you can find your data later.`,
+      'scenario': `## Scenario: The Leaked Salary List
+**The situation:** You uploaded the company payroll to S3. 10 minutes later, you find a link to the file on a public forum. Anyone can see the CEO's salary!
 
 **Your job:**
-1. Compare the "Time to Market" (how fast you can launch).
-2. Look at the "Free Credits" each provider offers to new startups.
-3. Make a recommendation based on your team's skills, not just what's popular.
-
-**Think through these:**
-- Why is "Team Skillset" a valid reason to choose a specific cloud?
-- How do "Free Credits" help a startup survive the first year?
-- Does it matter to the customer which cloud you use?
+1. Immediately turn off **Public Access** in the AWS Console.
+2. Set a policy that only allows your specific office IP address to see the files.
+3. Use **Presigned URLs** if you need to share a file with someone for only 10 minutes.
 
 **What the solution looks like:**
-As an MIS leader, you'd choose **Google Cloud**. Why? Because speed and team expertise are more valuable than following the crowd. You'd present a "Cost-Benefit Analysis" showing that the 2 months saved are worth more than any minor difference in server price.`,
-      'quizzes': [
-        {
-          'question': "Which cloud provider is known for being the most popular among large corporations already using Microsoft products?",
-          'options': ["A. AWS", "B. Azure", "C. Google Cloud", "D. iCloud"],
-          'correct': 1,
-          'explanation': "Microsoft Azure integrates seamlessly with existing Microsoft tools like Active Directory and Office 365, making it a favorite for large enterprises."
-        }
-      ]
-    },
-    'S3: Storing Data in the Sky': {
-      'lesson': `## What is AWS S3?
-S3 stands for **Simple Storage Service**. It's not a "computer"; it's a giant, infinite hard drive. You can store any file (Images, CSVs, Videos) and access it from anywhere in the world.
-
-## Why should you care as an MIS student?
-S3 is the "Starting Point" for data pipelines. Before you clean data, you "Dump" it into S3. This is called a **Data Lake**. It's much cheaper to store 100TB of data in S3 than it is to store it in a database.
-
-## How it actually works
-1. **Buckets**: Think of these as "Main Folders" (e.g., \`company-invoices\`).
-2. **Objects**: The files inside the bucket.
-3. **Keys**: The full path to the file (e.g., \`2023/jan/invoice_001.pdf\`).
-4. **Permissions**: Rules on who can see or delete the files.
-
-## Show me the code
-\`\`\`python
-# Downloading a file from S3 to your local computer
-s3.download_file('my-bucket', 'data.csv', 'local_data.csv')
-\`\`\`
-
-## Real life: How companies use this
-**Instagram** stores every photo you upload in S3 (or a similar service). When you scroll your feed, the app asks the "Sky Hard Drive" for the image file and shows it to you. S3 ensures that even if 1 billion people look at the same photo, the system doesn't crash.
-
-## Remember these three things
-- S3 is for "Unstructured Data" (files).
-- It is virtually "Unbreakable"-Amazon guarantees your data won't be lost.
-- It is the foundation of the "Modern Data Lake."`,
-      'scenario': `## Scenario: The "Leaky" Bucket
-**The situation:** You just uploaded the "Employee Salary List" to an S3 bucket. 1 hour later, you find a link to the file on a public forum. Anyone in the world can see what the CEO earns.
-
-**What you're seeing:**
-When you created the bucket, you clicked "Public Access" because you wanted it to be "easy to use." This is the #1 cause of data breaches in the cloud.
-
-**Your job:**
-1. Immediately turn off "Public Access" in the AWS Console.
-2. Set a "Bucket Policy" that only allows your specific office IP address to see the files.
-3. Use "Presigned URLs" if you need to share a file with someone for just 10 minutes.
-
-**Code to look at:**
-\`\`\`python
-# Generating a temporary link that expires in 1 hour
-url = s3.generate_presigned_url('get_object', Params={'Bucket': 'secret', 'Key': 'file.pdf'}, ExpiresIn=3600)
-\`\`\`
-
-**Think through these:**
-- Why is "Convenience" the enemy of "Security"?
-- What is the "Reputation Cost" of a public data leak?
-- How do "Presigned URLs" solve the problem of sharing files safely?
-
-**What the solution looks like:**
-By mastering S3 security, you protect the company from multi-million dollar lawsuits. You ensure that "Public" only means what you explicitly want the world to see, while everything else stays locked behind the cloud's digital vault.`,
+You've mastered **Cloud Security**. You understand that "The Cloud" is secure, but only if *you* set the locks correctly. This is the mark of a professional MIS analyst.`,
       'quizzes': [
         {
           'question': "What is an S3 'Bucket'?",
-          'options': ["A. A physical server", "B. A container for storing files (objects) in the cloud", "C. A type of database", "D. A programming language"],
+          'options': ["A. A physical server in your office", "B. A container for storing files (objects) in the cloud", "C. A type of database for SQL queries", "D. A programming language for the cloud"],
           'correct': 1,
           'explanation': "Buckets are the fundamental containers for data in S3. Everything you store in S3 is contained in a bucket."
         }
       ]
     },
-    'Lambda: Functions without Servers': {
-      'lesson': `## What is AWS Lambda?
-Lambda is "Serverless" computing. Instead of renting a whole computer that runs 24/7, you just upload your Python code. The code only "wakes up" when it's needed, runs for a few seconds, and then "disappears."
+    'AWS Lambda - Serverless Logic': {
+      'lesson': `## Why are we learning Lambda?
+Imagine you want to run a Python script every time a new customer signs up. In the old days, you'd need a server running 24/7. With **AWS Lambda**, you only pay for the **seconds** the code is actually running.
 
-## Why should you care as an MIS student?
-It is incredibly cheap. If your code only runs once a day for 5 seconds, you pay almost ₦0. With a traditional server, you'd pay for 24 hours of electricity even if the computer was doing nothing. Lambda is the future of efficient business automation.
+## Step-by-Step Tutorial: Functions in the Sky
+1. **Trigger**: What starts the code? (e.g., A new file arrives in S3, or a user clicks a button).
+2. **The Function**: Your Python script.
+3. **Serverless**: You don't manage the computer. Amazon manages everything; you just provide the code.
+4. **Scaling**: If 1,000 customers sign up at the same time, Lambda automatically runs 1,000 copies of your code.
 
-## How it actually works
-1. **Trigger**: What starts the code (e.g., "A new file arrived in S3").
-2. **Function**: Your Python script.
-3. **Execution**: The code runs, does its job, and stops.
-4. **Scaling**: If 1,000 files arrive at once, Lambda starts 1,000 copies of your code automatically.
+## Let's look at a Real Business Example
+**PiggyVest** might use Lambda to send a "Welcome Email." 
+- **Trigger**: New user record created in the database.
+- **Action**: Lambda wakes up, sends the email via an API, and then "Disappears."
+- **Cost**: ₦0.0001.
 
-## Show me the code
-\`\`\`python
-# A simple Lambda function
-def lambda_handler(event, context):
-    print("I was triggered by an event!")
-    return {"status": "success"}
-\`\`\`
-
-## Real life: How companies use this
-**A Food Delivery App** uses Lambda to resize photos. When a restaurant owner uploads a giant 10MB photo of their Jollof Rice, a Lambda function "wakes up," shrinks the photo to a small size for mobile phones, saves it, and then turns itself off. Total cost: ₦0.001.
-
-## Remember these three things
-- Serverless means you don't manage the operating system.
-- You only pay for the "Milliseconds" your code is running.
-- Lambda is perfect for "Event-Driven" tasks (like processing an order as soon as it's placed).`,
+## Common Mistakes to Avoid
+- **Long Running Tasks**: Lambda is for short tasks (under 15 minutes). Don't use it for heavy data processing that takes hours.
+- **No Monitoring**: If your Lambda fails, you need to check the **CloudWatch Logs** to see why.`,
       'scenario': `## Scenario: The "Night Owl" Automator
-**The situation:** You have a script that checks for "Fraudulent Transactions" every hour. You are currently running it on a virtual server that costs ₦20,000 per month. The script only takes 2 minutes to run each time.
-
-**What you're seeing:**
-The server is "Idle" (doing nothing) for 58 minutes of every hour, but you are still paying for those minutes. You are wasting the company's budget.
+**The situation:** Your boss wants a daily sales summary at 6 AM. Currently, you wake up at 5:45 AM to run a script manually.
 
 **Your job:**
-1. Move the Python logic to an **AWS Lambda** function.
-2. Set a "CloudWatch Trigger" to run the function every 60 minutes.
-3. Calculate the new cost (it will likely be under ₦100 per month).
-
-**Think through these:**
-- Why is it "wasteful" to have a server running 24/7 for a short task?
-- How does "Serverless" help a company stay "Lean" (spending less)?
-- What happens if the fraud-check script suddenly needs to run 1,000 times a minute? (Hint: Scaling)
+1. Upload your script to **AWS Lambda**.
+2. Set a **CloudWatch Event** (a timer) to trigger the function every morning at 6 AM automatically.
+3. Go back to sleep.
 
 **What the solution looks like:**
-By switching to Lambda, you've saved the company ₦240,000 a year. This is the kind of "Business Intelligence" that gets MIS professionals promoted. You've proven you understand both the **Code** and the **Cost**.`,
+You've achieved **Operational Excellence**. By using Serverless automation, you've ensured the report is always on time, costs the company almost nothing, and requires zero manual effort.`,
       'quizzes': [
         {
-          'question': "What is the main advantage of 'Serverless' computing like AWS Lambda?",
+          'question': "What is the main benefit of 'Serverless' computing like AWS Lambda?",
           'options': ["A. It is faster than any other computer", "B. You don't have to manage servers and you only pay for the time the code is actually running", "C. It doesn't use the internet", "D. It is only for storing images"],
           'correct': 1,
           'explanation': "Serverless allows you to focus on the code while the cloud provider handles the scaling and infrastructure, saving both time and money."
@@ -2903,13 +2026,12 @@ By switching to Lambda, you've saved the company ₦240,000 a year. This is the 
     },
     'Milestone Project': {
       'lesson': `## Milestone: The Disaster-Proof Backup System
-In this project, you will move your company's data security to the next level by building an automated, cloud-based backup system. You will ensure that even if the physical office is destroyed, the business continues.
+In this final project, you will move your company's data security to the next level by building an automated, cloud-based backup system. You will ensure that even if the physical office is destroyed, the business continues.
 
 ## The Broad Business Problem
-Your digital media company, **"Chinook Store,"** is operating under extreme existential risk. The entire company's intellectual property—a heavily linked relational database of Artists, Albums, and Tracks—is stored on a single physical server. If a hardware failure occurs, the business goes bankrupt instantly. You have been tasked with solving this critical infrastructure vulnerability by designing an automated, serverless "Cloud Bridge" that securely backs up every local file to an indestructible AWS S3 vault.
+Your digital media company, **"Chinook Store,"** is operating under extreme existential risk. The entire company's intellectual property—a heavily linked relational database of Artists, Albums, and Tracks—is stored on a single physical server in a basement in Lagos. If a hardware failure occurs or the room floods, the business goes bankrupt instantly. You have been tasked with solving this critical infrastructure vulnerability by designing an automated, serverless "Cloud Bridge" that securely backs up every local file to an indestructible AWS S3 vault.
 
 ## Your Project Tasks:
-0. **The Data**: Download the [Chinook Relational Database](https://github.com/lerocha/chinook-database), which simulates an iTunes store with heavily linked Tables (Artists, Albums, and Tracks).
 1. **The Bucket**: Create a uniquely named S3 bucket in your AWS account (simulated in code).
 2. **The Script**: Write a Python script using \`boto3\` to detect a new log file in your local "Production" folder.
 3. **The Upload**: Automatically upload the file to S3 with a "Private" access policy.
@@ -2923,11 +2045,11 @@ Your digital media company, **"Chinook Store,"** is operating under extreme exis
 \`\`\`python
 # Example of the final Dashboard Output you should generate:
 print("=========================================")
-print("   ENUGU MFG - CLOUD SECURITY DASHBOARD")
+print("   CHINOOK STORE - CLOUD SECURITY DASHBOARD")
 print("=========================================")
 print(f"SYNC STATUS:     [SUCCESS]")
-print(f"FILES PROTECTED: {file_count} CSVs")
-print(f"S3 DESTINATION:  s3://enugu-mfg-secure-backups/")
+print(f"FILES PROTECTED: {file_count} Tables")
+print(f"S3 DESTINATION:  s3://chinook-secure-vault/")
 print("-----------------------------------------")
 print("Action: Project files pushed to GitHub.")
 \`\`\`
@@ -2935,16 +2057,12 @@ print("Action: Project files pushed to GitHub.")
 ## Presenting to Executives
 Tell the CEO: "We are no longer vulnerable to local disasters. Our business intelligence is now stored in a globally distributed, encrypted digital vault. We can restore our entire operation in under 30 minutes from anywhere in the world."`,
       'scenario': `## Scenario: The "Oops, I Deleted It" Recovery
-**The situation:** A manager accidentally deleted the "June Production Report" from the local computer. He is panicking. He needs it for a meeting in 10 minutes.
+**The situation:** A manager accidentally deleted the "June Sales Report" from the local computer. He is panicking. He needs it for a meeting in 10 minutes.
 
 **Your job:**
 1. Use your script (or the AWS CLI) to "Pull" the backup from S3 back to the local computer.
 2. Verify that the file is the correct version.
-3. Show the manager how the "Cloud History" allows you to recover any version of a file from any date.
-
-**Think through these:**
-- Why is "Versioning" (keeping multiple copies of the same file) a life-saver in business?
-- How does the Cloud reduce the "Cost of Mistakes" in an organization?`,
+3. Show the manager how the "Cloud History" allows you to recover any version of a file from any date.`,
       'quizzes': [
         {
           'question': "What is the primary reason for moving backups from a local computer to a service like AWS S3?",
@@ -2957,40 +2075,21 @@ Tell the CEO: "We are no longer vulnerable to local disasters. Our business inte
   },
   'dbt & Data Modeling': {
     'Modern Data Modeling': {
-      'lesson': `## What is dbt & Modeling?
-dbt (data build tool) is a framework that brings software engineering best practices-like testing and version control-to the world of SQL. It's used to turn raw data in your warehouse into "Clean" tables for the business.
+      'lesson': `## Why are we learning Data Modeling?
 
-## Why should you care as an MIS student?
-Raw data is "Messy." Columns have weird names like \`C_123_TX\`, and dates are in the wrong format. If you give this to a manager, they'll be confused. dbt allows you to "Model" the data into clean, easy-to-read tables like \`daily_revenue\`.
+## Step-by-Step Tutorial: The Layers of Modeling
+1. **The Raw Layer (Source)**: The messy data exactly as it came from the database. We never touch this directly.
+2. **The Staging Layer (Stg)**: This is where we rename columns (e.g., \`C_123_TX\` becomes \`transaction_amount\`) and fix data types.
+3. **The Mart Layer (fct/dim)**: The final, beautiful tables used for dashboards.
+   - **Fact Tables (fct)**: These contain "Events" that happened (e.g., a sale, a click, a payment).
+   - **Dimension Tables (dim)**: These contain "Descriptions" (e.g., the name of the customer, the color of the product).
 
-## How it actually works
-1. **Raw Layer**: The messy data exactly as it came from the source.
-2. **Staging Layer**: Renaming columns and fixing dates.
-3. **Mart Layer**: The final tables used by the CEO (e.g., "Monthly Sales by Region").
+## Let's look at a Real Business Example
+Imagine a company like **Jumia**. Their raw database has a million rows of transactions. An MIS Analyst uses dbt to "Model" this into a clean \`fct_daily_sales\` table. Now, instead of a CEO writing a 100-line SQL query, they just type \`SELECT * FROM fct_daily_sales\` to get the answer.
 
-## Show me the code
-\`\`\`sql
--- A dbt model: stg_customers.sql
-with raw_data as (
-    select * from {{ source('sales_app', 'customers') }}
-),
-final as (
-    select
-        id as customer_id,
-        first_name || ' ' || last_name as full_name,
-        lower(email) as email
-    from raw_data
-)
-select * from final
-\`\`\`
-
-## Real life: How companies use this
-**Cowrywise** uses dbt to ensure everyone in the company is looking at the same numbers. Instead of 10 people writing 10 different SQL queries to find "Total Users," they all use the one dbt model. This is called the "Single Version of Truth."
-
-## Remember these three things
-- dbt is "SQL with Superpowers."
-- It focuses on the **Transformation** (the 'T' in ELT).
-- It makes your data pipelines reliable and easy for others to understand.`,
+## Common Mistakes to Avoid
+- **Modeling in the Dashboard**: Beginners often try to fix data inside Power BI. Pros fix it in dbt first so that the "Clean" data can be used by *every* tool, not just one.
+- **Nesting Logic**: Don't build models on top of models on top of models. It makes the system slow and hard to debug.`,
       'scenario': `## Scenario: The "Which Number is Right?" War
 **The situation:** In the Monday meeting, the Marketing Manager says sales were ₦5M last week. The Finance Manager says they were ₦4.2M. The CEO is angry because nobody knows the real number.
 
@@ -3001,20 +2100,6 @@ Marketing is counting "Orders Placed" (including ones not yet paid). Finance is 
 1. Create a single dbt model called \`fct_sales\`.
 2. Define exactly what a "Successful Sale" means in the SQL code.
 3. Tell both managers to use this new model instead of their own queries.
-
-**Code to look at:**
-\`\`\`sql
--- Inside fct_sales.sql
-select * 
-from raw_orders
-where status = 'completed' 
-  and payment_confirmed = true
-\`\`\`
-
-**Think through these:**
-- Why is it dangerous for a company to have two different "Sales" numbers?
-- How does dbt help stop people from writing their own (possibly wrong) SQL?
-- In MIS, why is "Consistency" more important than "Speed" in business reporting?
 
 **What the solution looks like:**
 You would use dbt to "lock down" the business rules. Once the CEO approves your model, it becomes the official law. Marketing and Finance now have to use your model, ending the confusion and ensuring the business makes decisions based on one accurate number.`,
@@ -3028,28 +2113,27 @@ You would use dbt to "lock down" the business rules. Once the CEO approves your 
       ]
     },
     'Tables vs Views': {
-      'lesson': `## Tables vs Views
-In a data warehouse, you have two ways to save your dbt models:
-- **Table**: The data is actually copied and stored on a disk. It's fast to read but takes up space and needs to be updated.
-- **View**: A "Virtual Table." It doesn't store data; it just runs the SQL query every time someone looks at it. It uses zero space but can be slow if the query is complex.
+      'lesson': `## Why are we learning Materialization?
+In dbt, when you "run" a model, you have to decide how it lives in the database. This is a critical "Cost vs. Speed" business decision.
 
-## Why should you care as an MIS student?
-This is a "Cost vs Speed" decision. If you have a giant table with 1 billion rows, you should probably use a **Table** so people don't have to wait 10 minutes every time they open a dashboard. For a small list of "Product Categories," a **View** is perfect.
+## Step-by-Step Tutorial: Tables vs. Views
+1. **Views (The Default)**:
+   - **What it is**: A "Virtual Table." It doesn't actually store data; it just runs the SQL query every time you open the dashboard.
+   - **Pros**: Uses zero storage space.
+   - **Cons**: Can be very slow if the data is large.
+2. **Tables**:
+   - **What it is**: The data is actually calculated and stored on the disk.
+   - **Pros**: Lightning fast for dashboards to read.
+   - **Cons**: Takes up storage space and needs to be "refreshed" (re-run) to show new data.
+3. **The Pro Choice (Incremental)**:
+   - Only processes *new* data since the last run. This is how billion-dollar companies handle massive data.
 
-## How it actually works
-In dbt, you change this with one line of code at the top of your SQL file:
-\`\`\`sql
-{{ config(materialized='table') }} -- To make it a Table
-{{ config(materialized='view') }}  -- To make it a View
-\`\`\`
+## Let's look at a Real Business Example
+A bank like **Kuda** might use a **Table** for "Daily Account Balances" because thousands of employees look at it all day and it needs to be fast. They use a **View** for the "Staff Directory" because it's small and only changes once a month.
 
-## Real life: How companies use this
-**A Retail Bank** might use a **Table** for "Daily Account Balances" because thousands of employees look at it all day. They use a **View** for the "Branch Manager List" because it only has 50 rows and only changes once a month.
-
-## Remember these three things
-- Views are "Live" (always up to date) but can be slow.
-- Tables are "Cached" (fast to read) but need to be "Refreshed" by dbt.
-- Use Tables for large, frequently used data and Views for small, simple logic.`,
+## Common Mistakes to Avoid
+- **Everything as a Table**: If you make every single model a table, your storage costs will explode and your "dbt run" will take hours.
+- **Everything as a View**: Your dashboards will be so slow that users will stop using them.`,
       'scenario': `## Scenario: The "Spinning Wheel" Dashboard
 **The situation:** You built a beautiful dashboard for the Sales Team. However, every time they open it, the screen stays blank for 30 seconds with a spinning wheel. The Sales VP is complaining that it's "too slow."
 
@@ -3061,13 +2145,8 @@ Your dbt model is currently a **View**. Every time the dashboard opens, the ware
 2. Run \`dbt run\` to build the table once.
 3. Watch the dashboard load in under 1 second.
 
-**Think through these:**
-- Why did the dashboard get faster when you switched to a Table?
-- What is the "Price" you pay for this speed? (Hint: Storage and Refresh time)
-- When would you *not* want to use a Table?
-
 **What the solution looks like:**
-By understanding "Materialization," you've improved the "User Experience" (UX). You've realized that the Sales Team's time is more valuable than a few pennies of storage cost. You've moved from "Building something that works" to "Building something that people actually like to use."`,
+By understanding "Materialization," you've improved the "User Experience" (UX). You've realized that the Sales Team's time is more valuable than a few pennies of storage cost.`,
       'quizzes': [
         {
           'question': "If you have a very complex query that takes 5 minutes to run, how should you save it in dbt to make it fast for users?",
@@ -3078,43 +2157,21 @@ By understanding "Materialization," you've improved the "User Experience" (UX). 
       ]
     },
     'Writing Tests for Data': {
-      'lesson': `## Why Test Data?
-In software, we test if buttons work. In data, we test if the numbers are "Sane." Is the price negative? Is the customer ID missing? Is the date in the year 2099? dbt allows you to write automatic tests to catch these "Data Quality" issues.
+      'lesson': `## Why are we learning Data Testing?
+In software, we test if buttons work. In data engineering, we test if the numbers are "Sane." Is the price negative? Is the customer ID missing? dbt allows you to write automatic tests to catch these "Data Quality" issues.
 
-## Why should you care as an MIS student?
-"Garbage In, Garbage Out." If your source data is broken, your reports will be wrong, and the company will make bad decisions. Testing is the "Filter" that stops garbage data from reaching the CEO's dashboard.
+## Step-by-Step Tutorial: The 4 Core Tests
+1. **Unique**: Ensures a column has no duplicates (e.g., Every user must have a unique ID).
+2. **Not_Null**: Ensures a column is never empty (e.g., Every sale must have a Price).
+3. **Accepted_Values**: Ensures a column only contains allowed options (e.g., Status must be 'Paid' or 'Pending', never 'Banana').
+4. **Relationships**: Ensures a "Customer ID" in a sale actually exists in the "Customers" table.
 
-## How it actually works
-dbt has 4 built-in tests that you can add to a simple YAML file:
-1. **Unique**: Is this column full of duplicates?
-2. **Not_Null**: Is there missing data?
-3. **Accepted_Values**: e.g. status must be 'Paid' or 'Pending', not 'Banana'.
-4. **Relationships**: Does this Customer ID actually exist in the Customer table?
+## Let's look at a Real Business Example
+A Fintech like **Flutterwave** might have a test on their "Transaction Amount" column. If a bug in the app tries to save a transaction for -₦500,000, the dbt test will "Fail" and alert the engineers before that negative number messes up the total revenue report.
 
-## Show me the code
-\`\`\`yaml
-# schema.yml
-version: 2
-models:
-  - name: stg_payments
-    columns:
-      - name: payment_id
-        tests:
-          - unique
-          - not_null
-      - name: status
-        tests:
-          - accepted_values:
-              values: ['success', 'failed', 'pending']
-\`\`\`
-
-## Real life: How companies use this
-**A Fintech** might have a test on their "Transaction Amount" column. If a bug in the app accidentally tries to save a transaction for -₦500,000, the dbt test will "Fail" and alert the engineers before that negative number messes up the total revenue report.
-
-## Remember these three things
-- Tests catch errors *before* the business sees them.
-- Data Quality is the responsibility of the Data Engineer.
-- dbt tests run every time you update your models (\`dbt test\`).`,
+## Common Mistakes to Avoid
+- **Not Testing Sources**: Beginners only test the final tables. Pros test the *raw* data as it comes in so they can catch errors at the very beginning.
+- **Ignoring Failures**: If a test fails, don't just ignore it. It means your dashboard is likely showing wrong information!`,
       'scenario': `## Scenario: The Duplicate Customer Disaster
 **The situation:** Your company ran a "Refer a Friend" promotion. A bug in the system allowed some people to sign up twice with the same email. Now your "Total Customers" report is showing 10,000 people, but there are only 8,000 real humans.
 
@@ -3126,13 +2183,8 @@ The CEO is happy about the 10,000 users, but the Marketing team is confused beca
 2. Run \`dbt test\`. It will show you exactly which emails are duplicates.
 3. Fix the SQL to only pick the "first" signup for each email.
 
-**Think through these:**
-- Why are "Duplicate Records" a major problem for business reporting?
-- How does a "Failing Test" protect your reputation as an analyst?
-- In MIS, why is "Auditability" (proving the numbers are right) so important?
-
 **What the solution looks like:**
-By adding automated tests, you've created a "Safety Net." You no longer have to manually "check" the data every morning. If there's a duplicate, the computer tells you. This ensures that the CEO only ever sees the "Real" number, protecting both the company's decisions and your professional integrity.`,
+By adding automated tests, you've created a "Safety Net." You no longer have to manually "check" the data every morning. If there's a duplicate, the computer tells you.`,
       'quizzes': [
         {
           'question': "Which dbt test would you use to ensure that every order has a valid 'customer_id'?",
@@ -3303,31 +2355,25 @@ Tell the CEO: "We no longer have three different revenue numbers. This dbt model
   },
   'Power BI & Visualization': {
     'Connecting to Data Sources': {
-      'lesson': `## What is Connecting to Data Sources?
-It is the process of linking Power BI to where your company's data actually lives (like a SQL database, Excel file, or API) so it can pull the numbers automatically.
+      'lesson': `## Why are we learning Data Connectivity?
+In Excel, you usually open a file and start typing. In Power BI, you **connect** to data. This is critical because it allows your dashboard to refresh automatically when the underlying source changes, without you ever having to re-copy and re-paste.
 
-## Why should you care as an MIS student?
-If you just copy-paste data into Excel, your reports are dead the moment you save them. By "Connecting," you build a live pipe. When the database updates, your dashboard updates automatically.
+## Step-by-Step Tutorial: Connecting your first source
+1. **The "Get Data" Button**: Open Power BI Desktop. On the Home ribbon, click **Get Data**. You will see over 100 connectors (Excel, SQL, Web, Google BigQuery, etc.).
+2. **Import vs. DirectQuery**:
+   - **Import (Beginner)**: Power BI takes a "snapshot" of the data and stores it in its own memory. This is the fastest and most common method.
+   - **DirectQuery (Pro)**: Power BI doesn't store the data; it asks the database for the answer every time you click a chart. Use this for massive datasets (billions of rows).
+3. **Connecting to the Web**:
+   - Select **Web** from the connectors.
+   - Paste a URL (like a GitHub CSV raw link).
+   - Click **Transform Data** (Never click "Load" immediately; always clean your data first!).
 
-## How it actually works
-You open Power BI, click "Get Data," choose your source (e.g., PostgreSQL), enter the server credentials, and Power BI establishes a secure connection to read the data without altering the source.
+## Let's look at a Real Business Example
+Imagine a Nigerian Fintech like **OPay**. They have millions of transactions stored in a SQL database. Instead of exporting a CSV every day, an MIS Analyst connects Power BI directly to the SQL Server using **DirectQuery**. Now, the CEO can look at a dashboard at 10:00 AM and see exactly how many people have performed transactions in the last 5 minutes.
 
-## Show me the code
-There isn't "code" here, but the concept is creating a connection string:
-\`\`\`text
-Server: mydb.company.com
-Database: sales_db
-Authentication: Database (Username/Password)
-Data Connectivity Mode: DirectQuery (Live) vs Import (Snapshot)
-\`\`\`
-
-## Real life: How companies use this
-A Nigerian retail chain uses Power BI connected directly to their POS (Point of Sale) SQL database. Instead of waiting for regional managers to email Excel files at the end of the month, the CEO can open Power BI at 2:00 PM and see exactly how many items were sold 5 minutes ago.
-
-## Remember these three things
-- "Get Data" is always step one.
-- Import Mode copies data into Power BI; DirectQuery leaves it in the database.
-- Live connections eliminate manual data entry.`,
+## Common Mistakes to Avoid
+- **Hard-coding file paths**: If you connect to \`C:\\Users\\Amarachi\\data.csv\`, the dashboard will break when you share it with your boss because she doesn't have your "Amarachi" folder. Use Cloud storage (OneDrive/SharePoint) instead.
+- **Loading Dirty Data**: Beginners click "Load" immediately. Pros always click "Transform" to check for errors first.`,
       'scenario': `## Scenario: The "Stale Data" Complaint
 **The situation:** The Sales Director is angry. He says your dashboard shows ₦5M in sales for yesterday, but his team's manual spreadsheet shows ₦7M.
 
@@ -3350,33 +2396,21 @@ By connecting directly to the source system, you remove human error and timing i
       ]
     },
     'Data Cleaning in Power Query': {
-      'lesson': `## What is Power Query?
-Power Query is the "kitchen" behind Power BI. It's where you clean, filter, and reshape messy data before it goes into the final dashboard.
+      'lesson': `## Why are we learning Power Query?
+Raw data is almost always "dirty." Dates are stored as text, columns have messy names, and there are empty rows at the bottom. **Power Query** is the "Kitchen" of Power BI where you clean the ingredients before cooking the meal (the dashboard).
 
-## Why should you care as an MIS student?
-Raw data is almost never ready for a chart. You'll find missing dates, text mixed with numbers (like "₦500"), and badly named columns. Power Query lets you build an automated cleaning process.
+## Step-by-Step Tutorial: The "M" Power Cleaning
+1. **The Recipe (Applied Steps)**: Every time you delete a column or filter a row, Power Query records that action in the **Applied Steps** pane. It is like a "Macro" that records itself.
+2. **Promoting Headers**: Sometimes your data starts on Row 2. Click **"Use First Row as Headers"** to fix this.
+3. **Changing Data Types**: This is the #1 cause of errors. Ensure your "Date" columns actually have the little calendar icon 📅 and "Sales" has the number icon 1.2.
+4. **Unpivoting**: If you have columns for "Jan", "Feb", "Mar", highlight them and click **Unpivot Columns**. This turns 12 columns into 2 (Month and Value), which is required for professional modeling.
 
-## How it actually works
-It records your steps. If you delete a column, rename another, and filter out blanks, Power Query saves those steps as a "Recipe." Next time new data comes in, it automatically applies the exact same recipe.
+## Let's look at a Real Business Example
+A retailer like **Shoprite** receives sales data from 20 different branches. Some branches use \`DD/MM/YYYY\` and others use \`MM/DD/YYYY\`. An MIS Analyst uses Power Query to detect the "Locale" and standardize all dates into one format. Without this, the "Total Sales" chart would be completely wrong.
 
-## Show me the code (M Language)
-Power Query writes 'M' code behind the scenes:
-\`\`\`powerquery
-let
-    Source = Sql.Database("server", "db"),
-    RemovedColumns = Table.RemoveColumns(Source,{"internal_id"}),
-    ReplacedValue = Table.ReplaceValue(RemovedColumns,"null","0",Replacer.ReplaceText,{"Revenue"})
-in
-    ReplacedValue
-\`\`\`
-
-## Real life: How companies use this
-An HR department receives attendance logs where employee names are sometimes uppercase, sometimes lowercase, and sometimes have spaces. They use Power Query to automatically format all names to "Capitalize Each Word" and trim spaces, so Jane Doe and JANE DOE don't appear as two different people in the dashboard.
-
-## Remember these three things
-- Clean your data *before* you try to visualize it.
-- Power Query records your steps so you never have to clean the same file twice.
-- It uses the "M" formula language behind the scenes.`,
+## Common Mistakes to Avoid
+- **Deleting the wrong step**: If you delete a step in the middle of the "Applied Steps" list, it might break all the steps that came after it.
+- **Manual Cleaning**: Never clean the data in Excel before importing. Use Power Query so that when the data refreshes next month, the cleaning happens automatically!`,
       'scenario': `## Scenario: The "Dirty Dates" Crisis
 **The situation:** Your dashboard crashed. The total sales chart is blank. 
 
@@ -3452,22 +2486,21 @@ By understanding the difference between row-context (Columns) and filter-context
       ]
     },
     'Building Interactive Dashboards': {
-      'lesson': `## What is Dashboard Building?
-It's the art of placing charts, slicers, and maps on a canvas so people can interact with data visually. It turns boring tables into a "Control Center."
+      'lesson': `## Why are we learning Dashboard Design?
+A dashboard is not just a collection of charts; it is a story. If a CEO looks at your dashboard and can't find the "Total Profit" in 5 seconds, you have failed as an MIS Analyst.
 
-## Why should you care as an MIS student?
-This is the only part of your work the executives will ever see. You could build the greatest ETL pipeline in the world, but if the dashboard is confusing and ugly, they will think the data is bad.
+## Step-by-Step Tutorial: The "5-Second Rule"
+1. **Visual Hierarchy**: Put your most important numbers (KPI Cards) at the top left. This is where the human eye starts reading.
+2. **Slicers (Interactivity)**: Add a **Date Slicer** and a **Region Slicer**. This allows managers to "self-serve"—they don't have to call you to ask for "Lagos Sales"; they just click the button themselves.
+3. **Cross-Filtering**: In Power BI, clicking a bar in one chart automatically filters all other charts on the page. This allows you to find "Hidden Patterns."
+4. **Tooltips**: Create a small "hover" page. When a user hovers over a city, a tiny chart pops up showing the sales trend for just that city.
 
-## How it actually works
-You drag a field (like "Sales") onto the canvas to create a chart. Then you add a "Slicer" (a filter button) for "Region." Because Power BI is interactive, clicking "North" on the Slicer automatically updates all other charts on the page.
+## Let's look at a Real Business Example
+**Flutterwave** has a "Global Merchant Dashboard." The top left shows "Total Transaction Volume (GTV)." Below that is a map. If the Head of Sales clicks on "Ghana" on the map, the rest of the page instantly changes to show only Ghana's top merchants. This allows for rapid, data-driven strategy meetings.
 
-## Real life: How companies use this
-A logistics company like GIGM has a giant TV in their headquarters showing a live Power BI map. When a manager clicks a specific truck icon, the surrounding charts instantly show that driver's fuel usage, speed, and delivery status.
-
-## Remember these three things
-- Less is more. Don't put 20 charts on one page.
-- Use Slicers to let the user "play" with the data.
-- Always design with the final audience (e.g., the CEO) in mind.`,
+## Common Mistakes to Avoid
+- **Chart Junk**: Don't use 3D pie charts or 50 different colors. Keep it clean. Use a maximum of 3 main colors that match the company brand.
+- **Too many visuals**: If you put 20 charts on one page, the user will be overwhelmed. Focus on the 4 or 5 most important questions the business needs to answer.`,
       'scenario': `## Scenario: The "Wall of Numbers"
 **The situation:** You present your new dashboard. It's basically just a giant table with 50 columns of numbers. The executives look bored and confused.
 
@@ -3489,22 +2522,21 @@ You changed data into a story. Instead of staring at numbers, the CEO immediatel
       ]
     },
     'Publishing & Workspaces': {
-      'lesson': `## What is Publishing?
-Publishing takes your Power BI file from your local laptop and pushes it to the Power BI Cloud Service so other people can see it securely on the web or their phones.
+      'lesson': `## Why are we learning Publishing?
+Power BI Desktop is for you (the developer). The **Power BI Service (Cloud)** is for the rest of the company. You don't email a Power BI file; you **Publish** it to a secure website where everyone can view it on their phone or laptop.
 
-## Why should you care as an MIS student?
-A dashboard on your laptop is useless to the company. Publishing allows you to control who sees what, schedule automatic data refreshes, and share insights securely.
+## Step-by-Step Tutorial: The Journey to the Cloud
+1. **The Publish Button**: Click **Publish** in the top right. This uploads your report to your account at \`app.powerbi.com\`.
+2. **Workspaces**: These are like "Shared Folders" for your team. You might have an "HR Workspace" and a "Finance Workspace." Only people in those teams can see the reports.
+3. **Scheduled Refresh**: Go to the settings of your dataset and set it to refresh at 8:00 AM every day. Now, you never have to manually update the data again!
+4. **Mobile Optimization**: Use the **Mobile Layout** view to rearrange your charts for someone looking at the dashboard on an iPhone or Android device.
 
-## How it actually works
-You click "Publish" in Power BI Desktop. The file is uploaded to a "Workspace" (a shared folder in the cloud). From there, you can share a link with the CEO, or embed the dashboard inside a company portal like Microsoft Teams.
+## Let's look at a Real Business Example
+A bank uses **Row-Level Security (RLS)** in the Power BI Service. When the Lagos Branch Manager logs into the published dashboard, he only sees Lagos data. When the National Director logs into the exact same dashboard link, she sees all of Nigeria. This ensures data privacy across the entire organization.
 
-## Real life: How companies use this
-A bank uses Row-Level Security (RLS) in the Power BI Service. When the Lagos Branch Manager logs into the published dashboard, he only sees Lagos data. When the National Director logs into the exact same dashboard link, she sees all of Nigeria.
-
-## Remember these three things
-- Desktop is for building; the Service (Cloud) is for sharing.
-- Workspaces act like secure folders for different teams.
-- You can set up scheduled refreshes in the cloud so the dashboard updates automatically while you sleep.`,
+## Common Mistakes to Avoid
+- **Publishing to "My Workspace"**: If you publish to your personal workspace, no one else can see it. Always use a "Pro" Workspace for company projects.
+- **Forgetting the Gateway**: If your data is on a local PC and you publish to the cloud, the "Refresh" will fail unless you install a **Power BI Gateway** to bridge the gap.`,
       'scenario': `## Scenario: The "Wrong Eyes" Problem
 **The situation:** You built an HR dashboard showing employee salaries. You accidentally emailed the raw Power BI file to the entire company. Panic ensues.
 

@@ -287,6 +287,29 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .rb.p:hover{background:var(--accent2)}
 .rb.s{background:transparent;color:var(--text);border:1px solid var(--border)}
 .rb.s:hover{border-color:var(--border2);background:var(--bg3)}
+
+/* ── PROJECTS ── */
+.project-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:18px;margin-bottom:12px;display:flex;flex-direction:column;gap:12px}
+.pc-head{display:flex;justify-content:space-between;align-items:flex-start}
+.pc-title{font-size:15px;font-weight:600;color:var(--accent)}
+.pc-status{font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:2px;letter-spacing:0.05em}
+.pc-status.pending{color:var(--yellow);background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.2)}
+.pc-status.done{color:var(--accent);background:rgba(0,217,139,0.1);border:1px solid rgba(0,217,139,0.2)}
+.pc-desc{font-size:12px;color:var(--muted2);line-height:1.6}
+.pc-input-row{display:flex;gap:8px}
+.pc-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:11px}
+.pc-input:focus{outline:none;border-color:var(--accent)}
+.pc-btn{padding:8px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:700;cursor:pointer}
+.pc-link{font-family:var(--mono);font-size:11px;color:var(--blue);text-decoration:none;display:flex;align-items:center;gap:6px}
+.pc-link:hover{text-decoration:underline}
+
+/* ── BADGES ── */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:10px;margin-top:10px}
+.badge-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;transition:all 0.2s;opacity:0.4;filter:grayscale(1)}
+.badge-card.earned{opacity:1;filter:grayscale(0);border-color:rgba(255,209,102,0.3);background:rgba(255,209,102,0.03)}
+.badge-icon{font-size:24px;margin-bottom:6px}
+.badge-name{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.05em}
+.badge-req{font-size:8px;color:var(--muted);margin-top:2px}
 </style>
 </head>
 <body>
@@ -298,6 +321,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
   <div class="nav">
     <button class="nb on" onclick="nav('home')">HOME</button>
     <button class="nb" onclick="nav('learn')">LEARN</button>
+    <button class="nb" onclick="nav('projects')">PROJECTS</button>
     <button class="nb" onclick="nav('quiz')">QUIZ</button>
   </div>
   <div class="hdr-right">
@@ -373,6 +397,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     </div>
   </div>
 
+  <div class="sec-lbl">Engineering Badges</div>
+  <div class="badge-grid" id="badge-grid">
+    <!-- Badges will be injected by JS -->
+  </div>
+
   <div class="sec-lbl">How it works</div>
   <div class="how-grid">
     <div class="hg-card"><div class="hg-num" style="color:var(--accent)">01 // LEARN</div><p>Pick a module and subtopic. The AI generates a full lesson in plain English with real code and a business story you'll relate to.</p></div>
@@ -398,6 +427,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
         <div class="empty-state"><div class="big">⌨</div>Pick a topic on the left,<br>choose a subtopic, then hit Lesson or Scenario.<br><br><span style="color:var(--muted);font-size:10px">🎤 You can also use your voice to ask questions.</span></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div id="screen-projects" class="screen">
+  <div class="terminal-card" style="padding:16px 20px;margin-bottom:16px">
+    <div class="tc-title" style="font-size:16px">My Portfolio_</div>
+    <div class="tc-sub" style="margin-bottom:0">Submit your GitHub repository URLs for the Milestone Projects to earn the "Project Master" badge and complete your profile.</div>
+  </div>
+  <div id="project-list">
+    <!-- Projects will be injected by JS -->
   </div>
 </div>
 
@@ -576,8 +616,19 @@ let S = {
   quizMode:'practice', quizTopics:['Python','ETL Pipelines'], quizDiff:['Entry Level'],
   qIdx:0, qC:0, qW:0, qSk:0, qTimes:[], qStart:0, timerInt:null, timerSec:90, answered:false,
   prog:{}, lessonText:'', isSpeaking:false,
-  tokensUsedTotal:0
+  tokensUsedTotal:0,
+  projects: {}, // { topic: github_url }
+  earnedBadges: []
 };
+
+const BADGES = [
+  { id: 'first_lesson', name: 'Fast Learner', icon: '🚀', req: 'Complete 1 lesson' },
+  { id: 'python_pro', name: 'Pythonista', icon: '🐍', req: 'Python Progress 100%' },
+  { id: 'airflow_expert', name: 'Orchestrator', icon: '⚙️', req: 'Airflow Progress 100%' },
+  { id: 'api_master', name: 'The Bridge', icon: '🔌', req: 'API Progress 100%' },
+  { id: 'quiz_streak', name: 'Sharp Mind', icon: '🔥', req: '5 Day Streak' },
+  { id: 'portfolio_ready', name: 'Project Master', icon: '💼', req: 'Submit 3 Projects' }
+];
 
 // Load saved state
 try {
@@ -635,8 +686,16 @@ function showTokenInfo() {
 // ─── NAVIGATION ───────────────────────────────────────────
 function nav(s) {
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));
-  document.getElementById('screen-'+s).classList.add('on');
-  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('on',['home','learn','quiz'][i]===s));
+  const target = document.getElementById('screen-'+s);
+  if (target) target.classList.add('on');
+  
+  document.querySelectorAll('.nb').forEach(b => {
+    const label = b.textContent.toLowerCase();
+    b.classList.toggle('on', label === s);
+  });
+
+  if (s === 'projects') renderProjects();
+  if (s === 'home') renderBadges();
 }
 
 function updateHdr() {
@@ -660,6 +719,103 @@ function updateProgress() {
     const pct = document.getElementById('pct-'+k);
     if (fill) fill.style.width = v+'%';
     if (pct) pct.textContent = v+'%';
+  });
+  checkBadges();
+}
+
+// ─── PROJECTS & PORTFOLIO ─────────────────────────────────
+function renderProjects() {
+  const container = document.getElementById('project-list');
+  container.innerHTML = '';
+  
+  Object.keys(TOPICS).forEach(t => {
+    const subs = TOPICS[t];
+    const milestone = subs.find(s => s.includes('Milestone Project'));
+    if (!milestone) return;
+
+    const url = S.projects[t] || '';
+    const isDone = !!url;
+
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.innerHTML = `
+      <div class="pc-head">
+        <div class="pc-title">${t}: Milestone Project</div>
+        <div class="pc-status ${isDone?'done':'pending'}">${isDone?'COMPLETED':'PENDING'}</div>
+      </div>
+      <div class="pc-desc">Build a real-world system for this module and host the code on GitHub. Use the tutorial in the last subtopic of this module.</div>
+      ${isDone ? `
+        <a href="${url}" target="_blank" class="pc-link">
+          <span>🔗 View on GitHub</span>
+        </a>
+        <button class="pc-btn" style="background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="editProject('${t}')">Edit Link</button>
+      ` : `
+        <div class="pc-input-row">
+          <input type="text" class="pc-input" id="proj-${t}" placeholder="https://github.com/yourname/repo">
+          <button class="pc-btn" onclick="saveProject('${t}')">Submit</button>
+        </div>
+      `}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function saveProject(topic) {
+  const input = document.getElementById('proj-' + topic);
+  const url = input.value.trim();
+  if (!url || !url.includes('github.com')) {
+    alert('Please enter a valid GitHub URL');
+    return;
+  }
+  S.projects[topic] = url;
+  addXP(100);
+  checkBadges();
+  save();
+  renderProjects();
+}
+
+function editProject(topic) {
+  delete S.projects[topic];
+  save();
+  renderProjects();
+}
+
+// ─── BADGES ───────────────────────────────────────────────
+function checkBadges() {
+  const newBadges = [];
+  
+  if (S.lessons >= 1) newBadges.push('first_lesson');
+  if (S.prog['python'] >= 100) newBadges.push('python_pro');
+  if (S.prog['airflow'] >= 100) newBadges.push('airflow_expert');
+  if (S.prog['api'] >= 100) newBadges.push('api_master');
+  if (S.streak >= 5) newBadges.push('quiz_streak');
+  if (Object.keys(S.projects).length >= 3) newBadges.push('portfolio_ready');
+
+  // Check if any are new
+  newBadges.forEach(id => {
+    if (!S.earnedBadges.includes(id)) {
+      S.earnedBadges.push(id);
+      // alert(`🏆 BADGE EARNED: ${BADGES.find(b=>b.id===id).name}!`);
+    }
+  });
+  save();
+}
+
+function renderBadges() {
+  const grid = document.getElementById('badge-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  BADGES.forEach(b => {
+    const isEarned = S.earnedBadges.includes(b.id);
+    const card = document.createElement('div');
+    card.className = 'badge-card' + (isEarned ? ' earned' : '');
+    card.innerHTML = `
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-req">${b.req}</div>
+    `;
+    grid.appendChild(card);
   });
 }
 
@@ -1339,6 +1495,7 @@ function renderQ(q) {
   // ─── INIT ─────────────────────────────────────────────────
   buildSidebar();
   buildTopicChecks();
+  renderBadges();
   updateHdr();
   </script>
   <script src="content.js"></script>
