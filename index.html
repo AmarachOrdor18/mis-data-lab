@@ -681,7 +681,16 @@ async function generateLesson(forceNew = false) {
   if (!S.topic) { alert('Choose a topic first'); return; }
   const sub = S.sub || TOPICS[S.topic][0];
 
-  // Check cache first
+  // 1. Check STATIC_CONTENT first (Zero Cost)
+  if (!forceNew && typeof STATIC_CONTENT !== 'undefined' && STATIC_CONTENT[S.topic]?.[sub]?.lesson) {
+    const text = STATIC_CONTENT[S.topic][sub].lesson;
+    S.lessonText = text;
+    renderLesson(text, true);
+    document.getElementById('regen-btn').style.display = 'inline-flex';
+    return;
+  }
+
+  // 2. Check Browser Cache
   if (!forceNew) {
     const cached = getCached(S.topic, sub, 'lesson');
     if (cached) {
@@ -742,7 +751,15 @@ async function generateScenario(forceNew = false) {
   if (!S.topic) { alert('Choose a topic first'); return; }
   const sub = S.sub || TOPICS[S.topic][0];
 
-  // Check cache first
+  // 1. Check STATIC_CONTENT first (Zero Cost)
+  if (!forceNew && typeof STATIC_CONTENT !== 'undefined' && STATIC_CONTENT[S.topic]?.[sub]?.scenario) {
+    const text = STATIC_CONTENT[S.topic][sub].scenario;
+    S.lessonText = text;
+    renderLesson(text, true);
+    return;
+  }
+
+  // 2. Check Browser Cache
   if (!forceNew) {
     const cached = getCached(S.topic, sub, 'scenario');
     if (cached) {
@@ -1041,6 +1058,23 @@ async function loadQ() {
 
   const topic = S.quizTopics[Math.floor(Math.random()*S.quizTopics.length)];
   const sub = TOPICS[topic][Math.floor(Math.random()*TOPICS[topic].length)];
+
+  // 1. Check STATIC_CONTENT for quizzes
+  if (typeof STATIC_CONTENT !== 'undefined' && STATIC_CONTENT[topic]?.[sub]?.quizzes) {
+    const list = STATIC_CONTENT[topic][sub].quizzes;
+    const qRaw = list[Math.floor(Math.random() * list.length)];
+    // Format to match AI response expectations
+    const q = {
+      ...qRaw,
+      topic,
+      type: S.quizMode === 'scenario' ? 'scenario' : 'technical',
+      scenario: qRaw.scenario || ""
+    };
+    renderQ(q);
+    if (S.quizMode === 'timed') startTimer();
+    return;
+  }
+
   const diff = S.quizDiff.length ? S.quizDiff[Math.floor(Math.random()*S.quizDiff.length)] : 'Entry Level';
   const useScenario = S.quizMode === 'scenario' || (S.quizMode === 'practice' && Math.random() > 0.45);
 
@@ -1114,98 +1148,99 @@ function renderQ(q) {
     cd.style.display = 'block';
   } else cd.style.display = 'none';
 
-  const ol = document.getElementById('opts');
-  ol.innerHTML = '';
-  const ks = ['A','B','C','D'];
-  q.options.forEach((o, i) => {
-    const b = document.createElement('button');
-    b.className = 'opt';
-    b.innerHTML = `<span class="opt-key">${ks[i]}</span><span>${o.replace(/^[A-D]\.\s*/,'')}</span>`;
-    b.onclick = () => answerQ(i, q, b);
-    ol.appendChild(b);
-  });
+    const ol = document.getElementById('opts');
+    ol.innerHTML = '';
+    const ks = ['A','B','C','D'];
+    q.options.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.innerHTML = `<span class="opt-key">${ks[i]}</span><span>${o.replace(/^[A-D]\.\s*/,'')}</span>`;
+      b.onclick = () => answerQ(i, q, b);
+      ol.appendChild(b);
+    });
 
-  S.qStart = Date.now();
-}
+    S.qStart = Date.now();
+  }
 
-function answerQ(i, q, btn) {
-  if (S.answered) return;
-  S.answered = true;
-  clearInterval(S.timerInt);
-  S.qTimes.push(Math.round((Date.now() - S.qStart) / 1000));
-  const btns = document.querySelectorAll('.opt');
-  btns.forEach(b => b.disabled = true);
-  const ok = i === q.correct;
-  btns[q.correct].classList.add('correct');
-  if (!ok) { btn.classList.add('wrong'); S.qW++; }
-  else { S.qC++; S.qCorrect++; }
-  S.qTotal++;
-  const fb = document.getElementById('feedback');
-  fb.className = 'feedback show ' + (ok ? 'ok' : 'bad');
-  document.getElementById('fb-title').textContent = ok ? '✓ CORRECT' : '✗ INCORRECT';
-  document.getElementById('fb-body').textContent = q.explanation || '';
-  document.getElementById('fb-mis').textContent = q.mis_link ? '📌 ' + q.mis_link : '';
-  document.getElementById('next-btn').className = 'next-btn show';
-  addXP(ok ? 10 : 2);
-  save();
-}
+  function answerQ(i, q, btn) {
+    if (S.answered) return;
+    S.answered = true;
+    clearInterval(S.timerInt);
+    S.qTimes.push(Math.round((Date.now() - S.qStart) / 1000));
+    const btns = document.querySelectorAll('.opt');
+    btns.forEach(b => b.disabled = true);
+    const ok = i === q.correct;
+    btns[q.correct].classList.add('correct');
+    if (!ok) { btn.classList.add('wrong'); S.qW++; }
+    else { S.qC++; S.qCorrect++; }
+    S.qTotal++;
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback show ' + (ok ? 'ok' : 'bad');
+    document.getElementById('fb-title').textContent = ok ? '✓ CORRECT' : '✗ INCORRECT';
+    document.getElementById('fb-body').textContent = q.explanation || '';
+    document.getElementById('fb-mis').textContent = q.mis_link ? '📌 ' + q.mis_link : '';
+    document.getElementById('next-btn').className = 'next-btn show';
+    addXP(ok ? 10 : 2);
+    save();
+  }
 
-function startTimer() {
-  S.timerSec = 90;
-  const el = document.getElementById('q-timer');
-  el.style.display = 'block';
-  clearInterval(S.timerInt);
-  S.timerInt = setInterval(() => {
-    S.timerSec--;
-    const m = Math.floor(S.timerSec/60), s = S.timerSec%60;
-    el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-    if (S.timerSec <= 0) { clearInterval(S.timerInt); S.qSk++; nextQ(); }
-  }, 1000);
-}
+  function startTimer() {
+    S.timerSec = 90;
+    const el = document.getElementById('q-timer');
+    el.style.display = 'block';
+    clearInterval(S.timerInt);
+    S.timerInt = setInterval(() => {
+      S.timerSec--;
+      const m = Math.floor(S.timerSec/60), s = S.timerSec%60;
+      el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+      if (S.timerSec <= 0) { clearInterval(S.timerInt); S.qSk++; nextQ(); }
+    }, 1000);
+  }
 
-function nextQ() {
-  clearInterval(S.timerInt);
-  S.qIdx++;
-  if (S.qIdx >= 8) { showResults(); return; }
-  document.getElementById('q-loading').style.display = 'flex';
-  document.getElementById('q-content').style.display = 'none';
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('next-btn').className = 'next-btn';
-  loadQ();
-}
+  function nextQ() {
+    clearInterval(S.timerInt);
+    S.qIdx++;
+    if (S.qIdx >= 8) { showResults(); return; }
+    document.getElementById('q-loading').style.display = 'flex';
+    document.getElementById('q-content').style.display = 'none';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('next-btn').className = 'next-btn';
+    loadQ();
+  }
 
-function showResults() {
-  document.getElementById('quiz-active').style.display = 'none';
-  document.getElementById('quiz-results').style.display = 'block';
-  const tot = S.qC + S.qW + S.qSk;
-  const pct = tot ? Math.round(S.qC / tot * 100) : 0;
-  document.getElementById('res-score').textContent = pct + '%';
-  const xpE = S.qC * 10 + (pct >= 80 ? 50 : pct >= 60 ? 25 : 0);
-  document.getElementById('xp-earned').textContent = '⚡ +' + xpE + ' XP earned';
-  const grades = [[90,'A // Excellent 🏆','You think like a data engineer. Keep going.'],[70,'B // Good Work 🎯','Solid foundation. Target those gaps.'],[50,'C // Passing 📚','Head to the Learn tab and do a scenario drill.'],[0,'D // Keep Studying 💪','Do a few more lessons then come back.']];
-  const [,g,m] = grades.find(([t]) => pct >= t);
-  document.getElementById('res-grade').textContent = g;
-  document.getElementById('res-msg').textContent = m;
-  document.getElementById('r-c').textContent = S.qC;
-  document.getElementById('r-w').textContent = S.qW;
-  document.getElementById('r-s').textContent = S.qSk;
-  const avg = S.qTimes.length ? Math.round(S.qTimes.reduce((a,b)=>a+b,0)/S.qTimes.length) : 0;
-  document.getElementById('r-t').textContent = avg + 's';
-  if (pct >= 70) { S.streak++; }
-  addXP(xpE);
-  save();
-}
+  function showResults() {
+    document.getElementById('quiz-active').style.display = 'none';
+    document.getElementById('quiz-results').style.display = 'block';
+    const tot = S.qC + S.qW + S.qSk;
+    const pct = tot ? Math.round(S.qC / tot * 100) : 0;
+    document.getElementById('res-score').textContent = pct + '%';
+    const xpE = S.qC * 10 + (pct >= 80 ? 50 : pct >= 60 ? 25 : 0);
+    document.getElementById('xp-earned').textContent = '⚡ +' + xpE + ' XP earned';
+    const grades = [[90,'A // Excellent 🏆','You think like a data engineer. Keep going.'],[70,'B // Good Work 🎯','Solid foundation. Target those gaps.'],[50,'C // Passing 📚','Head to the Learn tab and do a scenario drill.'],[0,'D // Keep Studying 💪','Do a few more lessons then come back.']];
+    const [,g,m] = grades.find(([t]) => pct >= t);
+    document.getElementById('res-grade').textContent = g;
+    document.getElementById('res-msg').textContent = m;
+    document.getElementById('r-c').textContent = S.qC;
+    document.getElementById('r-w').textContent = S.qW;
+    document.getElementById('r-s').textContent = S.qSk;
+    const avg = S.qTimes.length ? Math.round(S.qTimes.reduce((a,b)=>a+b,0)/S.qTimes.length) : 0;
+    document.getElementById('r-t').textContent = avg + 's';
+    if (pct >= 70) { S.streak++; }
+    addXP(xpE);
+    save();
+  }
 
-function resetQuiz() {
-  document.getElementById('quiz-results').style.display = 'none';
-  document.getElementById('quiz-active').style.display = 'none';
-  document.getElementById('quiz-setup').style.display = 'block';
-}
+  function resetQuiz() {
+    document.getElementById('quiz-results').style.display = 'none';
+    document.getElementById('quiz-active').style.display = 'none';
+    document.getElementById('quiz-setup').style.display = 'block';
+  }
 
-// ─── INIT ─────────────────────────────────────────────────
-buildSidebar();
-buildTopicChecks();
-updateHdr();
-</script>
+  // ─── INIT ─────────────────────────────────────────────────
+  buildSidebar();
+  buildTopicChecks();
+  updateHdr();
+  </script>
+  <script src="content.js"></script>
 </body>
 </html>
