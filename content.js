@@ -674,10 +674,10 @@ This is your first major project. You are going to build an automated Python sys
 Your company, **"Lagos Retail Hub,"** has 5 branches. Each branch saves its sales in a messy text file. Currently, an intern spends 4 hours every Monday copying these into Excel. You are going to automate this.
 
 ## Your Project Tasks:
-0. **The Data**: Download the [Supermarket Sales Dataset from Kaggle](https://www.kaggle.com/datasets/aungpyaeap/supermarket-sales).
-1. **The Script**: Write a Python script that reads data from a list of dictionaries (simulating your branches).
-2. **The Cleaning**: Handle missing values (NaN) and incorrect data types (e.g., prices stored as strings like "₦5,000").
-3. **The Analytics**: Calculate Total Revenue, Average Order Value, and identify the top-performing branch.
+0. **The Data**: Download the [Northwind Relational Database from GitHub](https://github.com/pthom/northwind_psql) (Specifically the Orders, Order Details, and Products CSVs).
+1. **The Script**: Write a Python script using Pandas to read these separate tables and `MERGE` them using their Foreign Keys (e.g., `product_id`).
+2. **The Cleaning**: Handle missing values and ensure the Data Types match before joining (an ID must be an integer in both tables).
+3. **The Analytics**: Calculate Total Revenue per Category by joining the merged data.
 4. **The Dashboard**: Print a clean, formatted text-based dashboard that an executive can read in 10 seconds.
 5. **The Delivery**: Create a new GitHub repository, upload your \`main.py\` and a \`README.md\` explaining how the "Dashboard" works.
 
@@ -1302,15 +1302,15 @@ In this project, you will build a complete ETL pipeline that handles the most cr
 Your startup, **"NaijaPay,"** is seeing "ghost transactions"-where a user says they were debited, but the payment gateway says they didn't receive the money. You need to build a pipeline that finds these mismatches automatically for the Finance VP.
 
 ## Your Project Tasks:
-0. **The Data**: Use the [Synthetic Financial Datasets for Fraud Detection on Kaggle](https://www.kaggle.com/datasets/ealaxi/paysim1) to simulate your transaction logs.
-1. **EXTRACT**: Create two CSV files (or lists) simulating "Our Database" and "Paystack Logs."
-2. **TRANSFORM**: Use Python to find transactions that exist in "Our Database" but are MISSING in "Paystack."
-3. **LOAD**: Save these "Exceptions" into a new CSV called \`refund_requests.csv\`.
+0. **The Data**: Use the [Instacart Relational Database on Kaggle](https://www.kaggle.com/c/instacart-market-basket-analysis/data) (specifically the Orders, Products, and Departments tables).
+1. **EXTRACT**: Pull the raw data from the separate tables into your Python environment.
+2. **TRANSFORM**: Use Pandas to `JOIN` the tables and identify "Data Anomalies" (e.g., products missing a department_id, or orders with zero items).
+3. **LOAD**: Save this cleaned, joined dataset into a final \`unified_warehouse.csv\` table.
 4. **THE DASHBOARD**: Create a simple summary showing:
-   - Total Transactions Processed.
-   - Total Discrepancy Amount (The "Lost Money").
-   - A list of the Top 5 customers affected.
-5. **THE DELIVERY**: Push your \`recon_pipeline.py\` and a sample \`dashboard_screenshot.md\` to GitHub.
+   - Total Clean Orders Processed.
+   - Total Anomalies Removed.
+   - A list of the Top 5 Departments.
+5. **THE DELIVERY**: Push your \`etl_pipeline.py\` and a sample \`dashboard_screenshot.md\` to GitHub.
 
 ## Show me the code (ETL Logic)
 \`\`\`python
@@ -1947,7 +1947,7 @@ Your company, **"Abuja Logistics,"** delivers 10,000 packages a day. The CEO wan
 If the data is missing or the pipeline fails, you need to know before the CEO wakes up.
 
 ## Your Project Tasks:
-0. **The Data**: Download the [Brazilian E-Commerce Public Dataset by Olist (Kaggle)](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) to simulate your logistics data.
+0. **The Data**: Download the [Brazilian E-Commerce Relational Dataset by Olist (Kaggle)](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) which contains 8 linked tables (Orders, Customers, Payments, etc).
 1. **The DAG**: Create a Python file representing your Airflow DAG.
 2. **The Sensor**: Add a task that "waits" for the daily delivery CSV to arrive.
 3. **The Transformation**: Add a task that calculates the KPIs for the CEO.
@@ -2615,38 +2615,40 @@ You've transformed the business. By replacing a manual portal login with an API 
       ]
     },
     'Milestone Project': {
-      'lesson': `## Milestone: The Live Currency Tracker
-In this project, you will bridge the gap between "Internal Systems" and the "Global Market" by pulling live data from an external API and building a tracking dashboard.
+      'lesson': `## Milestone: The Relational API Dashboard
+In this project, you will pull relational data (Users and Posts) from two separate API endpoints, join them together in memory, and generate an executive report.
 
 ## The Business Case
-Your company, **"Lekki Import-Export,"** deals with suppliers in the UK and USA. The Finance Director is tired of manually checking the Naira exchange rate every morning. You need to build a system that pulls the rate automatically and displays it on an "Executive Currency Dashboard."
+Your company, **"Lagos Media Group,"** has a platform with thousands of Users and Posts. The Marketing Director needs a report showing which authors are generating the most content. The database team is busy, so you need to pull this data directly from the live API endpoints, join the Users and Posts manually, and generate a dashboard.
 
 ## Your Project Tasks:
-1. **The Request**: Write a Python script using the \`requests\` library to call a live Currency API (e.g., ExchangeRate-API or similar).
-2. **The Extraction**: Parse the JSON response to find the specific rate for NGN (Nigerian Naira) against USD and GBP.
-3. **The Analytics**: Compare today's rate with a "Baseline Rate" to see if the Naira is getting stronger or weaker.
+0. **The Data**: We will use the [JSONPlaceholder Relational API](https://jsonplaceholder.typicode.com/) to simulate linked business systems.
+1. **The Request**: Write a Python script to call the \`/users\` endpoint and the \`/posts\` endpoint.
+2. **The Extraction & Join**: Parse the JSON responses and link the data together (matching the \`userId\` in a Post to the \`id\` in the Users list).
+3. **The Analytics**: Calculate the total number of posts made by each specific user.
 4. **The Dashboard**: Create a formatted text output showing:
    - Today's Date.
-   - Current USD/NGN Rate.
-   - Current GBP/NGN Rate.
-   - A "Market Alert" message if the rate changes by more than 5%.
-5. **The Delivery**: Push your \`currency_bot.py\` and a \`README.md\` with a screenshot of your dashboard to GitHub.
+   - Top 3 Most Active Users.
+   - Any users who have 0 posts (System Alert).
+5. **The Delivery**: Push your \`api_join_bot.py\` and a \`README.md\` with a screenshot of your dashboard to GitHub.
 
 ## Show me the code (API Logic)
 \`\`\`python
-# Example of pulling the data:
+# Example of joining API data:
 import requests
 
-url = "https://api.exchangerate-api.com/v4/latest/USD"
-response = requests.get(url)
-data = response.json()
+users = requests.get("https://jsonplaceholder.typicode.com/users").json()
+posts = requests.get("https://jsonplaceholder.typicode.com/posts").json()
 
-naira_rate = data['rates']['NGN']
-print(f"EXECUTIVE ALERT: Current Naira Rate is ₦{naira_rate}/$1")
+# Match the foreign key!
+user_dict = {user['id']: user['name'] for user in users}
+for post in posts[:3]:
+    author = user_dict.get(post['userId'])
+    print(f"Author: {author} | Title: {post['title']}")
 \`\`\`
 
 ## Presenting to Executives
-Tell the Director: "This isn't just a script; it's a real-time financial monitor. By using an API, we eliminate the risk of human error and ensure the company always makes decisions based on the most accurate market data available."`,
+Tell the Director: "By joining these API endpoints in memory, we bypassed the database bottleneck completely. We now have a real-time, automated report of our top content creators."`,
       'scenario': `## Scenario: The "API Key" Leak
 **The situation:** You just pushed your code to GitHub. 5 minutes later, you get an automated email from the API provider saying your "Secret Key" has been compromised and your account is suspended.
 
@@ -2911,7 +2913,7 @@ In this project, you will move your company's data security to the next level by
 Your company, **"Enugu Manufacturing,"** currently saves its daily production logs on a single computer in the factory. If that computer's hard drive fails (or the factory floods), 10 years of data is lost. You need to build a "Cloud Bridge" that pushes these logs to the AWS cloud automatically.
 
 ## Your Project Tasks:
-0. **The Data**: Use the massive [NYC Yellow Taxi Trip Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) to simulate the heavy logs you need to back up.
+0. **The Data**: Download the [Chinook Relational Database](https://github.com/lerocha/chinook-database), which simulates an iTunes store with heavily linked Tables (Artists, Albums, and Tracks).
 1. **The Bucket**: Create a uniquely named S3 bucket in your AWS account (simulated in code).
 2. **The Script**: Write a Python script using \`boto3\` to detect a new log file in your local "Production" folder.
 3. **The Upload**: Automatically upload the file to S3 with a "Private" access policy.
