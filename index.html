@@ -492,33 +492,58 @@ function setCache(topic, sub, type, text) {
 // ─── CURRICULUM ───────────────────────────────────────────
 const TOPICS = {
   'Python': [
-    'Variables & Data Types','Lists, Dicts & Loops','Functions','Reading & Writing Files',
-    'Pandas Basics','DataFrames & Filtering','The Requests Library','Writing Automation Scripts','Error Handling'
-  ],
-  'Apache Airflow': [
-    'What is Airflow & Why it Exists','DAGs — The Big Picture','Operators & Tasks',
-    'Scheduling with Cron','Task Dependencies','XCom: Passing Data Between Tasks',
-    'Monitoring & Alerts','Real Pipeline Examples'
-  ],
-  'APIs & REST': [
-    'What is an API? (Really)','HTTP Methods — GET, POST, PUT, DELETE','JSON: The Language of APIs',
-    'API Keys & Authentication','Pulling Data into Python','Handling Errors & Timeouts',
-    'Pagination — Getting All the Data','APIs in Banking & Fintech'
+    'Variables & Data Types',
+    'Lists, Dicts & Loops',
+    'Functions',
+    'Reading & Writing Files',
+    'Pandas Basics',
+    'DataFrames & Filtering',
+    'The Requests Library',
+    'Writing Automation Scripts',
+    'Error Handling'
   ],
   'ETL Pipelines': [
-    'What is ETL? (Plain English)','The Extract Phase','Cleaning & Transforming Data',
-    'Loading into a Warehouse','Handling Pipeline Failures','Incremental vs Full Loads',
-    'ETL vs ELT','ETL in a Real Nigerian Bank'
+    'What is ETL? (Plain English)',
+    'The Extract Phase',
+    'Cleaning & Transforming Data',
+    'Loading into a Warehouse',
+    'Handling Pipeline Failures',
+    'Incremental vs Full Loads',
+    'ETL vs ELT',
+    'ETL in a Real Nigerian Bank'
+  ],
+  'Apache Airflow': [
+    'What is Airflow & Why it Exists',
+    'DAGs — The Big Picture',
+    'Operators & Tasks',
+    'Scheduling with Cron',
+    'Task Dependencies',
+    'XCom: Passing Data Between Tasks',
+    'Monitoring & Alerts',
+    'Real Pipeline Examples'
+  ],
+  'APIs & REST': [
+    'What is an API? (Really)',
+    'HTTP Methods — GET, POST, PUT, DELETE',
+    'JSON: The Language of APIs',
+    'API Keys & Authentication',
+    'Pulling Data into Python',
+    'Handling Errors & Timeouts',
+    'Pagination — Getting All the Data',
+    'APIs in Banking & Fintech'
   ],
   'Cloud Computing': [
-    'What is the Cloud, Really?','Storage — S3, GCS, Blobs','Compute & Virtual Machines',
-    'IAM — Who Can Access What','Cloud Databases','Serverless Functions','Cloud Costs & Billing',
-    'Cloud in MIS Architecture'
+    'Cloud Basics for MIS',
+    'AWS, Azure, & Google Cloud',
+    'S3: Storing Data in the Sky',
+    'Lambda: Functions without Servers'
   ],
   'dbt & Modeling': [
-    'What is dbt and Why MIS Needs It','Your First dbt Model','Staging vs Mart Layers',
-    'ref() and Sources','Testing Your Data','Documentation','Star Schema in dbt',
-    'dbt in a Real BI Project'
+    'Modern Data Modeling',
+    'Tables vs Views',
+    'Writing Tests for Data',
+    'Documentation: The Data Dictionary',
+    'Career: The Analytics Engineer'
   ]
 };
 const PROG_MAP = {'Python':'python','Apache Airflow':'airflow','APIs & REST':'api','ETL Pipelines':'etl','Cloud Computing':'cloud','dbt & Modeling':'dbt'};
@@ -1242,5 +1267,9 @@ function renderQ(q) {
   updateHdr();
   </script>
   <script src="content.js"></script>
+  <script>
+    // Ensure STATIC_CONTENT exists even if script fails
+    if (typeof STATIC_CONTENT === 'undefined') window.STATIC_CONTENT = {};
+  </script>
 </body>
 </html>
