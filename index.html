@@ -174,6 +174,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .scen-btn{padding:10px 16px;background:transparent;color:var(--yellow);border:1px solid rgba(255,209,102,0.28);border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap}
 .scen-btn:hover{background:rgba(255,209,102,0.05)}
 .scen-btn:disabled{opacity:0.35;cursor:not-allowed}
+.regen-btn{padding:10px 16px;background:transparent;color:var(--muted2);border:1px solid var(--border);border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.regen-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.regen-btn:disabled{opacity:0.35;cursor:not-allowed}
+.cache-badge{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--accent);background:rgba(0,217,139,0.06);border:1px solid rgba(0,217,139,0.15);padding:2px 8px;border-radius:2px;margin-left:8px;vertical-align:middle}
 
 /* Voice button */
 .voice-btn{padding:10px 14px;background:transparent;color:var(--muted2);border:1px solid var(--border);border-radius:4px;font-size:14px;cursor:pointer;transition:all 0.15s;position:relative}
@@ -379,6 +383,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div class="btn-row">
         <button class="gen-btn" id="gen-btn" onclick="generateLesson()">▶ LESSON</button>
         <button class="scen-btn" id="scen-btn" onclick="generateScenario()">⚡ SCENARIO</button>
+        <button class="regen-btn" id="regen-btn" onclick="generateLesson(true)" style="display:none" title="Generate a fresh lesson (uses credits)">🔄 NEW</button>
         <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Ask a question by voice">🎤</button>
       </div>
       <div class="lesson-panel" id="lesson-panel">
@@ -468,10 +473,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
 const API_URL = '/api/chat'; // Vercel serverless route
-const MODEL = 'anthropic/claude-3-haiku'; // cheap + fast on OpenRouter
-const DAILY_TOKEN_BUDGET = 80000; // conservative estimate for free tier
-const WARN_THRESHOLD = 0.7; // show warning at 70%
-const CRIT_THRESHOLD = 0.9;
+const MODEL = 'google/gemini-2.0-flash-exp:free'; // free model on OpenRouter
+const TOTAL_CREDIT_BUDGET = 200000; // lifetime free-tier token estimate
+const WARN_THRESHOLD = 0.6; // show warning at 60%
+const CRIT_THRESHOLD = 0.85;
+
+// ─── LESSON CACHE ─────────────────────────────────────────
+const CACHE_KEY = 'mis_lesson_cache_v1';
+let lessonCache = {};
+try { lessonCache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch(e) {}
+function cacheKey(topic, sub, type) { return `${topic}::${sub}::${type}`; }
+function getCached(topic, sub, type) { return lessonCache[cacheKey(topic, sub, type)] || null; }
+function setCache(topic, sub, type, text) {
+  lessonCache[cacheKey(topic, sub, type)] = text;
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(lessonCache)); } catch(e) {}
+}
 
 // ─── CURRICULUM ───────────────────────────────────────────
 const TOPICS = {
@@ -514,18 +530,13 @@ let S = {
   quizMode:'practice', quizTopics:['Python','ETL Pipelines'], quizDiff:['Entry Level'],
   qIdx:0, qC:0, qW:0, qSk:0, qTimes:[], qStart:0, timerInt:null, timerSec:90, answered:false,
   prog:{}, lessonText:'', isSpeaking:false,
-  tokensUsedToday:0, tokenResetDate:todayKey()
+  tokensUsedTotal:0
 };
 
 // Load saved state
 try {
   const saved = JSON.parse(localStorage.getItem('mis_state_v2') || 'null');
   if (saved) {
-    // Reset token counter if it's a new day
-    if (saved.tokenResetDate !== todayKey()) {
-      saved.tokensUsedToday = 0;
-      saved.tokenResetDate = todayKey();
-    }
     Object.assign(S, saved);
   }
 } catch(e) {}
@@ -540,18 +551,14 @@ function todayKey() {
 
 // ─── TOKEN TRACKING ───────────────────────────────────────
 function addTokens(n) {
-  if (S.tokenResetDate !== todayKey()) {
-    S.tokensUsedToday = 0;
-    S.tokenResetDate = todayKey();
-  }
-  S.tokensUsedToday += n;
+  S.tokensUsedTotal += n;
   updateTokenUI();
   save();
 }
 
 function updateTokenUI() {
-  const used = S.tokensUsedToday;
-  const pct = used / DAILY_TOKEN_BUDGET;
+  const used = S.tokensUsedTotal;
+  const pct = used / TOTAL_CREDIT_BUDGET;
   const pill = document.getElementById('token-pill');
   const banner = document.getElementById('token-banner');
 
@@ -573,10 +580,10 @@ function updateTokenUI() {
 }
 
 function showTokenInfo() {
-  const used = S.tokensUsedToday;
-  const pct = Math.round(used / DAILY_TOKEN_BUDGET * 100);
-  const resetMsg = 'Resets daily at midnight UTC (1am WAT / Lagos time).';
-  alert(`Token Usage Today\n\nEstimated used: ~${used.toLocaleString()} tokens (${pct}% of daily budget)\nBudget: ~${DAILY_TOKEN_BUDGET.toLocaleString()} tokens\n\n${resetMsg}\n\nNote: This is an estimate. Actual usage depends on lesson length.`);
+  const used = S.tokensUsedTotal;
+  const pct = Math.round(used / TOTAL_CREDIT_BUDGET * 100);
+  const cached = Object.keys(lessonCache).length;
+  alert(`Credit Usage\n\nEstimated used: ~${used.toLocaleString()} tokens (${pct}%)\nCached lessons: ${cached} (these won't use credits again)\nModel: Free tier (Gemini Flash)\n\nTip: Lessons you've already generated are saved locally. Revisiting them costs zero credits. Use the Regenerate button only when you want fresh content.`);
 }
 
 // ─── NAVIGATION ───────────────────────────────────────────
@@ -670,10 +677,23 @@ async function callAI(prompt, maxTokens = 900) {
 }
 
 // ─── LESSON GENERATION ────────────────────────────────────
-async function generateLesson() {
+async function generateLesson(forceNew = false) {
   if (!S.topic) { alert('Choose a topic first'); return; }
   const sub = S.sub || TOPICS[S.topic][0];
+
+  // Check cache first
+  if (!forceNew) {
+    const cached = getCached(S.topic, sub, 'lesson');
+    if (cached) {
+      S.lessonText = cached;
+      renderLesson(cached, true);
+      document.getElementById('regen-btn').style.display = 'inline-flex';
+      return;
+    }
+  }
+
   setLoading(true);
+  document.getElementById('regen-btn').style.display = 'none';
 
   const prompt = `You're teaching "${sub}" in "${S.topic}" to a Nigerian university student studying Management Information Systems (MIS). She already knows Excel, SQL, Power BI, and basic data modeling.
 
@@ -703,6 +723,7 @@ Write in warm, encouraging, conversational English. No stiff academic tone.`;
 
   try {
     const text = await callAI(prompt, 1000);
+    setCache(S.topic, sub, 'lesson', text);
     S.lessonText = text;
     renderLesson(text);
     S.lessons++;
@@ -710,15 +731,27 @@ Write in warm, encouraging, conversational English. No stiff academic tone.`;
     const k = PROG_MAP[S.topic];
     if (k) { S.prog[k] = Math.min((S.prog[k]||0)+14, 100); updateProgress(); }
     save();
+    document.getElementById('regen-btn').style.display = 'inline-flex';
   } catch(e) {
     document.getElementById('lesson-panel').innerHTML = `<p style="color:var(--red)">Couldn't load lesson: ${e.message}</p>`;
   }
   setLoading(false);
 }
 
-async function generateScenario() {
+async function generateScenario(forceNew = false) {
   if (!S.topic) { alert('Choose a topic first'); return; }
   const sub = S.sub || TOPICS[S.topic][0];
+
+  // Check cache first
+  if (!forceNew) {
+    const cached = getCached(S.topic, sub, 'scenario');
+    if (cached) {
+      S.lessonText = cached;
+      renderLesson(cached, true);
+      return;
+    }
+  }
+
   setLoading(true);
 
   const prompt = `You're a senior data engineer mentoring a Nigerian MIS student. Drop her into a real work scenario involving "${sub}" from "${S.topic}". Write like you're talking to a smart junior colleague, warm but direct.
@@ -746,6 +779,7 @@ Write warmly. Make it feel real, not like a textbook exercise.`;
 
   try {
     const text = await callAI(prompt, 1100);
+    setCache(S.topic, sub, 'scenario', text);
     S.lessonText = text;
     renderLesson(text);
     S.lessons++;
@@ -790,7 +824,7 @@ function setLoading(on) {
 }
 
 // ─── MARKDOWN RENDERER ────────────────────────────────────
-function renderLesson(text) {
+function renderLesson(text, isCached = false) {
   let html = text
     .replace(/```[\w]*\n([\s\S]*?)```/g, (_, c) => `<pre>${esc(c.trim())}</pre>`)
     .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
@@ -801,6 +835,11 @@ function renderLesson(text) {
     .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
     .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
     .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // Inject cache badge into first heading if cached
+  if (isCached) {
+    html = html.replace(/<\/h2>/, ' <span class="cache-badge">Saved</span></h2>');
+  }
 
   // wrap consecutive <li> in <ul>
   html = html.replace(/(<li>.*?<\/li>(\n|$))+/g, m => `<ul>${m}</ul>`);
