@@ -2615,7 +2615,7 @@ You've transformed the business. By replacing a manual portal login with an API 
 In this project, you will pull relational data (Users and Posts) from two separate API endpoints, join them together in memory, and generate an executive report.
 
 ## The Broad Business Problem
-Your company has acquired a new social network platform (**JSONPlaceholder**), but the marketing team has a strategic blind spot: they have no idea who the top content creators are. The user profiles and the posts live in completely separate API endpoints. The database team is too backlogged to help. You must solve this strategic blind spot by building a Python script that pulls data directly from the live `/users` and `/posts` APIs, joins the systems in memory, and immediately identifies the top talent.
+Your company has acquired a new social network platform (**JSONPlaceholder**), but the marketing team has a strategic blind spot: they have no idea who the top content creators are. The user profiles and the posts live in completely separate API endpoints. The database team is too backlogged to help. You must solve this strategic blind spot by building a Python script that pulls data directly from the live \`/users\` and \`/posts\` APIs, joins the systems in memory, and immediately identifies the top talent.
 
 ## Your Project Tasks:
 0. **The Data**: We will use the [JSONPlaceholder Relational API](https://jsonplaceholder.typicode.com/) to simulate linked business systems.
@@ -2955,7 +2955,7 @@ Tell the CEO: "We are no longer vulnerable to local disasters. Our business inte
       ]
     }
   },
-  'dbt & Modeling': {
+  'dbt & Data Modeling': {
     'Modern Data Modeling': {
       'lesson': `## What is dbt & Modeling?
 dbt (data build tool) is a framework that brings software engineering best practices-like testing and version control-to the world of SQL. It's used to turn raw data in your warehouse into "Clean" tables for the business.

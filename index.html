@@ -497,8 +497,23 @@ function setCache(topic, sub, type, text) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(lessonCache)); } catch(e) {}
 }
 
-// ─── CURRICULUM ───────────────────────────────────────────
 const TOPICS = {
+  'Power BI & Visualization': [
+    'Connecting to Data Sources',
+    'Data Cleaning in Power Query',
+    'DAX Basics (Calculated Columns vs Measures)',
+    'Building Interactive Dashboards',
+    'Publishing & Workspaces',
+    'Milestone Project'
+  ],
+  'dbt & Data Modeling': [
+    'Modern Data Modeling',
+    'Tables vs Views',
+    'Writing Tests for Data',
+    'Documentation: The Data Dictionary',
+    'Career: The Analytics Engineer',
+    'Milestone Project'
+  ],
   'Python': [
     'Variables & Data Types',
     'Lists, Dicts & Loops',
@@ -550,25 +565,9 @@ const TOPICS = {
     'S3: Storing Data in the Sky',
     'Lambda: Functions without Servers',
     'Milestone Project'
-  ],
-  'dbt & Modeling': [
-    'Modern Data Modeling',
-    'Tables vs Views',
-    'Writing Tests for Data',
-    'Documentation: The Data Dictionary',
-    'Career: The Analytics Engineer',
-    'Milestone Project'
-  ],
-  'Power BI & Visualization': [
-    'Connecting to Data Sources',
-    'Data Cleaning in Power Query',
-    'DAX Basics (Calculated Columns vs Measures)',
-    'Building Interactive Dashboards',
-    'Publishing & Workspaces',
-    'Milestone Project'
   ]
 };
-const PROG_MAP = {'Python':'python','Apache Airflow':'airflow','APIs & REST':'api','ETL Pipelines':'etl','Cloud Computing':'cloud','dbt & Modeling':'dbt','Power BI & Visualization':'pbi'};
+const PROG_MAP = {'Power BI & Visualization':'pbi','dbt & Data Modeling':'dbt','Python':'python','Apache Airflow':'airflow','APIs & REST':'api','ETL Pipelines':'etl','Cloud Computing':'cloud'};
 
 // ─── STATE ────────────────────────────────────────────────
 let S = {
