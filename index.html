@@ -589,21 +589,17 @@ const TOPICS = {
     'Milestone Project'
   ],
   'APIs & REST': [
-    'What is an API? (Really)',
-    'HTTP Methods - GET, POST, PUT, DELETE',
-    'JSON: The Language of APIs',
-    'API Keys & Authentication',
-    'Pulling Data into Python',
-    'Handling Errors & Timeouts',
-    'Pagination - Getting All the Data',
-    'APIs in Banking & Fintech',
+    'The "Why" of APIs',
+    'Methods: GET vs POST',
+    'Authentication & Security',
+    'JSON: The Language of Business',
+    'Pulling API Data into Pandas',
     'Milestone Project'
   ],
   'Cloud Computing': [
     'Cloud Basics for MIS',
-    'AWS, Azure, & Google Cloud',
-    'S3: Storing Data in the Sky',
-    'Lambda: Functions without Servers',
+    'AWS S3 - The Digital Vault',
+    'AWS Lambda - Serverless Logic',
     'Milestone Project'
   ]
 };
@@ -896,7 +892,7 @@ async function generateLesson(forceNew = false) {
     const text = STATIC_CONTENT[S.topic][sub].lesson;
     S.lessonText = text;
     renderLesson(text, true);
-    document.getElementById('regen-btn').style.display = 'inline-flex';
+    // document.getElementById('regen-btn').style.display = 'inline-flex';
     return;
   }
 
@@ -906,52 +902,17 @@ async function generateLesson(forceNew = false) {
     if (cached) {
       S.lessonText = cached;
       renderLesson(cached, true);
-      document.getElementById('regen-btn').style.display = 'inline-flex';
+      // document.getElementById('regen-btn').style.display = 'inline-flex';
       return;
     }
   }
 
-  setLoading(true);
-  document.getElementById('regen-btn').style.display = 'none';
-
-  const prompt = `You are a Senior Data Engineer directly mentoring a Nigerian university student studying MIS. She already knows Excel, SQL, and Power BI. You are teaching her "${sub}" in "${S.topic}".
-
-Do NOT just give a high-level overview. You must actually TEACH her how to do it, step by step, with deep explanations and code.
-
-Use this exact structure:
-
-## Why are we learning ${sub}?
-Explain the concept in 2-3 sentences. Tell her exactly why this is critical for a data engineer to know, comparing it to things she already knows (like Excel or SQL).
-
-## Step-by-Step Tutorial
-Break the concept down into 3 or 4 clear, actionable steps. For each step:
-1. Explain *what* you are doing.
-2. Explain *why* you are doing it.
-3. Provide the exact code block (Python/SQL/etc).
-Do not just dump code. Teach it line by line.
-
-## Let's look at a Real Business Example
-Walk through a complete, realistic scenario in an African/Nigerian context (e.g., a Fintech, Telecom, or Logistics company). Show exactly how you would apply this concept to solve their specific data problem, complete with the final code snippet.
-
-## Common Mistakes to Avoid
-List 2 or 3 beginner mistakes people make with this topic and how she can avoid them.
-
-Write in a warm, encouraging, conversational tone, like you are pair-programming with her. No fluff, no academic jargon.`;
-
-  try {
-    const text = await callAI(prompt, 1000);
-    setCache(S.topic, sub, 'lesson', text);
-    S.lessonText = text;
-    renderLesson(text);
-    S.lessons++;
-    addXP(15);
-    const k = PROG_MAP[S.topic];
-    if (k) { S.prog[k] = Math.min((S.prog[k]||0)+14, 100); updateProgress(); }
-    save();
-    document.getElementById('regen-btn').style.display = 'inline-flex';
-  } catch(e) {
-    document.getElementById('lesson-panel').innerHTML = `<p style="color:var(--red)">Couldn't load lesson: ${e.message}</p>`;
-  }
+  // AI DESCOPED — all content served from content.js
+  document.getElementById('lesson-panel').innerHTML = `<div style="padding:32px;text-align:center;color:var(--muted)">
+    <div style="font-size:40px;margin-bottom:12px">📚</div>
+    <p>This lesson is not available yet.</p>
+    <p style="font-size:12px;margin-top:8px">All content is served from the static curriculum. Check back soon!</p>
+  </div>`;
   setLoading(false);
 }
 
@@ -977,44 +938,12 @@ async function generateScenario(forceNew = false) {
     }
   }
 
-  setLoading(true);
-
-  const prompt = `You're a senior data engineer mentoring a Nigerian MIS student. Drop her into a real work scenario involving "${sub}" from "${S.topic}". Write like you're talking to a smart junior colleague, warm but direct.
-
-Use this structure:
-
-## Scenario: [Give it a punchy real title like "The Missing Morning Report" or "3am Pipeline Crash at GT Bank"]
-
-**The situation:** Set the scene. A real company in Nigeria or Africa (a bank, telecom, FMCG company, fintech). Describe the business context, the stakeholders waiting, and what just went wrong. 4-5 sentences. Be specific: what data, what system, who's affected.
-
-**What you're seeing:** Describe exactly what the junior engineer (her) finds when she logs in. Error messages, empty dashboards, angry Slack messages. Make it vivid.
-
-**Your job:** Two or three specific tasks she needs to figure out.
-
-**Code to look at:**
-Provide a code snippet with a bug or gap she needs to spot and think about.
-
-**Think through these:**
-Three questions she should answer. Connect at least one to MIS principles: data integrity, system reliability, stakeholder trust.
-
-**What the solution looks like:**
-Walk through the right approach clearly. Tell her what a senior engineer would do. 4-5 sentences. This is where the learning happens, make it satisfying to read.
-
-Write warmly. Make it feel real, not like a textbook exercise.`;
-
-  try {
-    const text = await callAI(prompt, 1100);
-    setCache(S.topic, sub, 'scenario', text);
-    S.lessonText = text;
-    renderLesson(text);
-    S.lessons++;
-    addXP(20);
-    const k = PROG_MAP[S.topic];
-    if (k) { S.prog[k] = Math.min((S.prog[k]||0)+14, 100); updateProgress(); }
-    save();
-  } catch(e) {
-    document.getElementById('lesson-panel').innerHTML = `<p style="color:var(--red)">Couldn't load scenario: ${e.message}</p>`;
-  }
+  // AI DESCOPED — all content served from content.js
+  document.getElementById('lesson-panel').innerHTML = `<div style="padding:32px;text-align:center;color:var(--muted)">
+    <div style="font-size:40px;margin-bottom:12px">🎯</div>
+    <p>This scenario is not available yet.</p>
+    <p style="font-size:12px;margin-top:8px">All content is served from the static curriculum. Check back soon!</p>
+  </div>`;
   setLoading(false);
 }
 
