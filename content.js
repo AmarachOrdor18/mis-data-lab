@@ -2567,9 +2567,37 @@ def run_etl():
 run_etl()
 \`\`\`
 
-### The staging area pattern
+**Beginner Breakdown — The Complete ETL Pipeline**
 
-Professional ETL never processes data in-place. Raw data is always saved first (staging), then transformed. This gives you a fallback if the transformation logic has a bug.
+Let's walk through this code section by section.
+
+*The imports (top of the file):*
+- \`import pandas as pd\` — Pandas is a Python library that lets you work with data tables (like Excel, but in code). We nickname it \`pd\` so we don't have to type "pandas" every time.
+- \`import sqlite3\` — This is Python's built-in tool for talking to SQLite databases (a simple, file-based database).
+- \`from datetime import date\` — This gives us a way to get today's date, which we'll stamp on our processed records.
+
+*The extract function:*
+- \`def extract(source_db: str) -> pd.DataFrame:\` — We are defining a reusable function. The \`: str\` and \`-> pd.DataFrame\` are "type hints" — they tell other developers "this function expects a text value (the database filename) and will return a data table."
+- \`conn = sqlite3.connect(source_db)\` — Think of this as "opening the database file." \`conn\` is short for "connection" — our live link to the database.
+- \`pd.read_sql("SELECT * FROM transactions WHERE processed = 0", conn)\` — This runs a SQL query against the database. We're asking for all rows in the \`transactions\` table where \`processed = 0\` (meaning they haven't been handled yet). The result is loaded into \`df\`, a DataFrame (a table in memory).
+- \`conn.close()\` — Just like closing a file when you're done reading it. Always close connections to avoid wasting memory.
+- \`print(f"Extracted {len(df)} unprocessed rows")\` — \`len(df)\` counts the rows. The \`f"..."\` is an "f-string" — a way to embed variables inside a text message. This line tells you how many rows were found.
+
+*The transform function:*
+- \`df.dropna(subset=["amount"])\` — Remove any row where the \`amount\` column is empty (NULL). We can't calculate revenue on a transaction with no amount, so those rows are useless to us.
+- \`df["status"].str.lower().str.strip()\` — \`.str.lower()\` converts text to lowercase (so "SETTLED" and "settled" are treated the same). \`.str.strip()\` removes any accidental spaces at the start or end of the value.
+- \`df.apply(lambda r: ..., axis=1)\` — \`apply\` runs a function on every row. \`axis=1\` means "go row by row" (as opposed to column by column). The \`lambda r:\` is a small, unnamed function where \`r\` represents one row at a time.
+- \`r["amount"] * 0.015 if r["status"] == "settled" else 0\` — A one-line if/else: if the transaction's status is "settled," charge a 1.5% fee. Otherwise, the fee is zero. This is the business rule encoded in code.
+- \`df["processed_date"] = str(date.today())\` — Add a new column to every row recording today's date as a string.
+
+*The load function:*
+- \`df.to_sql("clean_transactions", conn, if_exists="append", index=False)\` — This saves our clean DataFrame to the warehouse database. \`"clean_transactions"\` is the table name. \`if_exists="append"\` means "add these rows to the bottom of the table if it already exists — don't delete what's there." \`index=False\` prevents pandas from writing its internal row numbers as an extra column.
+- \`return len(df)\` — Return the count of rows loaded so the calling function can report it.
+
+*The run_etl function (the orchestrator):*
+- This is the "conductor" that calls the three functions in the right order. \`raw = extract(...)\` gets the dirty data. \`clean = transform(raw)\` cleans it. \`count = load(clean, ...)\` saves it to the warehouse. This separation is intentional — each function does one job, which makes it easy to test and debug each step independently.
+
+### The staging area pattern
 
 \`\`\`python
 from pathlib import Path
@@ -2591,6 +2619,17 @@ def extract_and_stage(api_url: str, stage_dir: str) -> Path:
     print(f"Staged raw data to {output}")
     return output
 \`\`\`
+
+**Beginner Breakdown — Staging Area Pattern**
+
+- \`from pathlib import Path\` — \`Path\` is a modern Python tool for working with file and folder paths in a clean, cross-platform way (works on Windows, Mac, and Linux without you changing the code).
+- \`import requests\` — A popular Python library for making HTTP requests (like visiting a URL from code).
+- \`response = requests.get(api_url, timeout=30)\` — We're "visiting" the API URL and getting a response back. \`timeout=30\` means "if you don't hear back within 30 seconds, give up and raise an error" — without this, the script could hang forever if the server is down.
+- \`response.raise_for_status()\` — If the server responded with an error (like "404 Not Found" or "500 Server Error"), this line will raise an exception in Python immediately, stopping the pipeline before we try to process a broken response.
+- \`stage_path.mkdir(exist_ok=True)\` — Creates the staging folder if it doesn't already exist. \`exist_ok=True\` means "don't throw an error if the folder is already there."
+- \`stage_path / f"raw_{date.today()}.json"\` — The \`/\` operator on a Path object builds a file path. The result would look like: \`staging/raw_2024-01-15.json\`. Using today's date in the filename means we never overwrite yesterday's raw data.
+- \`with open(output, "w") as f:\` — Opens the file for writing. The \`with\` keyword ensures the file is automatically closed when the block finishes, even if an error occurs.
+- \`json.dump(response.json(), f)\` — \`response.json()\` converts the API response from raw text into a Python dictionary. \`json.dump\` then writes that dictionary to our file as JSON text.
 
 ### Why ETL fails in production (and how to prevent it)
 
@@ -2620,6 +2659,11 @@ print(f"Staging files found: {len(stage_files)}")
 # Expected: 5 (one per region). If 4 — missing region = missing ₦2M
 \`\`\`
 
+**Beginner Breakdown — Checking Staging Files**
+- \`date.today() - timedelta(days=1)\` — \`timedelta(days=1)\` represents "one day." Subtracting it from today gives us yesterday's date. This is much safer than manually typing a date string.
+- \`Path("staging").glob(f"*{yesterday}*.json")\` — \`glob\` is a pattern-matching tool for finding files. The \`*\` is a wildcard meaning "match anything." So this line finds every \`.json\` file in the "staging" folder whose name contains yesterday's date. We wrap it in \`list()\` because \`glob\` returns a lazy generator, not an actual list.
+- If you expected 5 files (one per region) but only found 4, you've immediately pinpointed that one region's data didn't arrive — and that's your missing ₦2M.
+
 2. **Check the Transform:** Is any filter incorrectly excluding rows?
 \`\`\`python
 raw_count = len(raw_df)
@@ -2628,6 +2672,11 @@ dropped = raw_count - clean_count
 print(f"Dropped {dropped} rows during transform ({dropped/raw_count:.1%})")
 # If >5% dropped, investigate the filter logic
 \`\`\`
+
+**Beginner Breakdown — Row Count Check**
+- \`len(raw_df)\` and \`len(clean_df)\` — \`len()\` on a DataFrame returns the number of rows. By comparing the count before and after transformation, we can see how many rows were removed.
+- \`dropped/raw_count:.1%\` — Inside an f-string, \`:.1%\` is a format code. It converts a decimal like \`0.24\` into a percentage string like \`24.0%\`. This makes it immediately human-readable.
+- This single check can reveal whether your transform step has an overly aggressive filter silently removing valid transactions.
 
 3. **Check the Load:** Did all rows make it to the warehouse?
 \`\`\`python
@@ -2638,6 +2687,11 @@ warehouse_count = pd.read_sql(
 print(f"Clean rows: {clean_count}, Warehouse rows: {warehouse_count}")
 # These must match
 \`\`\`
+
+**Beginner Breakdown — Load Verification**
+- \`SELECT COUNT(*) as n\` — A SQL query that counts rows instead of returning them all. This is much faster for large tables. \`as n\` gives the count column the name "n" so we can reference it in Python.
+- \`.iloc[0]["n"]\` — The query returns a tiny DataFrame with one row and one column. \`.iloc[0]\` gets the first (and only) row by position. \`["n"]\` gets the value of the "n" column. Together they extract the single number we care about.
+- If \`clean_count\` is 9,000 but \`warehouse_count\` is 7,500 — the load step dropped 1,500 rows, and that's where your investigation leads next.
 
 The answer in this scenario: the Extract step was scheduled at 11 PM, but the Abuja branch closes their books at midnight. Their data hadn't arrived yet. The fix: move the extract to 1 AM, or add an explicit wait/retry for each branch's data.`,
 
@@ -2749,6 +2803,26 @@ for f in Path("incoming").glob("*.csv"):
 df = pd.concat(frames, ignore_index=True)
 \`\`\`
 
+**Beginner Breakdown — Common Extraction Sources**
+
+*Source 1: Reading from a Database*
+- \`parse_dates=["created_at"]\` — By default, pandas reads date columns as plain text (strings). This parameter tells pandas to automatically convert the \`created_at\` column into proper Python date objects, which allows you to do date math on them later.
+- \`date('now', '-1 day')\` inside the SQL — This is a SQLite built-in function that calculates yesterday's date. We use it in the WHERE clause so we only pull yesterday's new records, not the entire history of the table.
+
+*Source 2: Paginated API*
+- \`all_records = []\` — We start with an empty list. Think of this as an empty bucket we'll fill up page by page.
+- \`while True:\` — An infinite loop. We keep going until we explicitly \`break\` out of it. This is the standard pattern for pagination when you don't know how many pages there are upfront.
+- \`params={"page": page, "limit": 500}\` — These are URL query parameters. The final URL would look like: \`https://api.example.com/data?page=1&limit=500\`. Most APIs use this to let you request data in chunks.
+- \`headers={"Authorization": f"Bearer {api_key}"}\` — APIs often require authentication. We pass our API key in the request header. "Bearer" is a standard prefix for token-based authentication.
+- \`r.json().get("data", [])\` — \`r.json()\` parses the API response text into a Python dictionary. \`.get("data", [])\` safely retrieves the "data" key — if it doesn't exist (the API returned an unexpected format), it returns an empty list instead of crashing.
+- \`if not batch: break\` — If the API returns an empty list, we've hit the last page. We break out of the while loop.
+- \`all_records.extend(batch)\` — \`.extend()\` adds all items from \`batch\` into our \`all_records\` list one by one (unlike \`.append()\` which would add the whole list as a single nested item).
+
+*Source 3: Multiple CSV Files*
+- \`Path("incoming").glob("*.csv")\` — Find every file ending in \`.csv\` in the "incoming" folder.
+- \`frames.append(pd.read_csv(f, encoding="utf-8"))\` — Read each file into its own DataFrame and add it to our list. \`encoding="utf-8"\` ensures special characters (like ₦) are read correctly.
+- \`pd.concat(frames, ignore_index=True)\` — Stack all the DataFrames on top of each other into one big table. \`ignore_index=True\` resets the row numbers from 0 to the total count, instead of keeping the row numbers from each individual file (which would create duplicates like 0,1,2,0,1,2...).
+
 ### Incremental extraction: only pull what's new
 
 \`\`\`python
@@ -2780,6 +2854,16 @@ def incremental_extract(conn) -> pd.DataFrame:
     return df
 \`\`\`
 
+**Beginner Breakdown — Incremental Extraction with Watermarks**
+
+- \`WATERMARK_FILE = Path("watermark.json")\` — We declare the watermark file path as a module-level constant (written in CAPS by convention, meaning "this value doesn't change"). It's a simple JSON file on disk that remembers where we left off.
+- \`WATERMARK_FILE.exists()\` — Returns True or False: does this file exist on disk? On the very first run, it won't, so we return the earliest possible timestamp to pull all historical data.
+- \`"1970-01-01T00:00:00"\` — January 1st 1970 is the "Unix Epoch" — the origin point of time in computing. Using it as a default means "on first run, pull everything from the beginning of time."
+- \`json.loads(WATERMARK_FILE.read_text())["last_extracted"]\` — Read the file as text, parse the JSON text into a Python dictionary, then grab the \`"last_extracted"\` key. This gives us the timestamp string from our last run.
+- \`WATERMARK_FILE.write_text(json.dumps({...}))\` — \`json.dumps()\` converts a Python dictionary to a JSON string. \`.write_text()\` writes that string to the file, overwriting what was there before.
+- \`df["updated_at"].max()\` — \`.max()\` on a date column finds the most recent date in that column. This becomes our new watermark — next run we'll only fetch records newer than this.
+- \`.isoformat()\` — Converts the date object to a standard text string like \`"2024-01-15T14:30:00"\` that we can safely store in our JSON file.
+
 ### Schema validation: catch changes before they corrupt your pipeline
 
 \`\`\`python
@@ -2798,6 +2882,15 @@ def validate_schema(df: pd.DataFrame) -> None:
 
     print("Schema validation passed")
 \`\`\`
+
+**Beginner Breakdown — Schema Validation**
+
+- \`EXPECTED_COLUMNS = {...}\` — A Python set (curly braces with no key:value pairs). Sets are perfect for this because they have a fast "is this item in here?" check.
+- \`EXPECTED_COLUMNS - set(df.columns)\` — This is set subtraction: "what's in EXPECTED_COLUMNS that is NOT in the actual column list?" If the result is empty, all expected columns are present. If not, we've found the missing ones.
+- \`raise ValueError(...)\` — This intentionally crashes the pipeline with a clear, descriptive message. A deliberate crash is far better than silently processing data with missing columns and loading corrupt results to the warehouse.
+- \`EXPECTED_DTYPES.items()\` — Iterates over the dictionary as key-value pairs: \`("amount", "float64")\`, \`("status", "object")\`, etc.
+- \`str(df[col].dtype)\` — Gets the data type of a column as a string (e.g., \`"float64"\`, \`"int32"\`, \`"object"\`). In pandas, \`"object"\` is the dtype for text/string columns.
+- \`raise TypeError(...)\` — A specific error type for wrong data types. Using specific error classes makes automated error handling downstream much easier.
 
 ### Handling extraction errors gracefully
 
@@ -2820,7 +2913,16 @@ def extract_with_retry(query: str, conn_factory, max_attempts=3) -> pd.DataFrame
             if attempt == max_attempts:
                 raise
             time.sleep(30 * attempt)   # 30s, 60s, 90s
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — Retry Logic**
+
+- \`logging.getLogger(__name__)\` — Creates a logger named after the current Python file. This is the professional standard for logging in Python. It means log messages from this file are clearly labelled, and you can control their output level (info, warning, error) from one central place.
+- \`conn_factory\` — Instead of passing a connection directly, we pass a function that *creates* a connection. This is important for retries: if the connection itself failed, we need to create a fresh one on the next attempt, not reuse the broken one.
+- \`range(1, max_attempts + 1)\` — Generates \`[1, 2, 3]\`. Starting from 1 (not 0) makes the log messages more human-readable: "attempt 1 failed" instead of "attempt 0 failed."
+- \`try: ... except Exception as e:\` — The \`try\` block runs the code we hope works. If anything goes wrong (network error, database timeout, etc.), the \`except\` block catches the error and stores it in \`e\` so we can log the message.
+- \`if attempt == max_attempts: raise\` — On the final attempt, instead of swallowing the error, we re-raise it. This lets the error bubble up to the calling code, which can then decide how to handle a total failure.
+- \`time.sleep(30 * attempt)\` — Wait before retrying. Multiplying by attempt number gives us: 30 seconds, 60 seconds, 90 seconds. Waiting longer each time (backoff) gives the source system time to recover.`,
 
       'scenario': `## Scenario: The Locked Database
 
@@ -2840,6 +2942,11 @@ df = pd.read_sql(
 )
 \`\`\`
 
+**Beginner Breakdown — Incremental Fix**
+- \`WHERE id > :last_id\` — The \`:\` prefix makes \`last_id\` a named parameter (a placeholder). This is safer than using an f-string to build the SQL, because named parameters protect against SQL injection attacks.
+- \`params={"last_id": last_processed_id}\` — This dictionary provides the actual value for our \`:last_id\` placeholder. Pandas will safely substitute it into the query.
+- The key insight: if the last run processed ID 4,500,000, then this query only fetches rows with IDs above that — maybe 5,000 new rows instead of 50,000,000.
+
 **Fix 2 — Use a read replica:**
 Most production databases have a replica server that mirrors the primary but handles read traffic. Point your extract at the replica so your full-table scan never touches the production system.
 
@@ -2856,7 +2963,12 @@ def is_peak_hour() -> bool:
 if is_peak_hour():
     logger.warning("Skipping extract during peak hours — will retry at 2 AM")
     sys.exit(0)
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — Peak Hour Guard**
+- \`datetime.now().hour\` — Gets the current hour as an integer (0–23). So 2 PM is 14, and midnight is 0.
+- \`8 <= hour <= 22\` — Python allows chained comparisons like this. It means "is the hour between 8 and 22 inclusive?" This is equivalent to \`hour >= 8 and hour <= 22\` but reads more naturally.
+- \`sys.exit(0)\` — Exits the Python script immediately. The \`0\` is an exit code meaning "I exited on purpose, no error." Exit code \`1\` would signal an error. This tells any external scheduler that the script ended cleanly, just chose not to run.`,
 
       'quizzes': [
         {
@@ -2948,6 +3060,31 @@ df = df.drop_duplicates(subset=["transaction_id"])
 print(f"Removed {before - len(df)} duplicate transaction IDs")
 \`\`\`
 
+**Beginner Breakdown — The Standard Cleaning Checklist**
+
+*Step 1: Understand what you have before changing anything*
+- \`df.shape\` — Returns a tuple like \`(10000, 12)\` meaning 10,000 rows and 12 columns. Always check this first so you know your starting point.
+- \`df.dtypes\` — Shows the data type of each column (e.g., \`float64\`, \`object\`, \`int64\`). This quickly reveals problems like an "amount" column that pandas read as text instead of numbers.
+- \`df.isnull().sum()\` — For each column, counts how many values are missing (NULL/NaN). This tells you which columns have data quality problems and how severe they are.
+- \`df.duplicated().sum()\` — Counts the total number of rows that are exact duplicates of another row. A high number here suggests a data extraction issue (the same data was fetched twice).
+
+*Step 2: Fix column names*
+- \`df.columns.str.lower().str.replace(" ", "_").str.strip()\` — This is a chain of string operations applied to all column names at once. \`.str.lower()\` makes everything lowercase. \`.str.replace(" ", "_")\` turns spaces into underscores (so "Transaction ID" becomes "transaction_id"). \`.str.strip()\` removes invisible whitespace. This standardization means you'll always write \`df["transaction_id"]\` instead of having to remember if it was "Transaction ID" or "TRANSACTION_ID" or "TransactionID."
+
+*Step 3: Fix data types*
+- \`pd.to_numeric(df["amount"], errors="coerce")\` — Tries to convert every value in the "amount" column to a number. \`errors="coerce"\` means "if a value can't be converted (like '₦50,000'), replace it with NaN instead of crashing." You can then handle those NaN values deliberately.
+- \`pd.to_datetime(..., errors="coerce")\` — Same concept for dates. Converts text like "2024-01-15" to a real date object, and converts unparseable values to NaT (Not a Time — the date equivalent of NaN).
+
+*Step 4: Standardize strings*
+- \`str.title()\` — Capitalizes the first letter of each word. "lagos island" becomes "Lagos Island." This is useful for branch names or city names that came in with inconsistent capitalization.
+
+*Step 5: Handle nulls with intention*
+- The key word is "intention" — you make a conscious decision for each column. Required fields (\`amount\`, \`transaction_id\`) get \`dropna\` — a transaction without an amount is unusable. Optional fields (\`notes\`) get \`fillna("")\` — an empty string is a valid "no notes." Numeric optional fields (\`fee\`) get \`fillna(0.0)\` — a missing fee means no fee was charged.
+
+*Step 6: Remove duplicates*
+- \`before = len(df)\` — We save the row count before deduplication so we can report how many were removed. This creates an audit trail.
+- \`subset=["transaction_id"]\` — Only consider the \`transaction_id\` column when identifying duplicates. Two rows are duplicates if they have the same ID, even if other columns differ.
+
 ### Applying business rules as transformations
 
 \`\`\`python
@@ -2975,6 +3112,14 @@ df["flagged"] = (
 )
 \`\`\`
 
+**Beginner Breakdown — Business Rules as Code**
+
+- \`1_000_000\` — Python allows underscores in numbers for readability. \`1_000_000\` is exactly the same as \`1000000\` — it just looks cleaner to human eyes.
+- \`df["amount"].apply(categorize_size)\` — \`apply\` passes each individual value in the "amount" column through the \`categorize_size\` function and collects the returned strings into a new column. It's like dragging a formula down in Excel but in code.
+- \`FEE_RATE = 0.015\` — Writing the fee rate as a named constant at the top means if the rate ever changes, you change it in one place. If you had \`0.015\` scattered throughout your code, you'd have to find and change every occurrence and risk missing one.
+- \`round(r["amount"] * FEE_RATE, 2)\` — \`round(..., 2)\` rounds to 2 decimal places, which is essential for currency calculations. Without this, floating-point math might give you \`₦750.0000000001\` instead of \`₦750.00\`.
+- \`df["flagged"] = (df["amount"] > 500_000) & (df["transaction_date"].dt.hour < 5)\` — Creates a column of True/False values. \`&\` is the "AND" operator for pandas (not the regular Python \`and\`). \`.dt.hour\` extracts just the hour from a datetime column. This flags transactions over ₦500,000 that happened between midnight and 5 AM — suspicious, but not deleted. Flagging preserves the data while marking it for review.
+
 ### Currency and format normalization
 
 \`\`\`python
@@ -2997,6 +3142,14 @@ def clean_currency(val) -> float:
 df["amount"] = df["raw_amount"].apply(clean_currency)
 \`\`\`
 
+**Beginner Breakdown — Currency Cleaning**
+
+- \`pd.isnull(val)\` — Checks if the value is NaN or None. We return \`np.nan\` (Not a Number) early because we can't clean what doesn't exist.
+- \`str(val).strip()\` — Convert the value to a string first (it might be a number, a float, or already a string). \`.strip()\` removes surrounding whitespace.
+- \`for ch in [...]: s = s.replace(ch, "")\` — Loop through each "dirty" character and remove it from the string. After this loop, "₦1,250,000.00" becomes "1250000.00".
+- \`if s.count(".") > 1:\` — European number formatting uses periods as thousands separators and commas as decimals: "1.250.000,00" means 1,250,000.00. If there's more than one period, we know it's European format. We remove the periods (thousands separators) and convert the comma to a period (decimal point).
+- \`try: return float(s) except ValueError: return np.nan\` — After all the cleaning, we try to convert to a float. If it still fails (maybe the original was total garbage like "N/A"), we return NaN rather than crashing.
+
 ### Asserting data quality after transformation
 
 \`\`\`python
@@ -3012,7 +3165,15 @@ def assert_quality(df: pd.DataFrame, source_count: int) -> None:
     assert df["transaction_id"].nunique() == len(df), \
         "Duplicate transaction IDs after deduplication"
     print(f"Quality checks passed: {len(df)} rows")
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — Quality Assertions**
+
+- \`assert condition, "error message"\` — Python's built-in testing tool. If the condition is False, it immediately raises an \`AssertionError\` with the message you provided. This intentionally stops the pipeline and tells you exactly what went wrong.
+- \`source_count * 0.95\` — We allow up to 5% of rows to be dropped (for cleaning). If more than 5% disappeared, something is likely wrong with the transform logic. This threshold encodes a business decision: "we don't expect to lose more than 5% of our transactions to cleaning."
+- \`df["amount"].isnull().sum() == 0\` — After cleaning, there should be zero null amounts (we either filled them or dropped those rows). This assertion verifies our earlier \`dropna\` actually worked.
+- \`(df["amount"] >= 0).all()\` — \`(df["amount"] >= 0)\` returns a Series of True/False for each row. \`.all()\` returns True only if every value is True. If any amount is negative, this fails — which likely means a refund wasn't handled correctly.
+- \`df["transaction_id"].nunique() == len(df)\` — \`nunique()\` counts distinct values. If every transaction ID is unique, this count equals the total row count. If they're not equal, we still have duplicates.`,
 
       'scenario': `## Scenario: The Duplicate Customer Disaster
 
@@ -3044,6 +3205,16 @@ removed = df[~df["customer_id"].isin(df_clean["customer_id"])]
 removed.to_csv("dedup_audit_log.csv", index=False)
 print(f"Audit log: {len(removed)} duplicate records archived")
 \`\`\`
+
+**Beginner Breakdown — Deduplication Scenario**
+
+- \`df.duplicated(subset=["email"], keep=False)\` — \`keep=False\` marks ALL rows that are part of a duplicate group, not just the extras. This lets you see the full extent of the problem. For example, if an email appears 3 times, all 3 rows get marked True.
+- \`df[df.duplicated(...)]\` — Square brackets with a True/False condition filter the DataFrame to only show rows where the condition is True. This shows you only the duplicated rows.
+- \`df.sort_values("created_at")\` — Sorts the entire DataFrame by the \`created_at\` column in ascending order (oldest first). This ensures that when we keep "first," we're keeping the original registration.
+- \`.drop_duplicates(subset=["email"], keep="first")\` — After sorting, "first" now means "earliest registration date." We keep that one and drop all later duplicates.
+- \`.reset_index(drop=True)\` — After dropping rows, the row numbers (index) have gaps (e.g., 0, 1, 5, 7...). \`reset_index(drop=True)\` renumbers them cleanly from 0. \`drop=True\` prevents the old index from being saved as a column.
+- \`~df["customer_id"].isin(df_clean["customer_id"])\` — The \`~\` is the NOT operator in pandas. \`.isin()\` returns True for rows whose customer_id exists in the clean list. So \`~.isin()\` returns True for rows that were REMOVED (the duplicates). This gives us our audit trail.
+- \`removed.to_csv("dedup_audit_log.csv", index=False)\` — Saves the removed rows to a CSV file. This is your paper trail: you can always show exactly which records were considered duplicates and why.
 
 The audit log matters: you're not deleting data, you're archiving it with justification. This is how you defend your transformation logic if an auditor asks "where did those 2,600 customers go?"`,
 
@@ -3142,6 +3313,18 @@ def upsert_load(df: pd.DataFrame, table: str, key_col: str, conn):
     print(f"Upserted {len(df)} rows into {table}")
 \`\`\`
 
+**Beginner Breakdown — Load Strategies**
+
+- \`if_exists="append"\` — Adds new rows to the bottom of the table. The existing data is untouched. Safe for event-style data (logs, transactions) where each record is new.
+- \`if_exists="replace"\` — Drops the entire existing table and creates a fresh one with your data. Fast and simple, but there's a dangerous moment where the table is empty.
+- *Upsert function explained step by step:*
+  - \`cursor = conn.cursor()\` — A cursor is like a pen for writing to the database. While \`conn\` is the connection (the open book), \`cursor\` is what you use to actually write.
+  - \`for _, row in df.iterrows():\` — Iterates through the DataFrame row by row. The \`_\` is a Python convention for "I don't care about this value" (it's the row index number, which we don't need).
+  - \`", ".join(["?"] * len(row))\` — Creates a string of question marks separated by commas, like \`"?, ?, ?, ?"\`. The \`?\` symbols are SQLite's way of saying "value goes here." \`["?"] * len(row)\` creates a list with one "?" per column.
+  - \`"INSERT OR REPLACE INTO ...\` — SQLite-specific syntax. If a row with this primary key already exists, replace it entirely. If not, insert a new row. This is the upsert behavior in one SQL command.
+  - \`tuple(row)\` — Converts the pandas row (a Series object) into a plain Python tuple of values, which is the format SQLite expects for the placeholders.
+  - \`conn.commit()\` — Saves all the changes to disk. Without this, your changes exist only in memory and are lost when the connection closes. Think of it like pressing "Save" in a document.
+
 ### When to use each strategy
 
 | Strategy | Use When | Risk |
@@ -3171,6 +3354,13 @@ def validate_load(df_sent: pd.DataFrame, table: str, conn, date_col: str, date_v
     print(f"Load validated: {expected_count} rows, ₦{expected_total:,.2f} total")
 \`\`\`
 
+**Beginner Breakdown — Post-Load Validation**
+
+- \`SELECT COUNT(*) as n, SUM(amount) as total\` — In one query we get both the row count AND the total amount from the warehouse for that specific date. This is our ground truth — what actually made it in.
+- \`pd.read_sql(query, conn).iloc[0]\` — Runs the query and gets the first (only) row of results as a pandas Series. We can then access values by column name: \`result["n"]\` and \`result["total"]\`.
+- \`abs(result["total"] - expected_total) > 0.01\` — \`abs()\` gives the absolute value (removes the negative sign). We allow a tiny tolerance of ₦0.01 for floating-point arithmetic rounding differences. Without this tolerance, a result of "₦500,000.000000001" would incorrectly fail the check.
+- \`f"₦{expected_total:,.2f}"\` — The \`,.2f\` format code formats a number with comma separators and 2 decimal places. So \`500000.5\` becomes \`"500,000.50"\`. The leading \`₦\` adds the currency symbol.
+
 ### Separation of production from analytics
 
 \`\`\`python
@@ -3187,7 +3377,13 @@ def run_etl():
     clean = transform(raw)
     clean.to_sql("clean_transactions", create_engine(WAREHOUSE_DB),
                  if_exists="append", index=False)
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — Separation of Concerns**
+
+- \`"postgresql://user:pass@prod-server/appdb"\` — This is a database connection string (also called a DSN or URI). The format is: \`protocol://username:password@hostname/database_name\`. Never hardcode real passwords like this in production — use environment variables instead.
+- \`create_engine(PROD_DB)\` — From the SQLAlchemy library, this creates a connection engine for the given database URL. \`pd.read_sql\` and \`df.to_sql\` both work with SQLAlchemy engines, which support all major databases (PostgreSQL, MySQL, etc.) with the same API.
+- The architecture principle here: ETL reads from one server (production) and writes to another (warehouse). These are physically separate machines. If your analytics query takes 10 minutes to run, it only slows down the warehouse server — the customer-facing app is completely unaffected.`,
 
       'scenario': `## Scenario: The "App is Slow" Complaint
 
@@ -3238,7 +3434,15 @@ def nightly_etl():
         )
     warehouse.commit()
     warehouse.close()
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — Building a Separate Warehouse**
+
+- \`CREATE TABLE IF NOT EXISTS\` — Creates the table only if it doesn't already exist. This makes the code safe to run multiple times (idempotent). On the first run, it creates the table. On subsequent runs, it does nothing.
+- \`transaction_id TEXT PRIMARY KEY\` — \`PRIMARY KEY\` marks this column as the unique identifier for each row. No two rows can have the same \`transaction_id\`. SQLite uses this for the "INSERT OR REPLACE" logic — it finds matching primary keys when deciding whether to insert or replace.
+- \`REAL\` — SQLite's data type for decimal numbers (equivalent to Python's \`float\`). Using the right types ensures numbers are stored as numbers, not text.
+- \`pd.Timestamp.now().isoformat()\` — Gets the current date and time and converts it to a standard string like \`"2024-01-15T22:00:01.234567"\`. The \`loaded_at\` column gives us a complete audit trail of exactly when each batch of data was loaded.
+- \`row[["transaction_id","branch",...]]\` — Explicitly selecting columns in a specific order ensures they match the order in our SQL INSERT statement. This prevents a bug where columns get shuffled and amounts land in the wrong fields.`,
 
       'quizzes': [
         {
@@ -3313,6 +3517,13 @@ def retry(func, max_attempts=3, base_delay=10):
 raw_data = retry(lambda: fetch_from_api(url))
 \`\`\`
 
+**Beginner Breakdown — Retry with Exponential Backoff**
+
+- \`def retry(func, max_attempts=3, base_delay=10)\` — We pass a function as an argument (\`func\`). This is a powerful Python pattern: the retry logic doesn't need to know what it's retrying — it just calls whatever function you give it.
+- \`except (ConnectionError, TimeoutError, OSError) as e:\` — We specifically catch network-related errors. We don't catch ALL exceptions (\`except Exception\`) because some errors (like a bug in our code) shouldn't trigger a retry — they should fail immediately.
+- \`2 ** (attempt - 1)\` — \`**\` is Python's exponent operator. So: attempt 1: \`2^0 = 1\` → wait 10s. Attempt 2: \`2^1 = 2\` → wait 20s. Attempt 3: \`2^2 = 4\` → wait 40s. Each failure doubles the wait time.
+- \`lambda: fetch_from_api(url)\` — A \`lambda\` with no arguments creates a "zero-argument function." We wrap \`fetch_from_api(url)\` in a lambda because \`retry\` expects a callable (something it can call with \`func()\`). The lambda delays the actual call until \`retry\` decides it's time to try.
+
 ### Checkpointing: resume from where you stopped
 
 \`\`\`python
@@ -3342,6 +3553,14 @@ def process_files(files: list):
     logger.info("All files processed")
 \`\`\`
 
+**Beginner Breakdown — Checkpointing**
+
+- \`checkpoint.get("last_processed_index", 0)\` — \`.get(key, default)\` on a dictionary returns the value for the key if it exists, or the default value if not. On the first run, no checkpoint exists, so \`load_checkpoint()\` returns \`{}\` (empty dict), and \`.get\` returns \`0\` — we start from the beginning.
+- \`files[start_from:]\` — Python list slicing. If \`start_from\` is 280, this gives us only items from index 280 onwards, skipping the first 280 files that were already processed.
+- \`enumerate(files[start_from:], start=start_from)\` — \`enumerate\` adds a counter to each item. The \`start=start_from\` parameter makes the counter start at 280 instead of 0, so our log messages say "Processing file 281/365" instead of "Processing file 1/85."
+- \`save_checkpoint({"last_processed_index": i + 1, ...})\` — We save \`i + 1\` (the NEXT index to process) so that if we crash mid-file, we restart at that file, not the one after it.
+- \`CHECKPOINT.unlink(missing_ok=True)\` — Deletes the checkpoint file when all files are done. \`missing_ok=True\` prevents an error if the file was already deleted. Cleaning up prevents old checkpoints from confusing future runs.
+
 ### Alerting when things go wrong
 
 \`\`\`python
@@ -3363,7 +3582,16 @@ def run_pipeline_with_alerts():
     except Exception as e:
         send_slack_alert(f"🚨 PIPELINE FAILED\\n{type(e).__name__}: {e}", webhook)
         raise
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — Alerting**
+
+- \`import requests as req\` — We alias \`requests\` as \`req\` here to avoid a naming conflict (since we imported \`requests\` earlier in the lesson under a different context).
+- \`req.post(webhook_url, json={"text": message})\` — Sends an HTTP POST request to Slack's webhook URL. The \`json=\` parameter automatically converts the Python dictionary to JSON and sets the right content-type headers.
+- \`except Exception: pass\` — We intentionally swallow all errors from the alert call. If Slack is down or our webhook expires, we don't want that to crash the pipeline. The \`pass\` statement does nothing — it's Python's way of having an empty code block.
+- \`os.environ["SLACK_WEBHOOK"]\` — Reads the webhook URL from an environment variable. This is the correct way to handle secrets — never hardcode URLs or passwords in your source code.
+- \`type(e).__name__\` — Gets the class name of the exception as a string. So \`ConnectionError\` becomes \`"ConnectionError"\`, making the alert message much clearer than just showing the error message alone.
+- The final \`raise\` after the alert — We re-raise the exception so the pipeline still fails (and any external scheduler can see it failed). We just made sure the team was notified first.`,
 
       'scenario': `## Scenario: The Midnight Crash
 
@@ -3394,6 +3622,13 @@ if errors:
 else:
     logger.info("All files processed cleanly")
 \`\`\`
+
+**Beginner Breakdown — Fault-Tolerant File Processing**
+
+- \`errors = []\` — We collect error messages in a list rather than sending an alert for every single bad file. This prevents "alert storms" where you get 50 Slack messages at 3 AM for 50 bad files.
+- \`try: ... except Exception as e:\` — The try/except is now inside the loop. This means a single bad file is caught, logged, and skipped — but the loop continues to the next file. Without this structure, one bad file would crash the entire pipeline.
+- \`errors.append(msg)\` — We collect all error messages. At the end, if there were any errors, we send ONE combined alert with all the skipped files listed. This is much more useful than 50 separate alerts.
+- \`"\\n".join(errors)\` — Joins the list of error messages into a single string with newlines between them, creating a readable list in the Slack message.
 
 This approach is called "fault tolerance" — the pipeline keeps moving even when individual inputs are bad, and it reports exactly what it skipped and why.`,
 
@@ -3449,6 +3684,11 @@ def full_load(source_conn, dest_conn, table: str):
     print(f"Full load: {len(df)} rows")
 \`\`\`
 
+**Beginner Breakdown — Full Load**
+
+- \`f"SELECT * FROM {table}"\` — An f-string lets us dynamically build the SQL query using the \`table\` variable. If \`table = "customers"\`, the query becomes \`"SELECT * FROM customers"\`. This makes the function reusable for any table.
+- \`if_exists="replace"\` — Drops the entire destination table and rebuilds it from scratch with the new data. For a 100-row product catalog, this is fine. For a 100M-row transactions table, this would take hours.
+
 **When full load makes sense:**
 - Small reference tables (currencies, countries, product categories)
 - Tables that change completely (daily snapshots)
@@ -3490,6 +3730,13 @@ def incremental_load(source_conn, dest_conn, table: str, ts_col: str):
     return len(new_rows)
 \`\`\`
 
+**Beginner Breakdown — Incremental Load**
+
+- \`SELECT MAX({ts_col}) as last_ts\` — \`MAX()\` is a SQL aggregate function that returns the largest value in a column. For timestamps, this means the most recent date. We use this to find our watermark: "what's the newest record already in the warehouse?"
+- \`result or "1970-01-01"\` — Python's "or" operator returns the first truthy value. If \`result\` is \`None\` (the table is empty or doesn't exist yet), it falls back to the Unix epoch date. This handles the "first ever run" case gracefully.
+- \`if new_rows.empty:\` — Pandas DataFrames have an \`.empty\` property that returns True if there are no rows. Checking this before attempting to load saves a database call when there's nothing to do.
+- \`f"Loaded {len(new_rows)} new rows (watermark: {last_ts} → {new_rows[ts_col].max()})"\` — The arrow \`→\` visually shows the watermark advancing forward. In logs, this makes it immediately obvious that progress is being made.
+
 ### The duplicate problem with incremental loads
 
 \`\`\`python
@@ -3510,6 +3757,14 @@ def idempotent_incremental_load(df: pd.DataFrame, table: str, key_col: str, conn
         conn.execute(f"UPDATE {table} SET {cols} WHERE {key_col} = ?", values)
     conn.commit()
 \`\`\`
+
+**Beginner Breakdown — Idempotent Upsert**
+
+- \`pd.read_sql(f"SELECT {key_col} FROM {table}", conn)[key_col].tolist()\` — We fetch only the key column (not all columns — that would be wasteful). \`[key_col]\` selects just that column, and \`.tolist()\` converts the pandas Series to a plain Python list for fast lookup.
+- \`df[~df[key_col].isin(existing_keys)]\` — Rows in our new data that do NOT have a matching key in the warehouse = brand new records to insert.
+- \`df[df[key_col].isin(existing_keys)]\` — Rows that DO have a matching key = records that already exist and need updating.
+- \`[f"{c} = ?" for c in row.index if c != key_col]\` — A list comprehension that builds SQL SET clauses. For a row with columns \`name\`, \`status\`, \`amount\` and a key of \`id\`, this produces: \`["name = ?", "status = ?", "amount = ?"]\`.
+- \`values = [...] + [row[key_col]]\` — We build the list of values for the UPDATE statement. The key column goes last because the SQL is: \`UPDATE table SET col=? WHERE key=?\` — the WHERE value comes at the end.
 
 ### Choosing the right strategy
 
@@ -3545,6 +3800,13 @@ df = pd.read_sql(
 df.to_sql("transactions", warehouse_conn, if_exists="append")
 save_watermark(df["updated_at"].max())
 \`\`\`
+
+**Beginner Breakdown — The Cost Fix**
+
+- The before code reads the entire 180M-row table into Python memory, then overwrites the entire warehouse table. Cloud providers charge by data processed — 180M rows × 6 months of growth = an ever-growing bill.
+- The after code reads only rows updated since the last run (using the \`:last_ts\` watermark). On a typical day, maybe 50,000 transactions are new or updated. That's 3,600x fewer rows.
+- \`df["updated_at"].max()\` — After loading, we immediately update our watermark to the newest timestamp in this batch, so next run knows where to start.
+- The cost math: if processing 180M rows costs ₦45,000, then processing 50,000 rows (0.028% of the data) costs roughly ₦1,200. Same result, 37x cheaper.
 
 **Expected results:**
 - Query time: 3 hours → 4 minutes
@@ -3616,6 +3878,12 @@ def run_etl(source_conn, warehouse_conn):
     raw.to_sql("clean_orders", warehouse_conn, if_exists="append")
 \`\`\`
 
+**Beginner Breakdown — Traditional ETL Flow**
+
+- In this pattern, every transformation happens in Python before a single row touches the warehouse. \`pd.to_numeric\`, \`dropna\`, and the \`revenue_usd\` calculation all run on your Python server.
+- \`raw["amount"] / exchange_rate\` — A simple column division. Every value in the "amount" column is divided by the exchange rate to produce a USD column. Pandas applies this to all rows simultaneously (vectorized), which is much faster than a Python loop.
+- The warehouse only ever receives clean, validated data. It never sees the raw mess. This is ETL's strength — and its limitation: the transform logic is hardcoded in Python, so if you need to add a new column later, you must re-run the entire pipeline from source.
+
 **ETL is right when:**
 - Data contains PII (credit cards, SSNs) that must be masked before leaving the secure environment
 - The target warehouse is expensive per GB stored — don't load raw junk
@@ -3638,6 +3906,12 @@ def run_elt_extract_and_load(source_conn, warehouse_conn):
     print(f"Loaded {len(raw)} raw rows")
 \`\`\`
 
+**Beginner Breakdown — ELT Raw Load**
+
+- \`raw["_loaded_at"]\` and \`raw["_source"]\` — The underscore prefix (\`_\`) is a naming convention for metadata columns that were added by the pipeline, not from the original source. This distinguishes them from business columns.
+- Notice what's NOT here: no \`dropna\`, no type conversion, no business rules. We load the data exactly as it came from the source. If it's messy, it goes in messy.
+- \`"raw__orders"\` — The double underscore in the table name is an ELT convention indicating this is the raw layer. It signals to any analyst querying the warehouse: "this table is unprocessed, use the clean view instead."
+
 \`\`\`sql
 -- ELT Step 2: transform inside the warehouse using SQL (or dbt)
 CREATE VIEW clean_orders AS
@@ -3649,6 +3923,14 @@ SELECT
 FROM raw__orders
 WHERE amount IS NOT NULL AND amount > 0;
 \`\`\`
+
+**Beginner Breakdown — ELT SQL Transform**
+
+- \`CREATE VIEW\` — A View is not a table. It's a saved SQL query. Every time someone queries \`clean_orders\`, the database runs this SQL against the raw table in real time. This means the "transformation" always uses the latest logic.
+- \`CAST(amount AS FLOAT)\` — SQL's equivalent of Python's \`pd.to_numeric()\`. Converts the stored text to a number inside the database.
+- \`LOWER(TRIM(status))\` — SQL has the same string functions as pandas. \`LOWER\` = lowercase. \`TRIM\` = remove whitespace. These run inside the database.
+- The subquery \`(SELECT rate FROM exchange_rates ... LIMIT 1)\` — This fetches the latest exchange rate dynamically every time the view is queried. No hardcoded rate, no stale values.
+- The power of ELT: if the business changes the definition of "valid amount" from \`> 0\` to \`> 100\`, you just edit this SQL. No Python pipeline to re-run, no re-extraction from source.
 
 ### Why ELT won
 
@@ -3670,7 +3952,13 @@ WHERE amount IS NOT NULL AND amount > 0;
 
 # ELT SQL addition (no re-extraction needed):
 # SELECT ..., ip_address FROM raw__orders WHERE ...
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — Raw Data as an Asset**
+
+- This code block is deliberately minimal because the point is conceptual. In ETL, you decided upfront what to keep — and if you were wrong, you've lost that data permanently (or must go back to the source).
+- In ELT, the decision of what columns to expose is deferred to the SQL transform layer, which you can update at any time against the raw data that's already in the warehouse.
+- The practical lesson: when in doubt, load more columns than you think you need. Storage is cheap. Re-extraction is expensive.`,
 
       'scenario': `## Scenario: The "Oops, We Forgot a Column" Problem
 
@@ -3699,6 +3987,13 @@ analysis = pd.read_sql("""
 """, warehouse_conn)
 print(analysis)
 \`\`\`
+
+**Beginner Breakdown — Answering New Questions from Existing Raw Data**
+
+- \`df["_pipeline_version"] = "1.0"\` — Versioning your pipeline load is good practice. If you later update the pipeline logic, rows loaded under different versions can be distinguished for debugging.
+- \`AVG(amount)\` — A SQL aggregate function that calculates the average of the amount column per group. Combined with \`GROUP BY device_type\`, it gives us the average transaction value for mobile vs desktop users — exactly what the product team wanted.
+- \`WHERE device_type IS NOT NULL\` — Excludes rows where the device type wasn't recorded. This is a much cleaner filter than "delete those rows" — the rows remain in the raw table for any future analysis.
+- \`GROUP BY device_type\` — SQL's equivalent of a pivot table. It collapses all rows with the same \`device_type\` into one row, and the aggregate functions (\`COUNT\`, \`AVG\`, \`SUM\`) summarize them.
 
 The ELT philosophy is: **you don't know what questions you'll be asked in 6 months, so keep the raw data and build answers with SQL.**`,
 
@@ -3794,6 +4089,14 @@ def run_eod_pipeline(business_date: date):
     print(f"EOD complete: {len(all_postings)} postings, balanced ✓")
 \`\`\`
 
+**Beginner Breakdown — Banking EOD Pipeline**
+
+- \`pd.concat([transactions, interest, standing_orders])\` — Stacks three separate DataFrames into one. Think of it as taking three piles of paper (transactions, interest calculations, and scheduled payments) and combining them into a single stack of all journal entries.
+- \`all_postings[all_postings["entry_type"] == "DR"]["amount"].sum()\` — A two-step filter. First, \`all_postings["entry_type"] == "DR"\` creates a True/False mask for all debit rows. Then \`["amount"].sum()\` adds up the amounts of only those rows. This gives us the total debits for the day.
+- \`abs(debits - credits) > 0.001\` — We use a small threshold (₦0.001 = 10 kobo) rather than checking for exact equality, because floating-point arithmetic can introduce microscopic rounding differences that are not real errors.
+- \`raise ValueError(f"EOD FAILED: Out of balance by ₦{abs(debits-credits):,.2f}")\` — This is a hard stop. In banking, an unbalanced ledger means the numbers are wrong. The pipeline must not continue. The error message shows exactly how much it's off by.
+- The double-entry principle: for every debit, there must be a matching credit. If a customer's account is debited ₦10,000 for a bill payment, the biller's account (or a suspense account) must be credited ₦10,000. Total debits always equal total credits. This is 500 years of accounting logic encoded in one if-statement.
+
 ### Reconciliation: the most important transform in banking
 
 Reconciliation compares two independent records of the same events and flags differences.
@@ -3826,6 +4129,15 @@ def reconcile_nibss(internal_df: pd.DataFrame, nibss_df: pd.DataFrame) -> dict:
     }
 \`\`\`
 
+**Beginner Breakdown — NIBSS Reconciliation**
+
+- \`.set_index("reference_no")\` — Makes the reference number the row label (index) instead of a regular column. When we join the two DataFrames, pandas automatically matches rows by this index — so internal transaction REF001 will be joined with NIBSS transaction REF001.
+- \`[["amount", "status"]]\` — Double brackets select only these two columns. We don't need all the other columns for reconciliation — just the amounts and statuses that we're comparing.
+- \`.join(..., how="outer")\` — An outer join includes ALL rows from both DataFrames, even if they have no match on the other side. This is essential for finding transactions that exist in only one system (our internal records vs NIBSS). A missing row on one side is a discrepancy.
+- \`lsuffix="_internal", rsuffix="_nibss"\` — When both DataFrames have a column called "amount," pandas needs to rename them to avoid a collision. After the join, we'll have "amount_internal" and "amount_nibss" — clearly distinguishable.
+- \`merged[merged["amount_nibss"].isnull()]\` — Rows where the NIBSS amount is null after an outer join means this transaction exists in our system but not in NIBSS. That's a potential missing settlement.
+- Returning a dictionary instead of a DataFrame allows the caller to access specific categories of discrepancies by name: \`result["internal_only"]\`, \`result["total_discrepancy"]\`, etc.
+
 ### KYC (Know Your Customer) data pipeline
 
 \`\`\`python
@@ -3846,11 +4158,19 @@ def kyc_compliance_check(customers_df: pd.DataFrame) -> pd.DataFrame:
     customers_df.loc[expiring_mask, "kyc_status"] = "expiring_soon"
 
     # High-value accounts (Tier 3) with missing documents
-    missing_docs = customers_df["account_tier"] == 3) & customers_df["bvn"].isnull()
+    missing_docs = (customers_df["account_tier"] == 3) & customers_df["bvn"].isnull()
     customers_df.loc[missing_docs, "kyc_status"] = "incomplete"
 
     return customers_df
-\`\`\``,
+\`\`\`
+
+**Beginner Breakdown — KYC Compliance Pipeline**
+
+- \`pd.DateOffset(years=1)\` — A pandas tool for date arithmetic. Adding \`DateOffset(years=1)\` to a date gives you exactly one year later, correctly handling leap years and month-end edge cases.
+- \`customers_df["kyc_status"] = "valid"\` — We set a default of "valid" for all rows first. Then we selectively override specific rows. This "set default, then override" pattern is cleaner than writing nested if/else conditions.
+- \`customers_df.loc[expired_mask, "kyc_status"] = "expired"\` — \`.loc\` is pandas' label-based row and column selector. \`[expired_mask, "kyc_status"]\` means "for all rows where \`expired_mask\` is True, set the \`kyc_status\` column." This only modifies the rows that match — all other rows keep their current value.
+- \`pd.DateOffset(days=30)\` — 30 days from today. Accounts expiring within this window get flagged proactively so the bank can contact customers before their KYC actually expires.
+- \`customers_df["bvn"].isnull()\` — BVN is Bank Verification Number, Nigeria's national bank identity system. A Tier 3 (high-value) account without a BVN is a serious compliance gap. This line identifies those accounts.`,
 
       'scenario': `## Scenario: The Failed ATM Settlement
 
@@ -3875,6 +4195,12 @@ print(f"Total discrepancy: ₦{recon['total_discrepancy']:,.2f}")
 # Save the discrepancy report for the refunds team
 recon["internal_only"].to_csv("discrepancy_report.csv", index=False)
 \`\`\`
+
+**Beginner Breakdown — ATM Settlement Investigation**
+
+- \`recon['internal_only']['amount_internal'].sum()\` — We access the "internal_only" DataFrame from our results dictionary, select the "amount_internal" column, and sum it. This gives us the total money that's in our records but missing from NIBSS — our ₦23.7M discrepancy.
+- \`{value:,.0f}\` — The format code \`,.0f\` means: use comma separators, and 0 decimal places. So \`23700000\` prints as \`"23,700,000"\` — far more readable.
+- \`recon["internal_only"].to_csv("discrepancy_report.csv")\` — Saves the problematic records to a CSV for the settlement team to investigate. Each row in this file is a transaction that needs to be re-submitted to NIBSS or manually reversed.
 
 **Finding:** 847 ATM transactions appear in the internal system but not in NIBSS. These are transactions where cash was dispensed but the network response timed out before NIBSS confirmed it. The ₦23.7M represents those transactions. They need to be re-submitted to NIBSS or manually reversed. Your pipeline identified them in 3 seconds.`,
 
@@ -3957,7 +4283,7 @@ conn.close()
 - \`import sqlite3, pandas as pd\`: We bring in two helpful tools. \`sqlite3\` lets Python talk to our database file, and \`pandas\` (nicknamed \`pd\`) is a powerful tool for working with data tables.
 - \`conn = sqlite3.connect(...)\`: We are opening a direct connection (like opening a book) to our music store database file.
 - \`tables = [...]\`: We make a list of all the different tables inside the database that we want to extract information from.
-- \`data = {...}\`: This line loops through our list of tables. For every table, it runs a simple SQL command (\`SELECT * FROM table_name\`) to grab all the data and saves it in our computer's memory using pandas.
+- \`data = {t: pd.read_sql(f"SELECT * FROM {t}", conn) for t in tables}\`: This is a "dictionary comprehension" — a compact way to build a dictionary by looping. For each table name \`t\` in our list, it runs a SQL query and stores the result with the table name as the key. After this line, \`data["Customer"]\` gives you the full customer table as a DataFrame, \`data["Invoice"]\` gives you invoices, and so on.
 - \`conn.close()\`: Just like closing a book when you're done reading, we close the database connection to free up the computer's resources.
 
 **2. Transform — join and validate:**
@@ -3981,7 +4307,7 @@ Here, we are bringing all the scattered data together into one big master table 
 - \`.merge(data["Invoice"][["InvoiceId"...]], on="InvoiceId")\`: We attach the main \`Invoice\` details to our lines, linking them using the common \`InvoiceId\` column. Notice the double brackets \`[[...]]\`: we are choosing to only select the specific columns we actually need (like CustomerId and Date) to keep our master table clean and save memory.
 - \`how="left"\`: When joining tables like Genre, Album, or Artist, we use a "left join" (\`how="left"\`). This ensures that even if a song somehow doesn't have an artist recorded in the system, we *still keep the sale record*. If we used a regular join, sales missing an artist would disappear, and our total revenue would be wrong!
 - \`.rename(columns={"Name":"Genre"})\`: Several tables have a generic column simply called "Name" (like the Genre Name, Artist Name, and Track Name). We rename them while merging so we don't get confused by having three columns all called "Name".
-- \`fact["LineTotal"] = ...\`: Finally, we calculate exactly how much money each line item made by multiplying the quantity sold by the price per unit, and we save that result in a brand new column.
+- \`fact["LineTotal"] = fact["Quantity"] * fact["UnitPrice"]\`: Finally, we calculate exactly how much money each line item made by multiplying the quantity sold by the price per unit, and we save that result in a brand new column.
 
 **3. Data quality checks:**
 - Invoices with no matching customer (orphaned records)
@@ -4080,6 +4406,7 @@ The auditor's job is to verify that the numbers are real. Your job is to make th
       ]
     }
   },
+
   'Apache Airflow': {
     'What is Airflow & Why it Exists': {
       'lesson': `## What is Apache Airflow?
@@ -4106,6 +4433,17 @@ def my_task():
 with DAG('daily_report', start_date=datetime(2023, 1, 1), schedule='@daily') as dag:
     task1 = PythonOperator(task_id='generate_report', python_callable=my_task)
 \`\`\`
+
+**Beginner Breakdown — Your First Airflow DAG**
+
+- \`from airflow import DAG\` — Imports the DAG class from the Airflow library. A DAG object is the container that holds all your tasks and their scheduling rules.
+- \`from airflow.operators.python import PythonOperator\` — Imports the operator we'll use to run a Python function as a task.
+- \`def my_task():\` — A plain Python function. This is the actual work — whatever you put here is what Airflow will execute when the task runs.
+- \`with DAG('daily_report', start_date=datetime(2023, 1, 1), schedule='@daily') as dag:\` — This is Python's "context manager" syntax. Everything indented inside the \`with\` block automatically belongs to this DAG. Breaking down the parameters:
+  - \`'daily_report'\` — The unique name (ID) of this DAG in the Airflow UI. Choose something descriptive.
+  - \`start_date=datetime(2023, 1, 1)\` — The date Airflow considers this DAG's "start of life." Airflow uses this to determine if there are any historical runs that need to be caught up.
+  - \`schedule='@daily'\` — A shorthand for "run once a day at midnight." Airflow supports \`@daily\`, \`@hourly\`, \`@weekly\`, and full cron expressions.
+- \`task1 = PythonOperator(task_id='generate_report', python_callable=my_task)\` — Creates a task inside the DAG. \`task_id\` is its unique name within this DAG. \`python_callable=my_task\` tells the operator which function to run (note: we pass the function itself, not the result of calling it — no parentheses).
 
 ## Real life: How companies use this
 **MTN Nigeria** has millions of call records. They use Airflow to schedule a "Billing Job" every night. 
@@ -4138,6 +4476,12 @@ task2 = PythonOperator(
     # How do we add retries?
 )
 \`\`\`
+
+**Beginner Breakdown — Adding Retries to a Task**
+- The comment \`# How do we add retries?\` points to where the solution goes. The fix is to add two parameters: \`retries=3\` (try up to 3 times) and \`retry_delay=timedelta(minutes=5)\` (wait 5 minutes between each attempt).
+- The complete fixed task would look like: \`PythonOperator(task_id='process_data', python_callable=do_math, retries=3, retry_delay=timedelta(minutes=5))\`
+- Why tasks 3, 4, and 5 were skipped: Airflow saw that Task 2 (an upstream dependency) failed. Rather than trying to run tasks that depend on broken data, it marks them all as "upstream_failed" and skips them. This is a safety feature — running Task 3 on bad data from Task 2 would produce wrong results.
+- How automated retries save your sleep: instead of being paged at 2 AM for a database that's briefly busy, Airflow quietly retries. If the database clears up within 15 minutes, the pipeline succeeds without you ever waking up.
 
 **Think through these:**
 - Why did tasks 3, 4, and 5 stay "skipped" instead of failing?
@@ -4182,6 +4526,12 @@ with DAG('business_flow', ...) as dag:
     extract >> transform >> load
 \`\`\`
 
+**Beginner Breakdown — DAG Structure and Dependencies**
+
+- \`extract = PythonOperator(task_id='extract_data', ...)\` — Each variable (\`extract\`, \`transform\`, \`load\`) is a task object. The variable name is just how we reference it in Python; the \`task_id\` is what appears in the Airflow UI.
+- \`extract >> transform >> load\` — The \`>>\` operator defines the flow. Read it as "extract then transform then load." This single line tells Airflow three things: (1) run \`extract\` first, (2) only run \`transform\` if \`extract\` succeeded, (3) only run \`load\` if \`transform\` succeeded. It's the most important line in any DAG.
+- Why not just run them in order in regular Python? Because Airflow handles scheduling, retries, parallel execution, logging, and monitoring. Regular Python code would run them once and give you nothing if they fail at 3 AM.
+
 ## Real life: How companies use this
 **Kuda Bank** uses DAGs for their "Daily Reconciliation." 
 Task 1: Pull card transactions from MasterCard. 
@@ -4210,6 +4560,11 @@ Because you created a "Cycle" (a loop), Airflow refuses to run the code. It show
 # Bad (Cycle): check >> update >> check
 # Good (DAG): check >> update >> [success_alert, failure_alert]
 \`\`\`
+
+**Beginner Breakdown — Fixing a Cycle**
+- \`# Bad (Cycle): check >> update >> check\` — This creates a loop: \`check\` leads to \`update\`, which leads back to \`check\`. Airflow detects this and refuses to run it — the "Acyclic" rule is enforced at parse time.
+- \`check >> update >> [success_alert, failure_alert]\` — The solution uses branching instead of looping. After \`update\`, the flow splits into two possible paths using a list. This is a directed, acyclic flow: it always moves forward, never backward.
+- In real Airflow, you'd use a \`BranchPythonOperator\` to dynamically choose between the success and failure paths based on the outcome of \`update\`. The key insight is: "don't go back, go sideways."
 
 **Think through these:**
 - Why does Airflow forbid loops in a DAG?
@@ -4260,6 +4615,13 @@ task_python = PythonOperator(
 )
 \`\`\`
 
+**Beginner Breakdown — Operators and Tasks**
+
+- \`from airflow.operators.bash import BashOperator\` — Airflow's operators live in sub-packages. Each operator type has its own import path. You only import what you use.
+- \`BashOperator(task_id='print_date', bash_command='date')\` — \`bash_command='date'\` runs the Linux \`date\` command in the terminal, which prints the current date and time. You can put any shell command or script here: \`bash_command='python my_script.py'\`, \`bash_command='./run_pipeline.sh'\`, etc.
+- \`def hello(): print("Hello MIS Lab!")\` — Defined before the task. Note it's a regular Python function — no Airflow-specific code inside it. This separation keeps your business logic independent from Airflow, making it easier to test.
+- \`python_callable=hello\` — We pass the function *object* (no parentheses). \`python_callable=hello\` means "here's the function, call it when the task runs." \`python_callable=hello()\` would mean "call it right now and pass the result," which is wrong.
+
 ## Real life: How companies use this
 **Paystack** might use a \`Sensor\` to wait for a bank's settlement file to appear in a folder. As soon as the file arrives, the \`Sensor\` triggers a \`PythonOperator\` to clean the data, followed by a \`PostgresOperator\` to save it. They don't have to "check" manually; the operators do it for them.
 
@@ -4287,6 +4649,12 @@ delete_old_rows = SQLExecuteQueryOperator(
     conn_id='my_bank_db'
 )
 \`\`\`
+
+**Beginner Breakdown — Using the Right Operator**
+- \`SQLExecuteQueryOperator\` — A pre-built Airflow operator specifically designed to run SQL against a database. It handles connecting, executing, committing, and closing automatically.
+- \`sql="DELETE FROM logs WHERE date < '2023-01-01'"\` — The SQL query to run. This deletes all log entries older than January 1st, 2023.
+- \`conn_id='my_bank_db'\` — The key parameter. Instead of hardcoding database credentials in your code, Airflow has a "Connections" store (in its UI) where you save connection details once and give them a name. \`conn_id\` references that saved connection by name. This means no passwords in your code, and if the database password changes, you update it in one place in the UI.
+- The 20-line Python alternative required manually: importing libraries, building a connection string, creating a cursor, executing SQL, calling commit(), calling cursor.close(), calling conn.close(), and handling exceptions at each step. The operator does all of this for you in 4 lines.
 
 **Think through these:**
 - Why is it safer to use an Operator than to write your own database connection code?
@@ -4330,6 +4698,12 @@ with DAG(
     # Tasks go here
 \`\`\`
 
+**Beginner Breakdown — Scheduling Parameters**
+
+- \`schedule='0 8 * * *'\` — Breaking down this cron expression: \`0\` = at minute 0, \`8\` = at hour 8, \`*\` = every day of the month, \`*\` = every month, \`*\` = every day of the week. Combined: "every day at 8:00 AM." A good mental trick: read left to right and fill in "at minute X, at hour Y, on day Z, in month W, on weekday V."
+- \`catchup=False\` — This is critically important. If today is January 10th and your \`start_date\` is January 1st, Airflow would normally try to "catch up" by running the DAG for every day from January 1st to today — 10 times. \`catchup=False\` tells Airflow: "Only run going forward from now, ignore the past."
+- \`*/15\` in a cron expression means "every 15 units." So \`*/15 * * * *\` means "every 15 minutes." The \`/\` is the step operator.
+
 ## Real life: How companies use this
 **MTN Nigeria** might have a billing DAG scheduled to run at \`0 0 * * *\` (Midnight). This ensures that exactly as the new day begins, they calculate the usage for the previous day and reset any daily data caps. Because it's scheduled, it never forgets, even on public holidays.
 
@@ -4357,6 +4731,11 @@ with DAG(
     ...
 )
 \`\`\`
+
+**Beginner Breakdown — Preventing Concurrent Runs**
+- \`schedule='0 * * * *'\` — Every hour, at minute 0. So: 1:00, 2:00, 3:00, etc.
+- \`max_active_runs=1\` — The default value allows multiple runs of the same DAG to be active simultaneously. Setting it to \`1\` creates a queue: if the 1:00 AM run is still going at 2:00 AM, Airflow waits instead of starting a new run. The new run will begin as soon as the previous one finishes.
+- The business consequence of NOT having this: a 90-minute billing job running hourly would have two concurrent runs processing the same customers, charging them twice. \`max_active_runs=1\` is a simple, one-line protection against this catastrophic outcome.
 
 **Think through these:**
 - Why is "Concurrency Control" (limiting active runs) critical in financial systems?
@@ -4400,6 +4779,12 @@ extract_abuja >> transform_abuja
 [transform_lagos, transform_abuja] >> combine_report
 \`\`\`
 
+**Beginner Breakdown — Defining Dependencies**
+
+- \`extract >> transform >> load\` — Python's \`>>\` normally means "bitshift right" for numbers, but Airflow overrides it for task objects to mean "set as downstream." This is called "operator overloading" — same symbol, different meaning based on context.
+- \`extract_lagos >> transform_lagos\` and \`extract_abuja >> transform_abuja\` on separate lines — These are independent chains. Airflow runs them in parallel simultaneously because there's no dependency between the Lagos and Abuja branches. This is how you process multiple regions at the same time.
+- \`[transform_lagos, transform_abuja] >> combine_report\` — A list on the left side of \`>>\` means "combine_report depends on ALL of these." \`combine_report\` will only start once BOTH \`transform_lagos\` AND \`transform_abuja\` have succeeded. This is a "fan-in" pattern.
+
 ## Real life: How companies use this
 **Jumia** has a "New Order" DAG. 
 Task 1: Check if item is in stock. 
@@ -4430,6 +4815,11 @@ Because there was no dependency, both tasks started at the exact same time. The 
 # Right:
 download_task >> update_task
 \`\`\`
+
+**Beginner Breakdown — Why Undeclared Tasks Run in Parallel**
+- When two tasks in a DAG have no declared relationship, Airflow assumes they're independent and runs them simultaneously. This maximizes efficiency — but it's catastrophic when one task actually depends on the output of the other.
+- \`download_task >> update_task\` — This single line adds the dependency. Now Airflow's scheduler knows: "I must wait for \`download_task\` to show a green (success) status before I'm even allowed to put \`update_task\` in the queue."
+- The "Wrong" code (just declaring the tasks without linking them) isn't a syntax error — it's a logic error. Airflow can't read your mind about which tasks need to wait for which.
 
 **Think through these:**
 - Why did the tasks run at the same time when there was no dependency?
@@ -4474,6 +4864,13 @@ def pull_count(**kwargs):
 # Task A >> Task B (Task B can now pull from A)
 \`\`\`
 
+**Beginner Breakdown — XCom Push and Pull**
+
+- \`**kwargs\` — The double asterisk means "accept any keyword arguments." Airflow automatically passes useful context (like the task instance, execution date, etc.) to your Python functions as keyword arguments. If you don't include \`**kwargs\`, your function won't receive this context.
+- \`kwargs['ti']\` — \`ti\` stands for "Task Instance" — an object representing this specific run of this specific task. It has methods for interacting with Airflow's internal state, including XCom.
+- \`.xcom_push(key='row_count', value=500)\` — Saves the number \`500\` to Airflow's database under the key \`'row_count'\`. Think of it like writing a Post-it note labeled "row_count: 500" and sticking it on a shared board.
+- \`.xcom_pull(key='row_count', task_ids='push_task')\` — Reads the value from the shared board. \`task_ids='push_task'\` specifies which task wrote the value we want (since multiple tasks could push values with the same key name).
+
 ## Real life: How companies use this
 A logistics firm might have Task 1 extract a "Batch ID" from a supplier's website. Task 2 needs that *specific* ID to download the correct file. They use XCom to pass the ID string from one step to the next.
 
@@ -4500,6 +4897,12 @@ ti.xcom_push(key='file_to_process', value=generated_name)
 file_path = ti.xcom_pull(key='file_to_process', task_ids='download_step')
 pd.read_csv(file_path)
 \`\`\`
+
+**Beginner Breakdown — Dynamic Filenames with XCom**
+- \`generated_name\` — This is a variable in Task 1 that holds the dynamically generated filename (e.g., \`"sales_2023_12_01_1430.csv"\`). The exact string is unknown until the task runs, which is why we can't hardcode it in Task 2.
+- \`ti.xcom_push(key='file_to_process', value=generated_name)\` — At the end of the download task, we save the generated filename to XCom so future tasks can find it.
+- \`file_path = ti.xcom_pull(key='file_to_process', task_ids='download_step')\` — At the start of the cleaning task, we retrieve the filename. Now \`file_path\` holds the exact filename the download task created.
+- \`pd.read_csv(file_path)\` — We use the retrieved filename to open the correct file. If the XCom value is \`"sales_2023_12_01_1430.csv"\`, this becomes \`pd.read_csv("sales_2023_12_01_1430.csv")\`.
 
 **Think through these:**
 - Why is it better to use XCom than to hard-code a filename?
@@ -4546,6 +4949,13 @@ with DAG(..., on_failure_callback=notify_failure) as dag:
     # All tasks in this DAG will now send a Slack alert if they fail
 \`\`\`
 
+**Beginner Breakdown — Failure Callbacks**
+
+- \`def notify_failure(context):\` — Airflow calls this function with a \`context\` dictionary when any task in the DAG fails. The context contains everything: the DAG object, the task instance, the execution date, the exception that caused the failure, and more.
+- \`context['dag'].dag_id\` — Drills into the context to get the DAG's ID string. For our alert message, this means the Slack message will show exactly which DAG failed by name.
+- \`SlackAPIPostOperator(...).execute(context=context)\` — We instantiate the Slack operator and immediately call \`.execute()\` to trigger it. This is an unusual pattern (we're not adding it to the DAG graph — just calling it directly as a function) but it's the standard way to use operators inside callbacks.
+- \`on_failure_callback=notify_failure\` — Registers our callback with the DAG. Note: this is at the DAG level, so any task within this DAG that fails will trigger the callback. You can also set \`on_failure_callback\` at the individual task level for more granular control.
+
 ## Real life: How companies use this
 **MTN** has thousands of DAGs. They have a "Data War Room" with screens showing the Airflow UI. If a circle turns Red (Failure), an alert goes to the on-call engineer's phone immediately. This allows them to fix billing issues before customers even notice a problem.
 
@@ -4573,6 +4983,13 @@ default_args = {
     'retries': 3,
 }
 \`\`\`
+
+**Beginner Breakdown — Default Args**
+- \`default_args\` — A Python dictionary that you pass to the DAG. Every task in the DAG automatically inherits these settings, so you don't have to set \`retries=3\` on every individual task.
+- \`'owner': 'mis_team'\` — Labels the DAG in the Airflow UI. Useful when multiple teams share one Airflow instance — you can filter by owner to see only your team's DAGs.
+- \`'email': ['support@bank.com']\` — A list of email addresses to notify. It's a list so you can add multiple recipients: \`['alice@bank.com', 'bob@bank.com']\`.
+- \`'email_on_failure': True\` — Enables the automated email. When a task exhausts all its retries and still fails, Airflow sends an email to every address in the \`email\` list.
+- \`'retries': 3\` — Before an alert email is sent, Airflow will try the task 3 more times. Only if all retries fail will it send the email. This prevents "alert fatigue" — being woken up at 2 AM for a 5-second network glitch that fixes itself.
 
 **Think through these:**
 - Why is an email alert better than just "checking the UI" every morning?
@@ -4621,6 +5038,13 @@ with DAG('daily_shop_sync', schedule='@daily', ...) as dag:
     wait_for_file >> clean_data >> update_db >> send_done_email
 \`\`\`
 
+**Beginner Breakdown — A Complete Production DAG**
+
+- \`FileSensor(task_id='wait', filepath='/data/sales.csv')\` — A Sensor is a special type of operator that keeps "poking" (checking a condition) on a schedule until it's True. This one checks if a file exists at the given path. It will keep checking every minute (configurable) until the file appears, then it succeeds and the downstream tasks run.
+- \`PostgresOperator(task_id='load', sql="INSERT INTO...")\` — A database-specific operator for PostgreSQL. It uses a stored Airflow connection (no credentials in code) to run the SQL. The \`"INSERT INTO..."\` is abbreviated here — in real usage you'd provide the full SQL or a path to a \`.sql\` file.
+- \`EmailOperator(task_id='done', to='manager@shop.com', ...)\` — Sends an email when the load is complete. This is the "success notification" — different from failure alerts, this proactively tells stakeholders the data is ready.
+- \`wait_for_file >> clean_data >> update_db >> send_done_email\` — The whole pipeline in one line. Read it as a story: "Wait for the file, then clean it, then load it to the database, then tell the manager it's done." This is the beauty of Airflow — the entire pipeline logic is readable as plain English.
+
 ## Real life: How companies use this
 **Aviation/Airlines**: Every night, an Airflow DAG pulls the "Flight Logs" from every plane. 
 - **Task 1**: Get logs. 
@@ -4651,6 +5075,12 @@ Data is in two places: "Completed Orders" are in a SQL database, but "Driver Rat
 # The Logic:
 # sensor >> [extract_sql, read_csv] >> calculate_bonuses >> load_payouts
 \`\`\`
+
+**Beginner Breakdown — Multi-Source Pipeline Design**
+- \`sensor >> [extract_sql, read_csv]\` — After the sensor confirms the CSV has arrived, TWO tasks start in parallel: one extracts from the SQL database and another reads the CSV file. Using a list on the right side of \`>>\` means "both of these start as soon as the sensor succeeds."
+- \`[extract_sql, read_csv] >> calculate_bonuses\` — The \`calculate_bonuses\` task waits for BOTH sources to be ready before it starts. This is a "fan-out then fan-in" pattern: one → two parallel → one.
+- \`calculate_bonuses >> load_payouts\` — The bonus calculation results are then loaded to the payout table. By this point, all data is verified and ready.
+- The architecture principle: each task does one thing. The sensor waits, extractors pull data, the calculator joins and applies logic, the loader saves. Each step is independently testable and debuggable.
 
 **Think through these:**
 - Why is it important to "Join" data from two different sources?
@@ -4698,6 +5128,14 @@ with DAG('ceo_morning_report', start_date=datetime(2023,1,1), schedule='0 6 * * 
     wait_for_data >> generate_metrics >> log_to_dashboard
 \`\`\`
 
+**Beginner Breakdown — Milestone DAG Template**
+
+- \`schedule='0 6 * * *'\` — Run at 6:00 AM every day (minute 0, hour 6, every day). The business requirement says "ready before 6 AM" — so the pipeline runs at 6 AM to prepare the report for when executives log in.
+- \`FileSensor(task_id='wait_for_csv', filepath='/data/today.csv')\` — The pipeline's first job is to wait. It keeps checking \`/data/today.csv\` until the file appears, meaning the previous night's data has been delivered. Only then does it proceed.
+- \`python_callable=analyze_data\` — The \`analyze_data\` function (which you write separately) would load the Olist datasets, join the 8 tables, calculate KPIs (revenue, orders, satisfaction scores), and save results.
+- \`bash_command='cat report.txt >> github_readme.md'\` — A shell command that appends (\`>>\`) the contents of \`report.txt\` to \`github_readme.md\`. This creates an automatically updated dashboard on GitHub. The \`cat\` command reads a file and outputs its contents. \`>>\` redirects that output to append to another file (unlike \`>\` which would overwrite it).
+- \`wait_for_data >> generate_metrics >> log_to_dashboard\` — The three-stage pipeline: wait → calculate → publish.
+
 ## Presenting to Executives
 Say: "This system is now autonomous. It checks for data, processes it, and updates our shared GitHub dashboard while we sleep. It's the highest level of data maturity for a modern logistics business."`,
       'scenario': `## Scenario: The "3 AM Alert"
@@ -4710,7 +5148,12 @@ Say: "This system is now autonomous. It checks for data, processes it, and updat
 
 **Think through these:**
 - Why is it better for the system to "Wait and Alert" than to just "Fail and Crash"?
-- How does "Automated Monitoring" reduce the stress of an MIS manager?`,
+- How does "Automated Monitoring" reduce the stress of an MIS manager?
+
+**Beginner Breakdown — SLA Miss Alerts**
+- An SLA (Service Level Agreement) Miss in Airflow triggers when a task takes longer than a defined time to complete. You set it with \`sla=timedelta(hours=2)\` on the sensor task — meaning "if this sensor is still waiting after 2 hours, fire an alert."
+- "Wait and Alert" vs "Fail and Crash": A sensor that just fails gives you a red circle in the UI but no context. A sensor with an SLA miss callback sends a targeted message to the branch manager saying "your file is missing — please upload it." The problem gets solved proactively by the right person.
+- The cascade of automated monitoring: sensor waits → SLA fires after 2 hours → branch manager gets alerted → uploads file → sensor detects file → pipeline proceeds. No manual intervention from the data engineer required.`,
       'quizzes': [
         {
           'question': "What is the role of a 'Dependency' ( >> ) in an Airflow Milestone project?",
