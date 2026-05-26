@@ -1313,20 +1313,7 @@ async function loadQ(forceTopic = null, forceSub = null) {
     return;
   }
 
-  // 1. Check STATIC_CONTENT first (Zero Cost)
-  if (typeof STATIC_CONTENT !== 'undefined' && STATIC_CONTENT[topic]?.[sub]?.quizzes) {
-    const staticQuizzes = STATIC_CONTENT[topic][sub].quizzes;
-    if (staticQuizzes.length > 0) {
-      const q = staticQuizzes[Math.floor(Math.random() * staticQuizzes.length)];
-      // Ensure q has topic and type for renderer
-      q.topic = topic;
-      q.type = q.type || 'technical';
-      renderQ(q);
-      document.getElementById('q-loading').style.display = 'none';
-      document.getElementById('q-content').style.display = 'block';
-      return;
-    }
-  }
+
 
   const diff = S.quizDiff.length ? S.quizDiff[Math.floor(Math.random()*S.quizDiff.length)] : 'Entry Level';
   const useScenario = S.quizMode === 'scenario' || (S.quizMode === 'practice' && Math.random() > 0.45);

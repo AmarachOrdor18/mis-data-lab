@@ -3953,6 +3953,13 @@ data = {t: pd.read_sql(f"SELECT * FROM {t}", conn) for t in tables}
 conn.close()
 \`\`\`
 
+**Beginner Breakdown: Extract Phase**
+- \`import sqlite3, pandas as pd\`: We bring in two helpful tools. \`sqlite3\` lets Python talk to our database file, and \`pandas\` (nicknamed \`pd\`) is a powerful tool for working with data tables.
+- \`conn = sqlite3.connect(...)\`: We are opening a direct connection (like opening a book) to our music store database file.
+- \`tables = [...]\`: We make a list of all the different tables inside the database that we want to extract information from.
+- \`data = {...}\`: This line loops through our list of tables. For every table, it runs a simple SQL command (\`SELECT * FROM table_name\`) to grab all the data and saves it in our computer's memory using pandas.
+- \`conn.close()\`: Just like closing a book when you're done reading, we close the database connection to free up the computer's resources.
+
 **2. Transform — join and validate:**
 \`\`\`python
 # Build the main fact table
@@ -3966,6 +3973,15 @@ fact = (data["InvoiceLine"]
 )
 fact["LineTotal"] = fact["Quantity"] * fact["UnitPrice"]
 \`\`\`
+
+**Beginner Breakdown: Transform Phase**
+Here, we are bringing all the scattered data together into one big master table (often called a "fact table"). It is very similar to doing multiple VLOOKUPs in Excel to pull data from different sheets!
+- \`fact = (data["InvoiceLine"]\`: We start our master table using the \`InvoiceLine\` data. Why? Because it represents every single individual song ever sold. It is the core of our business data.
+- \`.merge(...)\`: This is the pandas command to glue tables together side-by-side.
+- \`.merge(data["Invoice"][["InvoiceId"...]], on="InvoiceId")\`: We attach the main \`Invoice\` details to our lines, linking them using the common \`InvoiceId\` column. Notice the double brackets \`[[...]]\`: we are choosing to only select the specific columns we actually need (like CustomerId and Date) to keep our master table clean and save memory.
+- \`how="left"\`: When joining tables like Genre, Album, or Artist, we use a "left join" (\`how="left"\`). This ensures that even if a song somehow doesn't have an artist recorded in the system, we *still keep the sale record*. If we used a regular join, sales missing an artist would disappear, and our total revenue would be wrong!
+- \`.rename(columns={"Name":"Genre"})\`: Several tables have a generic column simply called "Name" (like the Genre Name, Artist Name, and Track Name). We rename them while merging so we don't get confused by having three columns all called "Name".
+- \`fact["LineTotal"] = ...\`: Finally, we calculate exactly how much money each line item made by multiplying the quantity sold by the price per unit, and we save that result in a brand new column.
 
 **3. Data quality checks:**
 - Invoices with no matching customer (orphaned records)
